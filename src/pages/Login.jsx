@@ -1,0 +1,9 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+
+export default function Login(){
+ const nav=useNavigate(), [show,setShow]=useState(false), [role,setRole]=useState('admin');
+ const submit=e=>{e.preventDefault();nav(`/${role}/dashboard`)};
+ return <main className="auth-page"><section className="auth-art"><button className="brand" onClick={()=>nav('/')}><span className="brand-mark">P</span><span>PULSE<span>FIT</span><small>GYM OS</small></span></button><div><p className="eyebrow">WELCOME BACK</p><h1>YOUR GYM.<br/><em>FULLY IN MOTION.</em></h1><p>Everything you need to lead your team, serve members and grow stronger.</p></div><small>Trusted by 5,000+ fitness businesses</small></section><section className="auth-form"><button className="back" onClick={()=>nav('/')}><ArrowLeft/> Back to home</button><form onSubmit={submit}><span className="mini-mark">P</span><h2>Sign in to PulseFit</h2><p>Access your performance workspace.</p><label>Workspace role<select value={role} onChange={e=>setRole(e.target.value)}><option value="admin">Gym administrator</option><option value="trainer">Trainer</option><option value="member">Member</option></select></label><label>Email address<input type="email" defaultValue="admin@gym.com" required/></label><label>Password<div className="password"><input type={show?'text':'password'} defaultValue="password123" required/><button type="button" onClick={()=>setShow(!show)}>{show?<EyeOff/>:<Eye/>}</button></div></label><div className="form-row"><label className="remember"><input type="checkbox" defaultChecked/> Remember me</label><a href="#">Forgot password?</a></div><button className="lime-btn full">Sign in securely <ArrowRight/></button><small className="secure"><ShieldCheck/> Protected with enterprise-grade security</small></form></section></main>
+}

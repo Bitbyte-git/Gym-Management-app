@@ -1,0 +1,104 @@
+.landing .nav nav a {
+  position: relative;
+  padding: 10px 0;
+  text-decoration: none;
+  transition: color 0.25s ease, text-shadow 0.25s ease;
+}
+
+.landing .nav nav a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lime);
+  box-shadow: 0 0 8px rgba(201, 255, 24, 0.45);
+  transition: left 0.28s ease, right 0.28s ease;
+}
+
+.landing .nav nav a:hover,
+.landing .nav nav a:focus-visible {
+  color: var(--lime);
+  outline: none;
+  text-shadow: 0 0 14px rgba(201, 255, 24, 0.18);
+}
+
+.landing .nav nav a:hover::after,
+.landing .nav nav a:focus-visible::after {
+  left: 0;
+  right: 0;
+}
+
+.landing .nav > .lime-btn {
+  transition: transform 0.22s ease, filter 0.22s ease, box-shadow 0.22s ease;
+}
+
+.landing .nav > .lime-btn:hover,
+.landing .nav > .lime-btn:focus-visible {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px rgba(201, 255, 24, 0.24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing .nav nav a,
+  .landing .nav nav a::after,
+  .landing .nav > .lime-btn {
+    transition: none;
+  }
+}
+
+@media (min-width: 761px) {
+  .landing .hero-copy {
+    transform: translateX(30px);
+  }
+}
+
+.landing > .nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6, 8, 7, 0.86);
+  box-shadow: 0 0 0 100vmax rgba(6, 8, 7, 0.86), 0 1px 0 rgba(255, 255, 255, 0.06);
+  clip-path: inset(0 -100vmax);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+@media (min-width: 1001px) {
+  .landing .hero {
+    height: 416px;
+    min-height: 416px;
+  }
+
+  .landing .hero-visual {
+    transform: translateY(32px);
+  }
+}
+
+@media (min-width: 1200px) {
+  .landing .hero {
+    height: 497px;
+    min-height: 497px;
+  }
+}
+
+@media (max-width: 1000px) and (min-width: 761px) {
+  .landing .hero {
+    height: 414px;
+    min-height: 414px;
+  }
+
+  .landing .hero-visual {
+    transform: translateY(24px);
+  }
+}
