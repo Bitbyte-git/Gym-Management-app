@@ -388,3 +388,416 @@
     row-gap:42px;
   }
 }
+
+/* Registration Form Styles */
+.registration-page .auth-form {
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.registration-form-container {
+  padding: 80px 40px 40px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.stepper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.stepper .step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6d726a;
+  background: #f0f1ed;
+  transition: all 0.2s;
+}
+
+.stepper .step.active {
+  background: var(--lime);
+  color: #0b0d09;
+}
+
+.stepper .step.completed {
+  background: #c9ff1840;
+  color: #4d6200;
+}
+
+.registration-form {
+  width: 100%;
+}
+
+.registration-form h2 {
+  font-size: 24px;
+  margin-bottom: 24px;
+  color: #111;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.registration-form label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #3d4139;
+}
+
+.registration-form input,
+.registration-form select,
+.registration-form textarea {
+  width: 100%;
+  height: 48px;
+  border: 1px solid #d0d3cb;
+  border-radius: 8px;
+  background: white;
+  padding: 0 14px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.registration-form textarea {
+  height: auto;
+  min-height: 80px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.registration-form input:focus,
+.registration-form select:focus,
+.registration-form textarea:focus {
+  outline: none;
+  border-color: var(--lime);
+  box-shadow: 0 0 0 3px rgba(201, 255, 24, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.fingerprint-step {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.fingerprint-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.fingerprint-visual svg {
+  color: #6d726a;
+  transition: color 0.3s;
+}
+
+.fingerprint-visual svg.animate-pulse {
+  color: var(--lime);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.fingerprint-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 40px 0;
+}
+
+.fingerprint-success p {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3d4139;
+}
+
+.plan-selection,
+.slot-selection,
+.trainer-selection {
+  margin: 20px 0;
+}
+
+.plans-grid,
+.slots-grid,
+.trainers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.plan-card,
+.slot-card,
+.trainer-card {
+  padding: 20px;
+  border: 2px solid #e0e3dc;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.plan-card:hover,
+.slot-card:hover,
+.trainer-card:hover {
+  border-color: var(--lime);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.plan-card.selected,
+.slot-card.selected,
+.trainer-card.selected {
+  border-color: var(--lime);
+  background: #c9ff1810;
+}
+
+.plan-card h3,
+.slot-card h3,
+.trainer-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #111;
+}
+
+.plan-card .price {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--lime);
+  margin: 12px 0;
+}
+
+.plan-card .price span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6d726a;
+}
+
+.plan-card .description {
+  font-size: 13px;
+  color: #6d726a;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.plan-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan-card ul li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #3d4139;
+  margin-bottom: 6px;
+}
+
+.plan-card ul li svg {
+  color: var(--lime);
+  flex-shrink: 0;
+}
+
+.slot-card .time {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111;
+  margin: 8px 0;
+}
+
+.slot-card .capacity {
+  font-size: 12px;
+  color: #6d726a;
+}
+
+.trainer-card {
+  text-align: center;
+}
+
+.trainer-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  margin: 0 auto 12px;
+}
+
+.trainer-card .specialization {
+  font-size: 13px;
+  color: #6d726a;
+  margin: 4px 0;
+}
+
+.trainer-card .experience {
+  font-size: 12px;
+  color: #3d4139;
+}
+
+.review-step {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.review-content {
+  background: #f8f9f5;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0;
+}
+
+.review-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e3dc;
+}
+
+.review-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.review-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #6d726a;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.review-section p {
+  font-size: 14px;
+  color: #3d4139;
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+.review-section strong {
+  font-weight: 600;
+  color: #111;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  border: 1px solid #fcc;
+}
+
+.management-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 84px;
+  padding: 24px;
+  color: var(--muted);
+}
+
+.management-message.error-message {
+  color: #c33;
+}
+
+.management-message svg {
+  flex: 0 0 auto;
+}
+
+@media(max-width: 760px) {
+  .registration-form-container {
+    padding: 60px 20px 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stepper {
+    gap: 6px;
+  }
+
+  .stepper .step {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  .plans-grid,
+  .slots-grid,
+  .trainers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}
+.page-loading{min-height:100vh;display:grid;place-items:center;color:var(--lime);font-weight:700}
+
+/* Core management workflows extend PulseFit's existing design tokens. */
+.operation-tools { display:flex; flex-wrap:wrap; gap:12px; align-items:end; }
+.operation-tools label { display:grid; gap:6px; color:var(--muted); }
+.operations input,.operations select { background:var(--panel2);color:var(--white);border:1px solid var(--line);padding:10px;border-radius:6px;max-width:100%; }
+.row-actions { display:flex;flex-wrap:wrap;gap:8px;min-width:160px; }
+.row-actions button { padding:8px 12px;font-size:12px; }
+.operation-modal { position:fixed;inset:0;z-index:100;background:#000b;display:grid;place-items:center;padding:20px; }
+.operation-form { background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;width:min(720px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 80px #0008; }
+.operation-form label { display:grid;gap:8px; }
+.operation-form input[type=checkbox] { width:18px;height:18px;accent-color:var(--lime); }
+.day-options { display:flex;flex-wrap:wrap;gap:10px; }
+.demo-credentials { margin:20px 0;color:var(--muted); }
+.demo-credentials button { display:block;text-align:left; }
+.payment-receipt { padding:24px;margin-bottom:24px; }
+.payment-receipt button { margin:12px 12px 0 0; }
+.side nav { overflow-y:auto;min-height:0; }
+@media print { body * { visibility:hidden; } .payment-receipt,.payment-receipt * { visibility:visible; } .payment-receipt { position:absolute;inset:0;color:#000;background:#fff; } .payment-receipt button { display:none; } }
+
+.registration-page .auth-form { background:var(--panel);color:var(--white); }
+.registration-page .registration-form h2,.registration-page .review-step h2,.registration-page .review-section h3 { color:var(--white); }
+.registration-page .registration-form label,.registration-page .review-step p { color:var(--muted); }
+.registration-page input,.registration-page select,.registration-page textarea { background:var(--panel2);color:var(--white);border-color:var(--line); }
+.registration-page .step { background:var(--panel2);color:var(--muted); }
+.registration-page .step.active,.registration-page .step.completed { background:var(--lime);color:var(--ink); }
+.registration-page .plan-card,.registration-page .slot-card,.registration-page .trainer-card,.registration-page .review-section { background:var(--panel2);border-color:var(--line);color:var(--white); }
+.registration-page .outline-btn { color:var(--white); }
+.session-row { display:grid;gap:8px;margin-bottom:14px; }

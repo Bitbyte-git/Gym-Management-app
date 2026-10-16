@@ -37,6 +37,7 @@ export default function Landing(){
    return()=>{cancelAnimationFrame(frame);clearInterval(pulse);clearInterval(classes)};
  },[]);
  const go=()=>nav('/login');
+ const register=()=>nav('/register');
  return <div className="landing">
   <header className="nav wrap">
    <button className="brand" onClick={()=>scrollTo(0,0)}><span className="brand-mark">P</span><span>PULSE<span>FIT</span><small>GYM OS</small></span></button>
@@ -51,7 +52,7 @@ export default function Landing(){
      <p className="eyebrow">ALL-IN-ONE GYM MANAGEMENT</p>
      <h1>BUILT FOR GYMS.<br/><em>DESIGNED FOR GROWTH.</em></h1>
      <p className="lead">PulseFit helps gym owners automate operations, delight members and grow revenue — all from one powerful platform.</p>
-     <div className="hero-actions"><button className="lime-btn" onClick={go}>Start 14-Day Free Trial <ArrowRight/></button><button className="ghost-btn" onClick={()=>document.querySelector('#how-it-works').scrollIntoView()}><Play size={17} fill="currentColor"/> Book a Demo</button></div>
+     <div className="hero-actions"><button className="lime-btn" onClick={go}>Start 14-Day Free Trial <ArrowRight/></button><button className="ghost-btn" onClick={register}>Register as Member <ArrowRight/></button></div>
      <div className="trust-row"><span>Available On :</span><Globe2/><b>Web App</b><span className="platform">◆</span><b>Android</b><span className="platform apple">●</span><b>iOS</b></div>
     </div>
     <div className="hero-visual">
