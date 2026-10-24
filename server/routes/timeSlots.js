@@ -35,7 +35,7 @@ router
 router
   .route('/:id')
   .get(getTimeSlot)
-  .put(protect, authorize('admin'), auditLogger('update', 'time_slot'), updateTimeSlot)
+  .put(protect, authorize('admin', 'reception'), auditLogger('update', 'time_slot'), updateTimeSlot)
   .delete(protect, authorize('admin'), auditLogger('deactivate', 'time_slot'), deleteTimeSlot);
 
 module.exports = router;

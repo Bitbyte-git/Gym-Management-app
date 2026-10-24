@@ -18,6 +18,7 @@ const SystemSetting = require('../models/SystemSetting');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { addMonthsClamped } = require('../utils/date');
+const config = require('../config/env');
 
 // Generate unique transaction ID
 const generateTransactionId = () => {
@@ -54,8 +55,12 @@ exports.getPayments = async (req, res, next) => {
 exports.getPayment = async (req, res, next) => {
   try {
     const payment = await Payment.findById(req.params.id)
-      .populate('member', 'memberId fullName mobileNumber')
-      .populate('membership');
+      .populate('member', 'memberId fullName mobileNumber address')
+      .populate({
+        path: 'membership',
+        select: 'membershipPlan startDate endDate totalAmount amountPaid pendingAmount status paymentStatus action',
+        populate: { path: 'membershipPlan', select: 'name duration description' },
+      });
 
     if (!payment) {
       return res.status(404).json({
@@ -66,7 +71,15 @@ exports.getPayment = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: payment,
+      data: {
+        ...payment.toObject(),
+        receiptIssuer: {
+          name: config.gym.name,
+          address: config.gym.address,
+          phone: config.gym.phone,
+          email: config.gym.email,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -157,13 +170,13 @@ exports.settlePayment = async (req, res, next, verifiedCheckout = null) => {
           error.statusCode = 409;
           throw error;
         }
-        if (!verifiedCheckout && (membership.stripeCheckoutSession || membership.checkoutAttempt)) {
+        if (!verifiedCheckout && (membership.gatewayOrderId || membership.checkoutAttempt)) {
           throw Object.assign(new Error('An online checkout is pending. Cancel it before recording cash.'), { statusCode: 409 });
         }
-        if (verifiedCheckout && (membership.stripeCheckoutSession !== verifiedCheckout.id ||
+        if (verifiedCheckout && (membership.gatewayOrderId !== verifiedCheckout.id ||
             verifiedCheckout.payment_status !== 'paid' || verifiedCheckout.currency !== 'inr' ||
             verifiedCheckout.amount_total !== Math.round(membership.pendingAmount * 100))) {
-          throw Object.assign(new Error('Stripe payment does not match this membership balance'), { statusCode: 409 });
+          throw Object.assign(new Error('Gateway payment does not match this membership balance'), { statusCode: 409 });
         }
         const due = Number(membership.pendingAmount);
         const paymentAmount = Number(amount);
@@ -239,6 +252,10 @@ exports.settlePayment = async (req, res, next, verifiedCheckout = null) => {
           ? 'paid'
           : (membership.amountPaid > 0 ? 'partial' : 'pending');
         membership.lastPaymentDate = new Date();
+        if (verifiedCheckout) {
+          membership.gatewayOrderId = undefined;
+          membership.checkoutAttempt = undefined;
+        }
         if (membership.status === 'pending' && fullyPaid) {
           const plan = await MembershipPlan.findById(membership.membershipPlan).session(session);
           if (!plan) {
@@ -414,12 +431,25 @@ exports.settleRefund = async (req, res, next, verifiedRefund = null) => {
     }
 
     if (payment.paymentMethod === 'online_gateway' && !verifiedRefund) {
-      const stripe = require('./stripeController').stripeClient();
       await Payment.findOneAndUpdate({ _id: payment._id, refundRequestedBy: { $exists: false } },
         { $set: { refundRequestedBy: req.user.id, refundReason: reason.trim() } }, { returnDocument: 'after' });
-      const refund = await stripe.refunds.create({ payment_intent: payment.gatewayTransactionId }, { idempotencyKey: `refund-${payment._id}` });
-      await Payment.updateOne({ _id: payment._id }, { $set: { stripeRefundId: refund.id } });
-      if (refund.status !== 'succeeded') return res.status(202).json({ success: true, message: 'Stripe refund requested. Waiting for provider confirmation.', data: { refundStatus: refund.status } });
+      if (!payment.gatewayTransactionId?.startsWith('pay_')) {
+        throw Object.assign(new Error('This payment was not created by Razorpay and requires manual provider reconciliation'), { statusCode: 409 });
+      }
+      const providerRefund = await require('./razorpayController').refund(
+        payment.gatewayTransactionId,
+        Math.round(payment.amount * 100),
+        `refund-${payment._id}`,
+      );
+      const refund = {
+        id: providerRefund.id,
+        payment_intent: providerRefund.payment_id,
+        amount: providerRefund.amount,
+        currency: providerRefund.currency?.toLowerCase(),
+        status: providerRefund.status === 'processed' ? 'succeeded' : providerRefund.status,
+      };
+      await Payment.updateOne({ _id: payment._id }, { $set: { gatewayRefundId: refund.id } });
+      if (refund.status !== 'succeeded') return res.status(202).json({ success: true, message: 'Razorpay refund requested. Waiting for provider confirmation.', data: { refundStatus: refund.status } });
       verifiedRefund = refund;
     }
     if (verifiedRefund && (verifiedRefund.status !== 'succeeded' || verifiedRefund.payment_intent !== payment.gatewayTransactionId ||
@@ -465,7 +495,7 @@ exports.settleRefund = async (req, res, next, verifiedRefund = null) => {
             membership.paymentStatus = membership.pendingAmount === 0
               ? 'paid'
               : (membership.amountPaid > 0 ? 'partial' : 'pending');
-            membership.stripeCheckoutSession = undefined;
+            membership.gatewayOrderId = undefined;
             membership.checkoutAttempt = undefined;
             await membership.save({ session });
           }

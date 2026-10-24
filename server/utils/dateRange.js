@@ -1,7 +1,9 @@
+const { zonedMidnight, addCalendarDays } = require('./gymDate');
+
 const dateRange = (start, end) => {
   const range = {};
-  if (start) range.$gte = new Date(start);
-  if (end) { const through = new Date(end); through.setUTCDate(through.getUTCDate() + 1); range.$lt = through; }
+  if (start) range.$gte = zonedMidnight(start);
+  if (end) range.$lt = zonedMidnight(addCalendarDays(end, 1));
   return range;
 };
 module.exports = dateRange;

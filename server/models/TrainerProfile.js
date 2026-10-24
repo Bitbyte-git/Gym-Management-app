@@ -21,6 +21,7 @@ const trainerProfileSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: ['male', 'female', 'other'],
+    required: [true, 'Please select gender'],
   },
   dateOfBirth: {
     type: Date,
@@ -55,6 +56,14 @@ const trainerProfileSchema = new mongoose.Schema({
     type: String,
     enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
   }],
+  convenientTimings: {
+    type: [{ type: String, enum: ['morning', 'afternoon', 'evening'] }],
+    default: ['morning', 'afternoon', 'evening'],
+    validate: {
+      validator: value => Array.isArray(value) && value.length > 0,
+      message: 'Select at least one convenient timing',
+    },
+  },
   status: {
     type: String,
     enum: ['active', 'inactive', 'on_leave', 'suspended'],

@@ -35,7 +35,7 @@ exports.getTimeSlots = async (req, res, next) => {
         return res.status(400).json({ success: false, error: 'Invalid day of week' });
       }
       query.dayOfWeek = dayOfWeek;
-    }
+    } else query.dayOfWeek = 'monday'; // Canonical records represent daily recurring slots.
     
     if (planId) {
       if (!mongoose.isValidObjectId(planId)) {
@@ -100,7 +100,8 @@ exports.getTimeSlot = async (req, res, next) => {
 // @access  Private (Admin)
 exports.createTimeSlot = async (req, res, next) => {
   try {
-    const { name, dayOfWeek, startTime, endTime, maxCapacity, eligiblePlans } = req.body;
+    const { name, startTime, endTime, maxCapacity, eligiblePlans } = req.body;
+    const dayOfWeek = 'monday'; // Stored for compatibility; the slot applies every day.
     if (!VALID_DAYS.includes(dayOfWeek)) {
       return res.status(400).json({ success: false, error: 'Invalid day of week' });
     }
@@ -159,7 +160,7 @@ exports.createTimeSlot = async (req, res, next) => {
 
 // @desc    Update time slot
 // @route   PUT /api/time-slots/:id
-// @access  Private (Admin)
+// @access  Private (Admin, Reception)
 exports.updateTimeSlot = async (req, res, next) => {
   try {
     const changes = Object.fromEntries(Object.entries(req.body).filter(([key]) => SLOT_FIELDS.includes(key)));

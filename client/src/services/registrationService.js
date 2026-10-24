@@ -15,9 +15,10 @@ export const registrationService = {
   },
   saveHealthDetails: (data) => api.post('/registration/health-details', data, withRegistrationToken()),
   getPlans: () => api.get('/registration/plans'),
-  getSlots: (planId) => api.get('/registration/slots', { params: { planId } }),
+  getSlots: (planId) => api.get('/registration/slots', { params: { planId, dayOfWeek: 'monday' } }),
   getTrainers: (slotId) => api.get('/registration/trainers', { params: { slotId } }),
   checkout: () => api.post('/registration/checkout', {}, withRegistrationToken()),
+  verifyPayment: (data) => api.post('/registration/verify-payment', data, withRegistrationToken()),
   cancelCheckout: () => api.post('/registration/cancel-checkout', {}, withRegistrationToken()),
   resume: async (data) => {
     const response = await api.post('/registration/resume', data);

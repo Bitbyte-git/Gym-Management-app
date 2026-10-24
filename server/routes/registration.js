@@ -20,7 +20,8 @@ router.get('/trainers', getAvailableTrainers);
 router.post('/selection', submitSelection);
 router.get('/summary', getRegistrationSummary);
 router.post('/complete', completeRegistration);
-router.post('/checkout', require('../controllers/stripeController').checkout);
-router.post('/cancel-checkout', require('../controllers/stripeController').cancelCheckout);
+router.post('/checkout', require('../controllers/razorpayController').checkout);
+router.post('/verify-payment', require('../controllers/razorpayController').verify);
+router.post('/cancel-checkout', require('../controllers/razorpayController').cancelCheckout);
 
 module.exports = router;

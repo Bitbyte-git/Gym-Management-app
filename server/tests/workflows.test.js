@@ -8,35 +8,35 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-access-secret-only-for-isolated-tests';
 process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-only-for-isolated-tests';
 process.env.PAYMENT_GATEWAY_ENABLED = 'true';
-process.env.STRIPE_SECRET_KEY = 'sk_test_isolated';
-process.env.STRIPE_WEBHOOK_SECRET = 'whsec_isolated';
-const Stripe = require('stripe');
-const actualStripe = new Stripe('sk_test_isolated');
-const sessions = new Map();
+process.env.RAZORPAY_KEY_ID = 'rzp_test_isolated';
+process.env.RAZORPAY_KEY_SECRET = 'razorpay-test-secret';
+const orders = new Map();
+const gatewayPayments = new Map();
 let checkoutCounter = 0;
 const refunds = new Map();
-const fakeStripe = { refunds: {
-  create: async (data, options) => {
-    if (refunds.has(options.idempotencyKey)) return refunds.get(options.idempotencyKey);
-    const checkout = [...sessions.values()].find(session => session.payment_intent === data.payment_intent);
-    const refund = { id: 're_' + refunds.size, payment_intent: data.payment_intent, amount: checkout.amount_total, currency: 'inr', status: 'succeeded' };
-    refunds.set(options.idempotencyKey, refund); return refund;
-  },
-  retrieve: async id => [...refunds.values()].find(refund => refund.id === id),
-}, webhooks: actualStripe.webhooks, checkout: { sessions: {
-  create: async (data, options) => {
-    const existing = [...sessions.values()].find(session => session.idempotencyKey === options.idempotencyKey);
-    if (existing) return existing;
-    const id = `cs_test_${++checkoutCounter}`;
-    const session = { id, url: `https://checkout.stripe.com/${id}`, status: 'open', payment_status: 'unpaid',
-      currency: 'inr', amount_total: data.line_items[0].price_data.unit_amount, metadata: data.metadata,
-      payment_intent: `pi_test_${checkoutCounter}`, idempotencyKey: options.idempotencyKey };
-    sessions.set(id, session); return session;
-  },
-  retrieve: async id => { const session = sessions.get(id); if (!session) throw new Error('Unknown test session'); return session; },
-  expire: async id => { sessions.get(id).status = 'expired'; },
-} } };
-require.cache[require.resolve('stripe')].exports = () => fakeStripe;
+const actualFetch = global.fetch;
+global.fetch = async (input, options = {}) => {
+  const url = String(input);
+  if (!url.startsWith('https://api.razorpay.com/v1')) return actualFetch(input, options);
+  const path = url.replace('https://api.razorpay.com/v1', '');
+  let data;
+  if (path === '/orders' && options.method === 'POST') {
+    const body = JSON.parse(options.body); const id = `order_test_${++checkoutCounter}`;
+    data = { id, amount: body.amount, currency: body.currency, receipt: body.receipt, notes: body.notes, status: 'created' };
+    orders.set(id, data);
+  } else if (/^\/orders\/[^/]+\/payments$/.test(path)) {
+    const orderId = path.split('/')[2]; data = { items: [...gatewayPayments.values()].filter(payment => payment.order_id === orderId) };
+  } else if (path.startsWith('/orders/')) data = orders.get(path.split('/')[2]);
+  else if (path.startsWith('/payments/') && path.endsWith('/refund')) {
+    const paymentId = path.split('/')[2]; const body = JSON.parse(options.body);
+    const existing = [...refunds.values()].find(refund => refund.payment_id === paymentId);
+    data = existing || { id: `rfnd_test_${refunds.size + 1}`, payment_id: paymentId, amount: body.amount, currency: 'INR', status: 'processed' };
+    refunds.set(data.id, data);
+  } else if (path.startsWith('/payments/')) data = gatewayPayments.get(path.split('/')[2]);
+  return new Response(JSON.stringify(data || { error: { description: 'Not found' } }), {
+    status: data ? 200 : 404, headers: { 'Content-Type': 'application/json' },
+  });
+};
 let database, server, base, tokens = {}, plan, slot, trainer;
 const User = require('../models/User');
 const MemberProfile = require('../models/MemberProfile');
@@ -51,12 +51,6 @@ async function request(method, path, body, headers = {}) {
   const response = await fetch(base + path, { method, headers: { 'Content-Type': 'application/json', ...headers }, body: body === undefined ? undefined : JSON.stringify(body) });
   const data = await response.json(); return { status: response.status, ...data };
 }
-async function webhook(session, id = crypto.randomUUID()) {
-  const payload = JSON.stringify({ id, type: 'checkout.session.completed', data: { object: { id: session.id } } });
-  const signature = actualStripe.webhooks.generateTestHeaderString({ payload, secret: process.env.STRIPE_WEBHOOK_SECRET });
-  const response = await fetch(base + '/payments/stripe/webhook', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Stripe-Signature': signature }, body: payload });
-  return response.status;
-}
 before(async () => {
   database = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' }, binary: { version: '8.0.12' } });
   process.env.MONGODB_URI = database.getUri('pulsefit_workflow_tests');
@@ -70,7 +64,7 @@ before(async () => {
   slot = await GymTimeSlot.findOne({ dayOfWeek: 'monday', name: 'Morning Regular' });
   trainer = await require('../models/TrainerProfile').findOne();
 }, { timeout: 240000 });
-after(async () => { if (server) await new Promise(resolve => server.close(resolve)); await mongoose.disconnect(); if (database) await database.stop(); });
+after(async () => { if (server) await new Promise(resolve => server.close(resolve)); await mongoose.disconnect(); if (database) await database.stop(); global.fetch = actualFetch; });
 
 test('all four seeded roles authenticate with persisted profiles', async () => {
   for (const role of ['admin', 'reception', 'trainer', 'member']) {
@@ -86,6 +80,22 @@ test('backend rejects role escalation and cross-member financial access', async 
   assert.equal((await request('POST', '/auth/login', { email: { $ne: null }, password: 'irrelevant' })).status, 400);
   const unrelated = new mongoose.Types.ObjectId();
   assert.equal((await request('GET', `/payments/member/${unrelated}`, undefined, authHeaders('member'))).status, 403);
+});
+test('admin dashboard returns chart-ready analytics datasets', async () => {
+  const result = await request('GET', '/dashboard/admin', undefined, authHeaders('admin'));
+  assert.equal(result.status, 200, JSON.stringify(result));
+  for (const key of ['attendanceTrend', 'revenueTrend', 'membershipDistribution', 'paymentMethodDistribution', 'slotUtilization']) {
+    assert.ok(Array.isArray(result.data[key]), `${key} must be an array`);
+  }
+});
+test('reception can edit an existing time slot but cannot delete it', async () => {
+  const editable = await GymTimeSlot.findOne({ status: 'active', currentCapacity: 0 });
+  const newCapacity = editable.maxCapacity + 5;
+  const updated = await request('PUT', `/time-slots/${editable.id}`, { maxCapacity: newCapacity }, authHeaders('reception'));
+  assert.equal(updated.status, 200, JSON.stringify(updated));
+  assert.equal(updated.data.maxCapacity, newCapacity);
+  assert.equal((await GymTimeSlot.findById(editable.id)).maxCapacity, newCapacity);
+  assert.equal((await request('DELETE', `/time-slots/${editable.id}`, undefined, authHeaders('reception'))).status, 403);
 });
 test('refresh tokens rotate immediately and old token replay fails', async () => {
   const login = await request('POST', '/auth/login', { email: 'member@pulsefit.com', password: 'member123' });
@@ -117,22 +127,27 @@ test('trainer selection filters by slot schedule and break', async () => {
   const filtered = await request('GET', `/registration/trainers?slotId=${sunday.id}`);
   assert.equal(filtered.data.length, 0);
 });
-test('Stripe checkout takes its amount from the server; return URL does not activate membership', async () => {
+test('Razorpay checkout takes its amount from the server and does not activate before verification', async () => {
   const checkout = await request('POST', '/registration/checkout', { amount: 1 }, registrationHeaders);
   assert.equal(checkout.status, 200, JSON.stringify(checkout));
-  const session = [...sessions.values()][0]; assert.equal(session.amount_total, plan.price * 100);
+  const order = orders.get(checkout.data.orderId); assert.equal(order.amount, plan.price * 100);
   assert.equal((await MemberMembership.findById(registered._id)).status, 'pending');
   const second = await request('POST', '/registration/checkout', {}, registrationHeaders);
-  assert.equal(second.data.url, checkout.data.url);
+  assert.equal(second.data.orderId, checkout.data.orderId);
 });
-test('unsigned or altered webhook payloads are rejected', async () => {
-  const result = await request('POST', '/payments/stripe/webhook', { type: 'checkout.session.completed' }); assert.equal(result.status, 400);
+test('unsigned or altered Razorpay responses are rejected', async () => {
+  const order = [...orders.values()][0];
+  const result = await request('POST', '/registration/verify-payment', { razorpay_order_id: order.id, razorpay_payment_id: 'pay_bad', razorpay_signature: 'bad' }, registrationHeaders);
+  assert.equal(result.status, 400);
   assert.equal((await MemberMembership.findById(registered._id)).status, 'pending');
 });
-test('paid Stripe webhook activates membership once, allocates slot/trainer, records receipt and notification', async () => {
-  const checkout = [...sessions.values()][0]; checkout.payment_status = 'paid'; checkout.status = 'complete';
-  assert.equal(await webhook(checkout), 200);
-  assert.equal(await webhook(checkout), 200);
+test('captured Razorpay payment activates membership and records allocations and receipt', async () => {
+  const order = [...orders.values()][0]; order.status = 'paid';
+  const payment = { id: 'pay_test_1', order_id: order.id, amount: order.amount, currency: 'INR', status: 'captured' };
+  gatewayPayments.set(payment.id, payment);
+  const signature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(`${order.id}|${payment.id}`).digest('hex');
+  const verified = await request('POST', '/registration/verify-payment', { razorpay_order_id: order.id, razorpay_payment_id: payment.id, razorpay_signature: signature }, registrationHeaders);
+  assert.equal(verified.status, 201, JSON.stringify(verified));
   const membership = await MemberMembership.findById(registered._id);
   assert.equal(membership.status, 'active'); assert.equal(membership.paymentStatus, 'paid');
   assert.equal(await Payment.countDocuments({ membership: membership._id, paymentStatus: 'completed' }), 1);
@@ -210,7 +225,7 @@ test('reminder notifications use unique deduplication keys', async () => {
   assert.equal(await Notification.countDocuments({ deduplicationKey: 'same-reminder-key' }), 1);
 });
 
-test('Stripe refunds are provider-confirmed, idempotent and adjust membership balance once', async () => {
+test('Razorpay refunds are provider-confirmed, idempotent and adjust membership balance once', async () => {
   const payment = await Payment.findOne({ membership: registered._id, paymentStatus: 'completed' });
   const first = await request('POST', `/payments/${payment.id}/refund`, { reason: 'Member requested a full refund' }, authHeaders('admin'));
   assert.equal(first.status, 200, JSON.stringify(first));

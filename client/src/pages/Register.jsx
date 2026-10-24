@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Loader2, User, Heart, CreditCard, Calendar, UserCheck } from 'lucide-react';
 import { registrationService } from '../services';
+import { openRazorpayCheckout } from '../services/razorpay';
 
 const STEPS = [
   { id: 'basic', title: 'Basic Details', icon: User },
@@ -111,7 +112,14 @@ export default function Register() {
   const loadSlots = async (planId) => {
     try {
       const response = await registrationService.getSlots(planId);
-      setSlots(response.data.data);
+      const unique = [];
+      const seen = new Set();
+      const ordered = [...response.data.data].sort((a, b) => (a.dayOfWeek === 'monday' ? -1 : 0) - (b.dayOfWeek === 'monday' ? -1 : 0));
+      for (const item of ordered) {
+        const key = `${item.name}|${item.startTime}|${item.endTime}`;
+        if (!seen.has(key)) { seen.add(key); unique.push(item); }
+      }
+      setSlots(unique);
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to load available time slots. Please try again.');
     }
@@ -239,8 +247,15 @@ export default function Register() {
 
   const beginCheckout = async () => {
     setLoading(true); setError('');
-    try { const response = await registrationService.checkout(); window.location.assign(response.data.data.url); }
-    catch (err) { setError(err.response?.data?.error || 'Unable to open Stripe Checkout'); setLoading(false); }
+    try {
+      const response = await registrationService.checkout();
+      if (response.data.data.completed) { await restoreDraft(); return; }
+      const payment = await openRazorpayCheckout(response.data.data);
+      await registrationService.verifyPayment(payment);
+      await restoreDraft();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Unable to complete Razorpay payment');
+    } finally { setLoading(false); }
   };
   const resume = async (event) => {
     event.preventDefault(); setLoading(true); setError('');
@@ -499,6 +514,7 @@ export default function Register() {
   const renderSlotSelection = () => (
     <div className="slot-selection">
       <h2>Select Time Slot</h2>
+      <p>Choose once. This same time applies on all seven days, subject to the gym being open.</p>
       {!slots.length && <p>No eligible slots are currently available. Choose another plan or contact the gym.</p>}
       <div className="slots-grid">
         {slots.map(slot => (
@@ -508,7 +524,7 @@ export default function Register() {
             onClick={() => handleSlotSelect(slot)}
           >
             <h3>{slot.name}</h3>
-            <p>{slot.dayOfWeek}</p><p className="time">{slot.startTime} - {slot.endTime}</p>
+            <p>Every day</p><p className="time">{slot.startTime} - {slot.endTime}</p>
             <p className="capacity">{slot.currentCapacity || 0} / {slot.maxCapacity} members</p>
           </div>
         ))}
@@ -552,7 +568,7 @@ export default function Register() {
   const renderReview = () => (
     <div className="review-step">
       <h2>Review Your Registration</h2>
-      <p>Fingerprint enrollment is not required. Save your registration, then pay securely with Stripe. Your membership activates after payment verification. Capacity is confirmed during activation.</p>
+      <p>Fingerprint enrollment is not required. Save your registration, then pay securely with Razorpay. Your membership activates after payment verification. Capacity is confirmed during activation.</p>
       <div className="review-content">
         <div className="review-section">
           <h3>Personal Details</h3>
@@ -626,8 +642,8 @@ export default function Register() {
               <p>Your payment has been verified. Sign in to access your member dashboard.</p>
               <button className="lime-btn" onClick={() => navigate('/login')}>Sign in</button>
             </> : <>
-              <p>Your details are saved securely. Complete Stripe payment to activate your membership; biometrics are not required. Your requested slot is confirmed during activation.</p>
-              <button className="lime-btn" disabled={loading} onClick={beginCheckout}>Pay with Stripe</button>
+              <p>Your details are saved securely. Complete Razorpay payment to activate your membership; biometrics are not required. Your requested slot is confirmed during activation.</p>
+              <button className="lime-btn" disabled={loading} onClick={beginCheckout}>Pay with Razorpay</button>
               <button className="outline-btn" disabled={loading} onClick={restoreDraft}>Refresh payment status</button>
               <p>If you closed Checkout, you can retry payment. If payment was taken but activation is pending, contact reception before paying again.</p>
             </>}

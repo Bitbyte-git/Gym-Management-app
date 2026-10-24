@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck, Loader2, Crown, Headphones, Dumbbell, UserRound, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
+const DEMO_ACCOUNTS = [
+  { role: 'admin', label: 'Administrator', email: 'admin@pulsefit.com', password: 'admin123', icon: Crown, description: 'Full gym control' },
+  { role: 'reception', label: 'Reception', email: 'reception@pulsefit.com', password: 'reception123', icon: Headphones, description: 'Members and payments' },
+  { role: 'trainer', label: 'Trainer', email: 'trainer@pulsefit.com', password: 'trainer123', icon: Dumbbell, description: 'Clients and schedules' },
+  { role: 'member', label: 'Member', email: 'member@pulsefit.com', password: 'member123', icon: UserRound, description: 'Personal membership' },
+];
 
 export default function Login() {
   const nav = useNavigate();
@@ -11,29 +18,38 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeDemo, setActiveDemo] = useState('');
   const [error, setError] = useState('');
+  const demoEnabled = import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true';
 
-  const submit = async (e) => {
-    e.preventDefault();
+  const signIn = async credentials => {
     setError('');
     setLoading(true);
 
     try {
-      const user = await login({ email, password, role });
-      setLoading(false);
+      const user = await login(credentials);
       
       // Redirect based on role
-      if (user.role === 'admin' || user.role === 'reception') {
+      if (user.role === 'admin') {
         nav('/admin/dashboard');
+      } else if (user.role === 'reception') {
+        nav('/reception/dashboard');
       } else if (user.role === 'trainer') {
         nav('/trainer/dashboard');
       } else if (user.role === 'member') {
         nav('/member/dashboard');
       }
     } catch (err) {
-      setLoading(false);
       setError(err.response?.data?.error || err.response?.data?.message || 'Login failed. Please try again.');
-    }
+    } finally { setLoading(false); setActiveDemo(''); }
+  };
+  const submit = async (e) => {
+    e.preventDefault();
+    await signIn({ email, password, role });
+  };
+  const useDemo = async account => {
+    setRole(account.role); setEmail(account.email); setPassword(account.password); setActiveDemo(account.role);
+    await signIn({ role: account.role, email: account.email, password: account.password });
   };
 
   return (
@@ -54,7 +70,7 @@ export default function Login() {
         <button className="back" onClick={() => nav('/')}>
           <ArrowLeft/> Back to home
         </button>
-        <form onSubmit={submit}>
+        <form className="login-form" onSubmit={submit}>
           <span className="mini-mark">P</span>
           <h2>Sign in to PulseFit</h2>
           <p>Access your performance workspace.</p>
@@ -97,15 +113,21 @@ export default function Login() {
           <button className="lime-btn full" type="submit" disabled={loading}>
             {loading ? <><Loader2 className="animate-spin"/> Signing in...</> : <>Sign in securely <ArrowRight/></>}
           </button>
-          {import.meta.env.DEV && <details className="demo-credentials"><summary>Local demo accounts (run npm run seed)</summary>
-            {[
-              ['admin', 'admin@pulsefit.com', 'admin123'], ['reception', 'reception@pulsefit.com', 'reception123'],
-              ['trainer', 'trainer@pulsefit.com', 'trainer123'], ['member', 'member@pulsefit.com', 'member123'],
-            ].map(([accountRole, accountEmail, accountPassword]) => <button type="button" className="back" key={accountRole}
-              onClick={() => { setRole(accountRole); setEmail(accountEmail); setPassword(accountPassword); }}>
-              {accountRole}: {accountEmail} / {accountPassword}
-            </button>)}
-          </details>}
+          {demoEnabled && <section className="demo-access" aria-label="Demo accounts">
+            <div className="demo-access-head"><div><span>LIVE DEMO</span><h3>Explore every workspace</h3></div><small>One-click secure demo access</small></div>
+            <div className="demo-account-grid">
+              {DEMO_ACCOUNTS.map(account => {
+                const Icon = account.icon;
+                const signingIn = loading && activeDemo === account.role;
+                return <button type="button" className={`demo-account ${role === account.role ? 'selected' : ''}`} key={account.role} disabled={loading} onClick={() => useDemo(account)}>
+                  <span className="demo-account-icon"><Icon size={18}/></span>
+                  <span className="demo-account-copy"><strong>{account.label}</strong><small>{account.description}</small><code>{account.email}</code><code>{account.password}</code></span>
+                  <span className="demo-account-action">{signingIn ? <Loader2 className="animate-spin" size={17}/> : <LogIn size={17}/>}</span>
+                </button>;
+              })}
+            </div>
+            <p><ShieldCheck size={14}/> Demo data only. Choose a role to sign in instantly.</p>
+          </section>}
           <small className="secure"><ShieldCheck/> Secure account sign-in</small>
         </form>
       </section>

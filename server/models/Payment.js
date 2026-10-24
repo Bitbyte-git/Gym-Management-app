@@ -34,7 +34,7 @@ const paymentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  stripeRefundId: String,
+  gatewayRefundId: String,
   refundRequestedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   refundReason: String,
   refundError: String,

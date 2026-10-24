@@ -193,7 +193,7 @@ exports.getAvailableSlots = async (req, res, next) => {
     if (req.query.planId && !mongoose.isValidObjectId(req.query.planId)) {
       return res.status(400).json({ success: false, error: 'Invalid membership plan ID' });
     }
-    const query = { status: 'active' };
+    const query = { status: 'active', dayOfWeek: 'monday' };
     if (req.query.planId) {
       query.$or = [
         { eligiblePlans: { $size: 0 } },

@@ -30,12 +30,11 @@ const config = {
   },
   payment: {
     enabled: process.env.PAYMENT_GATEWAY_ENABLED === 'true',
-    stripeSecretKey: process.env.STRIPE_SECRET_KEY,
-    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     currency: 'inr',
     razorpay: {
       keyId: process.env.RAZORPAY_KEY_ID,
       keySecret: process.env.RAZORPAY_KEY_SECRET,
+      webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
     },
   },
   sms: {

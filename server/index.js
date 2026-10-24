@@ -34,7 +34,6 @@ app.disable('x-powered-by');
 if (config.trustProxy) app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(config.cors));
-app.post('/api/payments/stripe/webhook', express.raw({ type: 'application/json', limit: '1mb' }), require('./controllers/stripeController').webhook);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -44,15 +43,27 @@ app.use((req, res, next) => {
   next();
 });
 
-const createRateLimiter = (windowMs, limit, message) => rateLimit({
+const createRateLimiter = (windowMs, limit, message, options = {}) => rateLimit({
   windowMs,
   limit,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   handler: (req, res) => res.status(429).json({ success: false, error: message }),
+  ...options,
 });
-app.use('/api/auth', createRateLimiter(15 * 60 * 1000, 10, 'Too many authentication attempts. Try again later.'));
-app.use('/api/registration', createRateLimiter(15 * 60 * 1000, 30, 'Too many registration requests. Try again later.'));
+app.use('/api/auth/login', createRateLimiter(
+  15 * 60 * 1000,
+  config.nodeEnv === 'production' ? 10 : 1000,
+  'Too many failed login attempts. Try again in 15 minutes.',
+  { skipSuccessfulRequests: true },
+));
+app.use('/api/registration/checkout', createRateLimiter(60 * 1000, 10, 'Too many checkout attempts. Try again in one minute.'));
+app.use('/api/registration/verify-payment', createRateLimiter(60 * 1000, 20, 'Too many payment verification attempts. Try again in one minute.'));
+app.use('/api/registration', createRateLimiter(
+  15 * 60 * 1000,
+  config.nodeEnv === 'production' ? 120 : 1000,
+  'Too many registration requests. Try again later.',
+));
 app.use('/api/payments', createRateLimiter(60 * 1000, 20, 'Too many payment requests. Try again later.'));
 app.use('/api/attendance', createRateLimiter(60 * 1000, 30, 'Too many attendance requests. Try again later.'));
 

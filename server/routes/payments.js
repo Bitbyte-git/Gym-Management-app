@@ -14,11 +14,10 @@ const {
   getRevenueReport,
 } = require('../controllers/paymentController');
 
-const stripe = require('../controllers/stripeController');
-router.post('/stripe/checkout', protect, stripe.checkout);
-router.post('/stripe/cancel', protect, stripe.cancelCheckout);
-router.get('/stripe/events', protect, authorize('admin'), stripe.getEvents);
-router.post('/stripe/events/:id/retry', protect, authorize('admin'), stripe.retry);
+const razorpay = require('../controllers/razorpayController');
+router.post('/razorpay/checkout', protect, razorpay.checkout);
+router.post('/razorpay/verify', protect, razorpay.verify);
+router.post('/razorpay/cancel', protect, razorpay.cancelCheckout);
 
 // Specific routes first
 router.post('/online', protect, processOnlinePayment);

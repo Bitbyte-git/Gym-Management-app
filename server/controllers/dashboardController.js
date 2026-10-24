@@ -4,6 +4,9 @@ const MemberMembership = require('../models/MemberMembership');
 const MemberAttendance = require('../models/MemberAttendance');
 const Payment = require('../models/Payment');
 const TrainerClientAllocation = require('../models/TrainerClientAllocation');
+const GymTimeSlot = require('../models/GymTimeSlot');
+const config = require('../config/env');
+const { gymDayBounds } = require('../utils/gymDate');
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/dashboard/admin
@@ -17,12 +20,11 @@ exports.getAdminDashboard = async (req, res, next) => {
     const activeTrainers = await TrainerProfile.countDocuments({ status: 'active' });
 
     // Today's check-ins
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const { start: today, end: tomorrow } = gymDayBounds();
     const todayCheckins = await MemberAttendance.countDocuments({
       attendanceDate: {
         $gte: today,
-        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        $lt: tomorrow,
       },
     });
 
@@ -30,7 +32,7 @@ exports.getAdminDashboard = async (req, res, next) => {
     const currentlyCheckedIn = await MemberAttendance.countDocuments({
       attendanceDate: {
         $gte: today,
-        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        $lt: tomorrow,
       },
       checkOutTime: null,
     });
@@ -78,6 +80,33 @@ exports.getAdminDashboard = async (req, res, next) => {
       },
     ]);
 
+    const attendanceSince = new Date(today);
+    attendanceSince.setDate(attendanceSince.getDate() - 6);
+    const revenueSince = new Date(currentMonth);
+    revenueSince.setMonth(revenueSince.getMonth() - 5);
+    const [attendanceTrend, revenueTrend, membershipDistribution, paymentMethodDistribution, slotUtilization] = await Promise.all([
+      MemberAttendance.aggregate([
+        { $match: { attendanceDate: { $gte: attendanceSince } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$attendanceDate', timezone: config.gym.timezone } }, checkIns: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
+      Payment.aggregate([
+        { $match: { paymentStatus: 'completed', paymentDate: { $gte: revenueSince } } },
+        { $group: { _id: { year: { $year: '$paymentDate' }, month: { $month: '$paymentDate' } }, revenue: { $sum: '$amount' }, payments: { $sum: 1 } } },
+        { $sort: { '_id.year': 1, '_id.month': 1 } },
+      ]),
+      MemberMembership.aggregate([
+        { $group: { _id: '$status', value: { $sum: 1 } } },
+        { $sort: { value: -1 } },
+      ]),
+      Payment.aggregate([
+        { $match: { paymentStatus: 'completed' } },
+        { $group: { _id: '$paymentMethod', value: { $sum: '$amount' }, payments: { $sum: 1 } } },
+        { $sort: { value: -1 } },
+      ]),
+      GymTimeSlot.find({ status: 'active', dayOfWeek: 'monday' }).select('name startTime endTime currentCapacity maxCapacity').sort({ startTime: 1 }).lean(),
+    ]);
+
     res.status(200).json({
       success: true,
       data: {
@@ -90,6 +119,17 @@ exports.getAdminDashboard = async (req, res, next) => {
         monthlyRevenue: monthlyRevenue[0]?.total || 0,
         expiringSoon,
         pendingDues: pendingDues[0]?.total || 0,
+        attendanceTrend: attendanceTrend.map(item => ({ date: item._id, checkIns: item.checkIns })),
+        revenueTrend: revenueTrend.map(item => ({ year: item._id.year, month: item._id.month, revenue: item.revenue, payments: item.payments })),
+        membershipDistribution: membershipDistribution.map(item => ({ name: item._id || 'unknown', value: item.value })),
+        paymentMethodDistribution: paymentMethodDistribution.map(item => ({ name: item._id || 'unknown', value: item.value, payments: item.payments })),
+        slotUtilization: slotUtilization.map(slot => ({
+          name: slot.name,
+          time: `${slot.startTime}-${slot.endTime}`,
+          members: slot.currentCapacity,
+          capacity: slot.maxCapacity,
+          utilization: Math.round((slot.currentCapacity / slot.maxCapacity) * 100),
+        })),
       },
     });
   } catch (error) {
@@ -117,14 +157,13 @@ exports.getTrainerDashboard = async (req, res, next) => {
     const assignedClients = activeAllocations.length;
 
     // Today's sessions
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const { start: today, end: tomorrow } = gymDayBounds();
     const todaySessions = activeAllocations.length
       ? await MemberAttendance.countDocuments({
           member: { $in: activeAllocations.map(allocation => allocation.member) },
           attendanceDate: {
             $gte: today,
-            $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+            $lt: tomorrow,
           },
         })
       : 0;
@@ -163,13 +202,12 @@ exports.getMemberDashboard = async (req, res, next) => {
     }).populate('membershipPlan');
 
     // Today's attendance
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const { start: today, end: tomorrow } = gymDayBounds();
     const todayAttendance = await MemberAttendance.findOne({
       member: memberProfile._id,
       attendanceDate: {
         $gte: today,
-        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        $lt: tomorrow,
       },
     });
 

@@ -33,7 +33,7 @@ const memberMembershipSchema = new mongoose.Schema({
     ref: 'TrainerProfile',
   },
   frozenAt: { type: Date },
-  stripeCheckoutSession: { type: String },
+  gatewayOrderId: { type: String },
   checkoutAttempt: { type: String },
   status: {
     type: String,

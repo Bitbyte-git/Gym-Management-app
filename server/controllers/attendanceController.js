@@ -7,6 +7,12 @@ const MemberSlotAllocation = require('../models/MemberSlotAllocation');
 const GymOperatingHours = require('../models/GymOperatingHours');
 const SystemSetting = require('../models/SystemSetting');
 const { verifyFingerprint, getMemberByEnrollment } = require('../services/biometricService');
+const { dateKeyAt, zonedMidnight, gymDayBounds } = require('../utils/gymDate');
+
+const displayTime = value => new Date(`2000-01-01T${value}:00`).toLocaleTimeString('en-US', {
+  hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC',
+});
+const displaySlot = slot => `daily, ${displayTime(slot.startTime)} to ${displayTime(slot.endTime)}`;
 
 const getCurrentMembership = async (memberId, now = new Date()) => MemberMembership.findOne({
   member: memberId,
@@ -74,9 +80,8 @@ const validateAttendanceAccess = async (member, now = new Date()) => {
     if (!slotAllocation?.timeSlot) throw Object.assign(new Error('A current slot allocation is required for attendance'), { statusCode: 403 });
     if (slotAllocation?.timeSlot) {
       const slot = slotAllocation.timeSlot;
-      if (slot.status !== 'active' || slot.dayOfWeek !== currentDay ||
-          currentTime < slot.startTime || currentTime >= slot.endTime) {
-        const error = new Error('Check-in is outside the active allocated time slot');
+      if (slot.status !== 'active' || currentTime < slot.startTime || currentTime >= slot.endTime) {
+        const error = new Error(`Check-in blocked. Assigned time: ${displaySlot(slot)}.`);
         error.statusCode = 403;
         throw error;
       }
@@ -173,10 +178,7 @@ exports.getMemberAttendance = async (req, res, next) => {
 // @access  Private (Admin, Reception)
 exports.getTodayAttendance = async (req, res, next) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { start: today, end: tomorrow } = gymDayBounds();
 
     const attendance = await MemberAttendance.find({
       attendanceDate: {
@@ -237,10 +239,7 @@ exports.biometricCheckIn = async (req, res, next) => {
     const { membership, slotAllocation } = await validateAttendanceAccess(member);
 
     // Check for existing open session today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { start: today } = gymDayBounds();
 
     const existingSession = await MemberAttendance.findOne({
       member: member._id,
@@ -309,11 +308,6 @@ exports.biometricCheckOut = async (req, res, next) => {
     const member = await getMemberByEnrollment(verificationResult.enrollmentReference);
 
     // Find open attendance session
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
     const openAttendance = await MemberAttendance.findOne({
       member: member._id,
       sessionOpen: true,
@@ -382,10 +376,7 @@ exports.manualCheckIn = async (req, res, next) => {
     const { slotAllocation } = await validateAttendanceAccess(member);
 
     // Check for existing open session
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { start: today } = gymDayBounds();
 
     const existingSession = await MemberAttendance.findOne({
       member: memberId,
@@ -427,11 +418,6 @@ exports.manualCheckOut = async (req, res, next) => {
     if (notes !== undefined && (typeof notes !== 'string' || notes.length > 500)) {
       return res.status(400).json({ success: false, error: 'Attendance notes must be 500 characters or fewer' });
     }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
 
     const attendance = await MemberAttendance.findOne({
       member: memberId,
@@ -496,8 +482,7 @@ exports.correctAttendance = async (req, res, next) => {
         return res.status(400).json({ success: false, error: 'Check-in time must be a valid date' });
       }
       attendance.checkInTime = parsedCheckIn;
-      attendance.attendanceDate = new Date(parsedCheckIn);
-      attendance.attendanceDate.setHours(0, 0, 0, 0);
+      attendance.attendanceDate = zonedMidnight(dateKeyAt(parsedCheckIn));
     }
     if (checkOutTime !== undefined) {
       if (checkOutTime === null || checkOutTime === '') {

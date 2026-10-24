@@ -87,12 +87,14 @@ const seedDatabase = async () => {
     const profileFields = {
       trainerId: 'TR001',
       fullName: 'Kabir Singh',
+      gender: 'male',
       mobileNumber: '9000000001',
       email: trainerUser.email,
       specialization: 'Strength & Conditioning',
       experience: 8,
       certifications: ['NASM-CPT', 'ACE'],
       workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      convenientTimings: ['morning', 'afternoon', 'evening'],
       status: 'active',
     };
     if (!trainerProfile) {

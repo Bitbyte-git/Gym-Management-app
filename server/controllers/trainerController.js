@@ -84,9 +84,16 @@ exports.createTrainer = async (req, res, next) => {
       certifications,
       joiningDate,
       workingDays,
+      convenientTimings,
     } = req.body;
     if (!email || !password || password.length < 8) {
       return res.status(400).json({ success: false, error: 'A valid email and password of at least 8 characters are required' });
+    }
+    if (!['male', 'female', 'other'].includes(gender)) {
+      return res.status(400).json({ success: false, error: 'Select a valid gender' });
+    }
+    if (!Array.isArray(convenientTimings) || !convenientTimings.length || convenientTimings.some(value => !['morning', 'afternoon', 'evening'].includes(value))) {
+      return res.status(400).json({ success: false, error: 'Select at least one valid convenient timing' });
     }
     session = await User.startSession();
     let trainer;
@@ -114,6 +121,7 @@ exports.createTrainer = async (req, res, next) => {
         certifications,
         joiningDate,
         workingDays,
+        convenientTimings,
       }], { session });
     });
 
@@ -133,6 +141,14 @@ exports.createTrainer = async (req, res, next) => {
 // @access  Private (Admin)
 exports.updateTrainer = async (req, res, next) => {
   try {
+    if (req.body.gender !== undefined && !['male', 'female', 'other'].includes(req.body.gender)) {
+      return res.status(400).json({ success: false, error: 'Select a valid gender' });
+    }
+    if (req.body.convenientTimings !== undefined &&
+        (!Array.isArray(req.body.convenientTimings) || !req.body.convenientTimings.length ||
+         req.body.convenientTimings.some(value => !['morning', 'afternoon', 'evening'].includes(value)))) {
+      return res.status(400).json({ success: false, error: 'Select at least one valid convenient timing' });
+    }
     const trainer = await TrainerProfile.findById(req.params.id);
 
     if (!trainer) {
@@ -144,7 +160,7 @@ exports.updateTrainer = async (req, res, next) => {
 
     const fields = [
       'fullName', 'gender', 'dateOfBirth', 'mobileNumber', 'specialization',
-      'experience', 'certifications', 'joiningDate', 'workingDays', 'status',
+      'experience', 'certifications', 'joiningDate', 'workingDays', 'convenientTimings', 'status',
     ];
     for (const field of fields) {
       if (Object.prototype.hasOwnProperty.call(req.body, field)) trainer[field] = req.body[field];

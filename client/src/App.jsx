@@ -14,8 +14,13 @@ export default function App(){
       <Route path="/login" element={<Login/>}/>
       <Route path="/register" element={<Register/>}/>
       <Route path="/admin/*" element={
-        <ProtectedRoute allowedRoles={['admin', 'reception']}>
+        <ProtectedRoute allowedRoles={['admin']}>
           <Dashboard role="admin"/>
+        </ProtectedRoute>
+      }/>
+      <Route path="/reception/*" element={
+        <ProtectedRoute allowedRoles={['reception']}>
+          <Dashboard role="reception"/>
         </ProtectedRoute>
       }/>
       <Route path="/trainer/*" element={
