@@ -1,4 +1,6 @@
 import Operations from './Operations';
+import Biometrics from './Biometrics';
+import { Brand } from '../components/Brand';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Dumbbell, CreditCard, CalendarCheck, ReceiptIndianRupee, ChartNoAxesCombined, Search, Plus, ArrowUpRight, LogOut, Menu, X, ChevronRight, WalletCards, UserCheck, Clock3, Flame, Utensils, Target, Loader2 } from 'lucide-react';
@@ -23,7 +25,7 @@ const recentGymDates = count => {
 };
 
 const adminNav = [
-  [LayoutDashboard, 'Overview', 'dashboard'], [Users, 'Members', 'members'],
+  [LayoutDashboard, 'Overview', 'dashboard'], [Users, 'Members', 'members'], [UserCheck, 'Fingerprints', 'biometrics'],
   [Dumbbell, 'Trainers', 'trainers'], [CreditCard, 'Membership plans', 'plans'],
   [CreditCard, 'Member memberships', 'memberships'], [CalendarCheck, 'Check-in & attendance', 'attendance'],
   [WalletCards, 'Payments & receipts', 'payments'], [UserCheck, 'Member trainers', 'allocations'],
@@ -32,9 +34,9 @@ const adminNav = [
   [Users, 'Staff accounts', 'users'], [CalendarCheck, 'Notifications', 'notifications'],
   [LayoutDashboard, 'Settings', 'settings'], [ReceiptIndianRupee, 'Audit trail', 'audit'],
 ];
-const receptionSections = ['dashboard', 'members', 'memberships', 'attendance', 'payments', 'slots', 'slotAllocations', 'notifications'];
+const receptionSections = ['biometrics', 'dashboard', 'members', 'memberships', 'attendance', 'payments', 'slots', 'slotAllocations', 'notifications'];
 const trainerNav = [[LayoutDashboard, 'Overview', 'dashboard'], [Users, 'My members', 'members'], [Clock3, 'My availability', 'availability'], [CalendarCheck, 'Notifications', 'notifications']];
-const memberNav = [[LayoutDashboard, 'Overview', 'dashboard'], [Users, 'My profile', 'profile'], [CreditCard, 'Memberships', 'membership'], [CalendarCheck, 'Attendance', 'attendance'], [WalletCards, 'Payments', 'payments'], [Dumbbell, 'My trainer', 'coach'], [Clock3, 'My slot', 'schedule'], [CalendarCheck, 'Notifications', 'notifications']];
+const memberNav = [[UserCheck, 'Fingerprint', 'biometrics'], [LayoutDashboard, 'Overview', 'dashboard'], [Users, 'My profile', 'profile'], [CreditCard, 'Memberships', 'membership'], [CalendarCheck, 'Attendance', 'attendance'], [WalletCards, 'Payments', 'payments'], [Dumbbell, 'My trainer', 'coach'], [Clock3, 'My slot', 'schedule'], [CalendarCheck, 'Notifications', 'notifications']];
 
 export default function Dashboard({ role = 'admin' }) {
   const nav = useNavigate();
@@ -57,19 +59,16 @@ export default function Dashboard({ role = 'admin' }) {
     <div className="app-shell">
       <aside className={menu ? 'side open' : 'side'}>
         <div className="side-top">
-          <button className="brand" onClick={() => nav('/')}>
-            <span className="brand-mark">P</span>
-            <span>PULSE<span>FIT</span><small>GYM OS</small></span>
-          </button>
+          <Brand onClick={() => nav('/')} subtitle="UNISEX FITNESS STUDIO" size="md" />
           <button className="close-side" onClick={() => setMenu(false)}>
             <X />
           </button>
         </div>
         <div className="location">
-          <span>PF</span>
+          <img src="/Gym-Logo-128.png" alt="Vino Fitness Studio" className="location-logo" />
           <div>
-            <b>PulseFit Central</b>
-            <small>MG Road · Bengaluru</small>
+            <b>Vino Fitness Studio</b>
+            <small>Unisex Fitness Studio</small>
           </div>
           <ChevronRight />
         </div>
@@ -132,7 +131,7 @@ export default function Dashboard({ role = 'admin' }) {
         </header>
         {current === 'dashboard' && <Overview role={role} onNavigate={nav} />}
         {current !== 'dashboard' && (links.some(item => item[2] === current)
-          ? <Operations section={current} user={user} query={query}/>
+          ? current === 'biometrics' ? <Biometrics user={user} /> : <Operations section={current} user={user} query={query}/>
           : <div className="dash-content"><p>This section is unavailable for your role.</p></div>)}
       </main>
     </div>
@@ -400,7 +399,7 @@ function MemberOverview({ user, stats, onNavigate }) {
       <div className="welcome">
         <div>
           <h2>Keep showing up, {user?.name || 'Member'}.</h2>
-          <p>Your membership and attendance information from PulseFit.</p>
+          <p>Your membership and attendance information from Vino Fitness Studio.</p>
         </div>
         <button className="outline-btn" onClick={() => onNavigate('/member/attendance')}>View attendance</button>
       </div>
@@ -415,14 +414,30 @@ function MemberOverview({ user, stats, onNavigate }) {
           <div><strong>{membership ? stats?.remainingDays ?? 0 : '—'}</strong><small>days remaining</small></div>
         </article>
         <article className="today">
-          <p>TODAY'S ATTENDANCE</p>
-          <h2>{attendance ? 'Attendance recorded' : 'No attendance record'}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ margin: 0 }}>TODAY'S ATTENDANCE</p>
+            {attendance?.sessionName && (
+              <span className={`session-badge ${attendance.sessionName}`}>
+                {attendance.sessionName}
+              </span>
+            )}
+          </div>
+          <h2>
+            {stats?.todaySpending?.totalMinutes > 0
+              ? `${stats.todaySpending.totalHoursFormatted} gym time today`
+              : attendance ? 'Attendance recorded' : 'No attendance record'}
+          </h2>
           <span><Clock3 /> {attendance?.checkInTime
-            ? new Date(attendance.checkInTime).toLocaleTimeString()
+            ? `Checked in at ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
             : 'No check-in today'}</span>
           <span><Flame /> {attendance?.checkOutTime
-            ? `${attendance.duration} minutes`
-            : attendance?.checkInTime ? 'Currently checked in' : 'Attendance is recorded by reception'}</span>
+            ? `Latest session: ${attendance.duration >= 60 ? `${Math.floor(attendance.duration/60)}h ${attendance.duration%60}m` : `${attendance.duration}m`}`
+            : attendance?.checkInTime ? 'Currently active in gym' : 'Attendance tracked at biometric scanner'}</span>
+          {stats?.todaySpending?.breakdown && stats.todaySpending.totalMinutes > 0 && (
+            <small style={{ color: 'var(--muted)', marginTop: '4px', display: 'block', fontSize: '11px' }}>
+              Morning: {stats.todaySpending.breakdown.morningFormatted} · Afternoon: {stats.todaySpending.breakdown.afternoonFormatted} · Evening: {stats.todaySpending.breakdown.eveningFormatted}
+            </small>
+          )}
         </article>
         <article className="coach">
           <p>YOUR PROFILE</p>

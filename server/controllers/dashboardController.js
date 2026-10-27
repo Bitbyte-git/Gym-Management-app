@@ -7,6 +7,7 @@ const TrainerClientAllocation = require('../models/TrainerClientAllocation');
 const GymTimeSlot = require('../models/GymTimeSlot');
 const config = require('../config/env');
 const { gymDayBounds } = require('../utils/gymDate');
+const { calculateDailySpending } = require('../utils/gymSession');
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/dashboard/admin
@@ -203,13 +204,15 @@ exports.getMemberDashboard = async (req, res, next) => {
 
     // Today's attendance
     const { start: today, end: tomorrow } = gymDayBounds();
-    const todayAttendance = await MemberAttendance.findOne({
+    const todayAttendances = await MemberAttendance.find({
       member: memberProfile._id,
       attendanceDate: {
         $gte: today,
         $lt: tomorrow,
       },
-    });
+    }).sort({ checkInTime: 1 });
+    const todaySpending = calculateDailySpending(todayAttendances);
+    const todayAttendance = todayAttendances[todayAttendances.length - 1] || null;
 
     // Calculate remaining days
     let remainingDays = 0;
@@ -225,6 +228,8 @@ exports.getMemberDashboard = async (req, res, next) => {
         member: memberProfile,
         membership,
         todayAttendance,
+        todayAttendances,
+        todaySpending,
         remainingDays,
       },
     });

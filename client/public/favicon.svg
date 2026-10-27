@@ -1,4 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#080a09"/>
-  <path d="M14 25h7v-6h7v26h-7v-6h-7V25Zm36 0h-7v-6h-7v26h7v-6h7V25ZM28 29h8v6h-8v-6Z" fill="#c9ff18"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e130f"/>
+      <stop offset="100%" stop-color="#050705"/>
+    </linearGradient>
+    <linearGradient id="limeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2ff4a"/>
+      <stop offset="100%" stop-color="#b6f00a"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#c9ff18" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded hexagon / shield -->
+  <polygon points="64,6 118,34 118,94 64,122 10,94 10,34" fill="url(#bgGrad)" stroke="#2a3325" stroke-width="4"/>
+  <polygon points="64,14 110,38 110,90 64,114 18,90 18,38" fill="none" stroke="url(#limeGrad)" stroke-width="2.5" opacity="0.45"/>
+
+  <!-- Lightning bolts on top sides -->
+  <polygon points="36,24 44,24 38,36 46,36 32,54 36,38 30,38" fill="url(#limeGrad)" opacity="0.9"/>
+  <polygon points="92,24 84,24 90,36 82,36 96,54 92,38 98,38" fill="url(#limeGrad)" opacity="0.9"/>
+
+  <!-- Central Bold V monogram styled like athletic muscle / crest -->
+  <path d="M40 38 L54 38 L64 74 L74 38 L88 38 L72 88 L56 88 Z" fill="url(#limeGrad)" filter="url(#glow)"/>
+
+  <!-- Dynamic horizontal bar with UNISEX aesthetic -->
+  <rect x="26" y="92" width="76" height="10" rx="3" fill="#141913" stroke="url(#limeGrad)" stroke-width="1.5"/>
+  <text x="64" y="100" fill="#c9ff18" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="7.5" text-anchor="middle" letter-spacing="1.5">VFS · UNISEX</text>
 </svg>

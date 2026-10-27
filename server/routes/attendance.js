@@ -16,9 +16,22 @@ const {
   getAttendanceStats,
 } = require('../controllers/attendanceController');
 
-// Public routes for kiosk mode
-router.post('/checkin', biometricCheckIn);
-router.post('/checkout', biometricCheckOut);
+// Biometric kiosk requests require authentication.
+router.post('/checkin', protect, authorize('admin', 'reception', 'member'), biometricCheckIn);
+router.post('/checkout', protect, authorize('admin', 'reception', 'member'), biometricCheckOut);
+
+// Automatic member identification uses server-issued sessions; no browser identity assertions.
+const biometric = require('../controllers/biometricAttendanceController');
+router.use('/biometric', protect, authorize('admin', 'reception'), require('../middleware/localBiometricWorkstation'));
+router.get('/biometric/capabilities', biometric.capabilities);
+router.get('/biometric/overview', biometric.overview);
+router.get('/biometric/candidates', biometric.candidates);
+router.post('/biometric/stations', biometric.open);
+router.post('/biometric/stations/close', biometric.close);
+router.post('/biometric/stations/rearm', biometric.rearm);
+router.post('/biometric/challenges', biometric.challenge);
+router.post('/biometric/identify', biometric.identify);
+router.post('/biometric/record', biometric.record);
 
 // Specific routes
 router.get('/today', protect, authorize('admin', 'reception'), getTodayAttendance);

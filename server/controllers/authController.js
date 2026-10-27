@@ -208,6 +208,7 @@ exports.refreshToken = async (req, res, next) => {
 exports.logout = async (req, res, next) => {
   try {
     await User.updateOne({ _id: req.user.id }, { $unset: { refreshTokenHash: 1 } });
+    await require('../services/biometricAttendanceService').closeOperatorStations(req.user.id);
     res.status(200).json({
       success: true,
       message: 'Logged out successfully',

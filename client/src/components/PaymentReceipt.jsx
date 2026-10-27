@@ -20,8 +20,8 @@ export default function PaymentReceipt({ payment, onClose }) {
     <article className="receipt-sheet">
       <header className="receipt-header">
         <div className="receipt-brand">
-          <span className="receipt-mark">P</span>
-          <div><strong>PULSE<span>FIT</span></strong><small>GYM MANAGEMENT</small></div>
+          <img src="/Gym-Logo-128.png" alt="Vino Fitness Studio" className="receipt-logo" />
+          <div><strong>VINO <span>FITNESS STUDIO</span></strong><small>UNISEX FITNESS STUDIO</small></div>
         </div>
         <div className="receipt-title"><span>PAYMENT RECEIPT</span><strong>{payment.transactionId}</strong></div>
       </header>
@@ -33,7 +33,7 @@ export default function PaymentReceipt({ payment, onClose }) {
 
       <section className="receipt-parties">
         <div><small>RECEIVED FROM</small><h3>{member.fullName || 'Member'}</h3><p>{member.memberId || '—'}</p><p>{member.mobileNumber || ''}</p></div>
-        <div><small>ISSUED BY</small><h3>{issuer.name || 'PulseFit Gym'}</h3><p>{issuer.address || ''}</p><p>{[issuer.phone, issuer.email].filter(Boolean).join(' · ')}</p></div>
+        <div><small>ISSUED BY</small><h3>{issuer.name || 'Vino Fitness Studio'}</h3><p>{issuer.address || ''}</p><p>{[issuer.phone, issuer.email].filter(Boolean).join(' · ')}</p></div>
       </section>
 
       <section className="receipt-details">
@@ -59,7 +59,7 @@ export default function PaymentReceipt({ payment, onClose }) {
       {payment.notes && <p className="receipt-note"><strong>Note:</strong> {payment.notes}</p>}
 
       <footer className="receipt-footer">
-        <div><strong>Thank you for choosing PulseFit.</strong><span>This is a computer-generated payment receipt and does not require a signature.</span></div>
+        <div><strong>Thank you for choosing Vino Fitness Studio.</strong><span>This is a computer-generated payment receipt and does not require a signature.</span></div>
         <div className="receipt-actions"><button className="outline-btn" onClick={onClose}><X size={16}/> Close</button><button className="lime-btn" onClick={() => window.print()}><Printer size={16}/> Print / Save PDF</button></div>
       </footer>
     </article>

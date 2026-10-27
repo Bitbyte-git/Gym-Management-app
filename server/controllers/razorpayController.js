@@ -57,7 +57,7 @@ const checkoutData = (order) => ({
   amount: order.amount,
   currency: order.currency,
   name: config.gym.name,
-  description: 'PulseFit membership',
+  description: 'Vino Fitness Studio membership',
 });
 
 const settleCapturedPayment = async (membership, order, payment) => {

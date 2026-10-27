@@ -4,6 +4,8 @@ import { CalendarDays, Loader2, Plus, RefreshCw, Download } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
+import AttendanceKiosk from '../components/AttendanceKiosk';
+import AttendancePopup from '../components/AttendancePopup';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const field = (name, label, type = 'text', options) => ({ name, label, type, options });
@@ -25,7 +27,7 @@ const modules = {
     edit: [field('name', 'Plan name'), field('description', 'Description'), field('duration', 'Duration in months', 'number'), field('price', 'Price (INR)', 'number'), field('facilities', 'Included services (comma separated)', 'list'), field('status', 'Status', 'select', ['active', 'inactive'])] },
   memberships: { url: '/memberships', columns: ['member', 'membershipPlan', 'startDate', 'endDate', 'pendingAmount', 'status', 'paymentStatus'], create: [member, plan, slot] },
   membership: { url: '/memberships', columns: ['membershipPlan', 'startDate', 'endDate', 'pendingAmount', 'status', 'paymentStatus'] },
-  attendance: { url: '/attendance', columns: ['member', 'checkInTime', 'checkOutTime', 'duration', 'attendanceStatus', 'deviceId'] },
+  attendance: { url: '/attendance', columns: ['member', 'sessionName', 'checkInTime', 'checkOutTime', 'duration', 'attendanceStatus', 'deviceId'] },
   payments: { url: '/payments', columns: ['member', 'transactionId', 'amount', 'paymentMethod', 'paymentStatus', 'paymentDate'] },
   allocations: { url: '/trainer-allocations', columns: ['member', 'trainer', 'startDate', 'endDate', 'status'], create: [member, trainer, field('notes', 'Notes', 'optional')] },
   slotAllocations: { url: '/time-slots/allocations', columns: ['member', 'timeSlot', 'startDate', 'endDate', 'status'] },
@@ -55,7 +57,7 @@ const reportLabels = {
 const reportColumns = {
   registrations: ['memberId', 'fullName', 'mobileNumber', 'fitnessGoal', 'registrationStatus', 'createdAt'],
   memberships: ['member', 'membershipPlan', 'startDate', 'endDate', 'totalAmount', 'paymentStatus', 'status'],
-  attendance: ['member', 'attendanceDate', 'checkInTime', 'checkOutTime', 'duration', 'attendanceStatus'],
+  attendance: ['member', 'attendanceDate', 'sessionName', 'checkInTime', 'checkOutTime', 'duration', 'attendanceStatus'],
   revenue: ['member', 'transactionId', 'amount', 'paymentMethod', 'paymentDate'],
   'pending-dues': ['member', 'membershipPlan', 'pendingAmount', 'paymentStatus', 'endDate'],
   'expiring-memberships': ['member', 'membershipPlan', 'endDate', 'paymentStatus', 'status'],
@@ -75,7 +77,7 @@ const sectionHelp = {
   plans: ['Membership plans', 'Define the plans members can buy, including duration, price and facilities.', ['Create plan', 'Set price', 'Activate or deactivate']],
   memberships: ['Member memberships', 'See which plan each member owns, its dates, payment balance and current status.', ['Choose member', 'Assign plan', 'Renew or change']],
   membership: ['My membership', 'View your plan dates, payment balance and current membership status.', ['Review plan', 'Pay balance', 'View status']],
-  attendance: ['Check-in and attendance', 'Record when a member enters or leaves. The member must have an active paid membership and use their assigned time slot.', ['Select member', 'Check in', 'Check out']],
+  attendance: ['Attendance & Gym Hours', 'Session-based attendance (Morning 5AM-11:59AM, Afternoon 12PM-3:59PM, Evening 4PM-10PM) with flexible entry, multi-punch check-out tracking, and total daily gym hours.', ['Select member', 'Check in', 'Check out']],
   payments: ['Payments and receipts', 'Review money received, payment status and printable receipts.', ['Find payment', 'Check status', 'Open receipt']],
   allocations: ['Member trainer assignments', 'Connect each member with the trainer responsible for them.', ['Select member', 'Assign trainer', 'Reassign when needed']],
   slotAllocations: ['Member slot assignments', 'See or change the weekly gym time reserved for each member.', ['Select member', 'Choose time slot', 'Change assignment']],
@@ -91,7 +93,15 @@ const sectionHelp = {
   coach: ['My trainer', 'View your currently assigned trainer.', ['View trainer', 'Check status']],
   schedule: ['My weekly slot', 'View the gym time currently reserved for you.', ['Check weekday', 'Check time']],
 };
-const label = value => value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ').replace(/^./, s => s.toUpperCase());
+const customLabels = {
+  sessionName: 'Session',
+  checkInTime: 'Check-in Time',
+  checkOutTime: 'Check-out Time',
+  attendanceStatus: 'Studio Status',
+  deviceId: 'Terminal / Scanner',
+  duration: 'Gym Time',
+};
+const label = value => customLabels[value] || value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ').replace(/^./, s => s.toUpperCase());
 const friendlyError = message => message === 'Check-in is outside the active allocated time slot'
   ? 'Check-in blocked. This member can enter only during their assigned gym time. Open Member slot assignments to review or change it.'
   : message;
@@ -106,7 +116,15 @@ const valueText = (value, key = '') => {
   if (typeof value === 'object') return value.fullName || value.name || value.email || value.memberId || '—';
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (/amount|revenue|totalValue/i.test(key) && Number.isFinite(Number(value))) return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value));
-  if (key === 'duration' && Number.isFinite(Number(value))) return `${value} min`;
+  if (key === 'duration' && Number.isFinite(Number(value))) {
+    const mins = Math.max(0, Math.round(Number(value)));
+    if (mins === 0) return '0m';
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    if (hrs === 0) return `${rem}m`;
+    if (rem === 0) return `${hrs}h`;
+    return `${hrs}h ${rem}m`;
+  }
   if (/Percentage$/i.test(key) && Number.isFinite(Number(value))) return `${value}%`;
   if (['dateOfBirth', 'startDate', 'endDate', 'attendanceDate', 'createdAt', 'paymentDate'].includes(key) && /^\d{4}-\d{2}-\d{2}T/.test(String(value))) return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   if (/Date$|Time$|At$|timestamp/.test(key) && /^\d{4}-\d{2}-\d{2}T/.test(String(value))) return new Date(value).toLocaleString();
@@ -143,6 +161,8 @@ export default function Operations({ section, user, query = '' }) {
   const [details, setDetails] = useState(null);
   const [memberSlot, setMemberSlot] = useState(undefined);
   const [slotLoading, setSlotLoading] = useState(false);
+  const [attendanceTab, setAttendanceTab] = useState('all');
+  const [attendancePopup, setAttendancePopup] = useState(null);
   useEffect(() => { setPage(1); setRows([]); setAction(null); setReceipt(null); setDetails(null); }, [section, query]);
   useEffect(() => {
     let active = true;
@@ -231,9 +251,33 @@ export default function Operations({ section, user, query = '' }) {
         else body.checkOutTime = null;
       }
       if (action.url === '/payments') { body.paymentMethod = 'cash'; body.cashReceived = Boolean(values.cashReceived); }
+      const isManualAttendance = action.url?.startsWith('/attendance/manual-');
       const result = await api.request({ method: action.method, url: action.url, data: body, headers: { 'Idempotency-Key': action.key } });
       setAction(null); setNotice(result.data.message || 'Saved successfully.'); setRevision(v => v + 1);
-    } catch (err) { setError(friendlyError(err.response?.data?.error || 'Unable to save. Your changes have not been confirmed.')); }
+      if (isManualAttendance) {
+        const isCheckout = action.url.includes('checkout');
+        const selectedMember = choices.members?.find(m => m._id === values.memberId) || result.data.data?.member;
+        setAttendancePopup({
+          id: Date.now(),
+          type: 'success',
+          title: 'Thank you! Attendance marked',
+          subtitle: result.data.message || (isCheckout ? 'Member check-out recorded successfully.' : 'Member check-in recorded successfully.'),
+          member: selectedMember ? { fullName: selectedMember.fullName, memberId: selectedMember.memberId } : null,
+          action: isCheckout ? 'Check out' : 'Check in',
+        });
+      }
+    } catch (err) {
+      const errMsg = friendlyError(err.response?.data?.error || 'Unable to save. Your changes have not been confirmed.');
+      setError(errMsg);
+      if (action?.url?.startsWith('/attendance/manual-')) {
+        setAttendancePopup({
+          id: Date.now(),
+          type: 'error',
+          title: 'Try again, not Matched',
+          subtitle: errMsg,
+        });
+      }
+    }
     finally { setBusy(false); }
   };
   const payOnline = async row => {
@@ -268,9 +312,12 @@ export default function Operations({ section, user, query = '' }) {
     const keys = columns;
     const csv = [keys.map(key => csvCell(label(key))).join(','), ...visible.map(row => keys.map(key => csvCell(valueText(row[key], key))).join(','))].join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const a = document.createElement('a'); a.href = url; a.download = `pulsefit-${section}.csv`; a.click(); URL.revokeObjectURL(url);
+    const a = document.createElement('a'); a.href = url; a.download = `vinofitness-${section}.csv`; a.click(); URL.revokeObjectURL(url);
   };
-  const visible = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
+  let visible = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
+  if (section === 'attendance' && attendanceTab === 'active') {
+    visible = visible.filter(row => Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present')));
+  }
   let columns = section === 'reports' ? reportColumns[report] || [] : definition?.columns || [];
   if (user.role === 'trainer' && section === 'members') columns = ['member', 'startDate', 'status'];
   const showActions = section !== 'reports';
@@ -304,9 +351,17 @@ export default function Operations({ section, user, query = '' }) {
         }
       }
     }
-    if (section === 'attendance' && isAdmin) add('Correct times', 'put', `/attendance/${row._id}/correct`, [field('checkInTime', 'Check-in', 'datetime-local'), { ...field('checkOutTime', 'Check-out', 'datetime-local'), optional: true }, field('correctionReason', 'Correction reason')], {
-      checkInTime: localInput(row.checkInTime), checkOutTime: localInput(row.checkOutTime),
-    });
+    if (section === 'attendance') {
+      const isOpen = Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present'));
+      if (staff && isOpen) {
+        add('Check out', 'post', '/attendance/manual-checkout', [field('notes', 'Exit reason')], { memberId: row.member?._id || row.member });
+      }
+      if (isAdmin) {
+        add('Correct times', 'put', `/attendance/${row._id}/correct`, [field('checkInTime', 'Check-in', 'datetime-local'), { ...field('checkOutTime', 'Check-out', 'datetime-local'), optional: true }, field('correctionReason', 'Correction reason')], {
+          checkInTime: localInput(row.checkInTime), checkOutTime: localInput(row.checkOutTime),
+        });
+      }
+    }
     if (section === 'payments') {
       if (row.paymentStatus === 'completed' || row.paymentStatus === 'refunded') buttons.push(<button className="outline-btn" key="receipt" disabled={busy} onClick={() => openReceipt(row)}>Receipt</button>);
       if (isAdmin && row.paymentStatus === 'completed' && row.paymentMethod === 'online_gateway') add('Refund online', 'post', `/payments/${row._id}/refund`, [field('reason', 'Refund reason')]);
@@ -334,6 +389,84 @@ export default function Operations({ section, user, query = '' }) {
   } : null;
   const renderCell = (row, key) => {
     const value = row[key];
+    if (section === 'attendance') {
+      if (key === 'member') {
+        const name = value?.fullName || (typeof value === 'string' ? value : 'Unknown member');
+        const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'M';
+        const memberId = value?.memberId || '';
+        const phone = value?.mobileNumber || '';
+        return (
+          <div className="attendance-member-cell">
+            <span className="attendance-avatar">{initials}</span>
+            <div>
+              <b>{name}</b>
+              <small>{memberId ? `${memberId}` : ''}{phone ? (memberId ? ` · ${phone}` : phone) : (!memberId ? 'Member' : '')}</small>
+            </div>
+          </div>
+        );
+      }
+      if (key === 'sessionName') {
+        const session = String(value || 'morning').toLowerCase();
+        return <span className={`session-badge ${session}`}>{session}</span>;
+      }
+      if (key === 'checkInTime') {
+        if (!value) return '—';
+        const d = new Date(value);
+        return (
+          <div className="attendance-time-cell">
+            <b>{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</b>
+            <small>{d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</small>
+          </div>
+        );
+      }
+      if (key === 'checkOutTime') {
+        const isOpen = Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present'));
+        if (isOpen) {
+          return (
+            <span className="attendance-live-badge">
+              <span className="pulse-dot" /> Training Active
+            </span>
+          );
+        }
+        if (!value) return '—';
+        const d = new Date(value);
+        return (
+          <div className="attendance-time-cell">
+            <b>{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</b>
+            <small>{d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</small>
+          </div>
+        );
+      }
+      if (key === 'duration') {
+        const isOpen = Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present'));
+        if (isOpen) {
+          const checkIn = new Date(row.checkInTime).getTime();
+          const mins = Math.max(0, Math.round((Date.now() - checkIn) / 60000));
+          const hrs = Math.floor(mins / 60);
+          const rem = mins % 60;
+          const formatted = hrs > 0 ? `${hrs}h ${rem}m` : `${mins}m`;
+          return <span className="attendance-duration-pill live">⏱️ Active ({formatted})</span>;
+        }
+        const formatted = valueText(value, 'duration');
+        return <span className="attendance-duration-pill done">✓ {formatted}</span>;
+      }
+      if (key === 'attendanceStatus') {
+        const isOpen = Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present'));
+        return (
+          <span className={`attendance-status-badge ${isOpen ? 'present' : 'completed'}`}>
+            {isOpen ? 'Active in Studio' : 'Completed'}
+          </span>
+        );
+      }
+      if (key === 'deviceId') {
+        const isBio = String(value || '').toLowerCase().includes('mfs') || String(value || '').toLowerCase().includes('bio');
+        return (
+          <span className={`attendance-channel-badge ${isBio ? 'biometric' : ''}`}>
+            {isBio ? `Biometric (${value})` : (value || 'Manual Counter')}
+          </span>
+        );
+      }
+    }
     if (section === 'payments' && key === 'member') {
       const name = value?.fullName || 'Unknown member';
       return <div className="payment-member"><i>{name.split(' ').map(part => part[0]).join('').slice(0, 2)}</i><span><b>{name}</b><small>{value?.memberId || 'Member'}</small></span></div>;
@@ -341,6 +474,10 @@ export default function Operations({ section, user, query = '' }) {
     if (section === 'payments' && key === 'transactionId') return <code className="transaction-reference" title={value}>{value}</code>;
     if (section === 'payments' && key === 'amount') return <strong className="payment-amount">{valueText(value, key)}</strong>;
     if (section === 'payments' && key === 'paymentMethod') return <span className={`payment-method ${value}`}>{value === 'online_gateway' ? 'Razorpay' : label(value || 'unknown')}</span>;
+    if (key === 'sessionName') {
+      const session = String(value || 'morning').toLowerCase();
+      return <span className={`session-badge ${session}`}>{session}</span>;
+    }
     if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus'].includes(key)) return <span className={`status ${String(value || '').toLowerCase()}`}>{label(String(value || 'unknown'))}</span>;
     return valueText(value, key);
   };
@@ -355,6 +492,7 @@ export default function Operations({ section, user, query = '' }) {
       <div><span>Purpose</span><h2>{help[0]}</h2><p>{help[1]}</p></div>
       <ol>{help[2].map((step, index) => <li key={step}><b>{index + 1}</b>{step}</li>)}</ol>
     </section>}
+    {section === 'attendance' && staff && <AttendanceKiosk user={user} onRecorded={() => setRevision(value => value + 1)} />}
     <div className="toolbar operation-tools">
       {section === 'reports' && <label className="report-type-filter"><span>Report</span><select value={report} onChange={e => setReport(e.target.value)}>{reportTypes.map(type => <option key={type} value={type}>{reportLabels[type]}</option>)}</select></label>}
       {['reports', 'attendance', 'payments'].includes(section) && <>
@@ -418,7 +556,30 @@ export default function Operations({ section, user, query = '' }) {
     </div>}
     {details && <MemberProfileModal member={details} onClose={() => setDetails(null)}/>}
     {receipt && <PaymentReceipt payment={receipt} onClose={() => setReceipt(null)}/>}
-    {loading ? <p role="status"><Loader2 className="animate-spin"/> Loading…</p> : <section className={`table-card ${section === 'reports' ? 'report-table-card' : ''} ${section === 'payments' ? 'payments-table-card' : ''}`}><div className="table-scroll"><table>
+    <AttendancePopup popup={attendancePopup} onClose={() => setAttendancePopup(null)} />
+    {section === 'attendance' && (
+      <div className="attendance-filter-tabs">
+        <button
+          type="button"
+          className={`attendance-tab-btn ${attendanceTab === 'all' ? 'active' : ''}`}
+          onClick={() => setAttendanceTab('all')}
+        >
+          All Attendance Records
+          <span className="attendance-tab-badge">{rows.length}</span>
+        </button>
+        <button
+          type="button"
+          className={`attendance-tab-btn ${attendanceTab === 'active' ? 'active' : ''}`}
+          onClick={() => setAttendanceTab('active')}
+        >
+          <span className="pulse-dot" /> Currently Active in Studio
+          <span className="attendance-tab-badge">
+            {rows.filter(r => Boolean(r.sessionOpen || (!r.checkOutTime && r.attendanceStatus === 'present'))).length}
+          </span>
+        </button>
+      </div>
+    )}
+    {loading ? <p role="status"><Loader2 className="animate-spin"/> Loading…</p> : <section className={`table-card ${section === 'reports' ? 'report-table-card' : ''} ${section === 'payments' ? 'payments-table-card' : ''} ${section === 'attendance' ? 'attendance-table-card' : ''}`}><div className="table-scroll"><table>
       <thead><tr>{columns.map(key => <th key={key}>{label(key)}</th>)}{showActions && <th>Actions</th>}</tr></thead>
       <tbody>{visible.length ? visible.map((row, i) => <tr key={row._id || row.slotId || i}>{columns.map(key => <td key={key}>{renderCell(row, key)}</td>)}{showActions && <td><div className="row-actions">{rowActions(row)}</div></td>}</tr>) : <tr><td className="empty-table" colSpan={columns.length + (showActions ? 1 : 0)}>No records found for the selected filters.</td></tr>}</tbody>
     </table></div></section>}

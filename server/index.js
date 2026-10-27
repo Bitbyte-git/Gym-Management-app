@@ -32,8 +32,13 @@ const app = express();
 // Middleware
 app.disable('x-powered-by');
 if (config.trustProxy) app.set('trust proxy', 1);
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 app.use(cors(config.cors));
+// Template 64 KiB + optional image 512 KiB + Base64 overhead and metadata.
+app.use('/api/attendance/biometric', express.json({ limit: '100kb' }));
+app.use('/api/biometrics', express.json({ limit: '800kb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -65,7 +70,9 @@ app.use('/api/registration', createRateLimiter(
   'Too many registration requests. Try again later.',
 ));
 app.use('/api/payments', createRateLimiter(60 * 1000, 20, 'Too many payment requests. Try again later.'));
-app.use('/api/attendance', createRateLimiter(60 * 1000, 30, 'Too many attendance requests. Try again later.'));
+app.use('/api/biometrics', createRateLimiter(60 * 1000, 20, 'Too many biometric requests. Try again later.'));
+app.use('/api/attendance/biometric', createRateLimiter(60 * 1000, 120, 'Too many scanner requests. Pause and retry shortly.'));
+app.use('/api/attendance', createRateLimiter(60 * 1000, 30, 'Too many attendance requests. Try again later.', { skip: req => req.path.startsWith('/biometric/') }));
 
 app.use('/api', require('./middleware/queryValidation'));
 
@@ -95,7 +102,7 @@ app.get('/api/health', (req, res) => {
   const databaseReady = require('mongoose').connection.readyState === 1;
   res.status(databaseReady ? 200 : 503).json({
     success: databaseReady,
-    message: databaseReady ? 'PulseFit API is ready' : 'PulseFit API database is unavailable',
+    message: databaseReady ? 'Vino Fitness Studio API is ready' : 'Vino Fitness Studio API database is unavailable',
     database: databaseReady ? 'connected' : 'unavailable',
     timestamp: new Date().toISOString(),
   });

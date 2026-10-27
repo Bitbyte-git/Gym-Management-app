@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    window.dispatchEvent(new Event('pulsefit:auth-stopping'));
     try {
       await authService.logout();
     } catch (error) {

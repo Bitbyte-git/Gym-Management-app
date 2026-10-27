@@ -10,12 +10,13 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     </div>;
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    return <Navigate to={`/${user.role}/dashboard`} replace />;
+  if (allowedRoles.length > 0 && (!user.role || !allowedRoles.includes(user.role))) {
+    const targetPath = user.role ? `/${user.role}` : '/login';
+    return <Navigate to={targetPath} replace />;
   }
 
   return children;

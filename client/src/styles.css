@@ -968,3 +968,854 @@
 .registration-page .step{font-size:12px}.registration-page h2{font-size:30px}.registration-page h3{font-size:19px}.plan-card p,.slot-card p,.trainer-card p,.review-section p{font-size:14px}.demo-access-head span{font-size:11px}.demo-access-head h3{font-size:20px}.demo-access-head>small,.demo-account-copy small,.demo-access>p{font-size:11px}.demo-account-copy strong{font-size:14px}.demo-account-copy code{font-size:11px}
 .profile-info small,.member-profile-metrics small,.health-note-grid small{font-size:10px}.profile-info strong,.health-note-grid p{font-size:13px}.member-section-title h3{font-size:17px}.member-section-title p,.health-consent,.member-profile-footer>span{font-size:11px}.receipt-brand small,.receipt-title span,.receipt-hero small,.receipt-parties small,.receipt-details small,.receipt-row-head{font-size:11px}.receipt-parties p,.receipt-details strong,.receipt-row small,.receipt-note{font-size:13px}
 @media(max-width:760px){.side{width:265px}.workspace{margin-left:0}.app-shell,.auth-page{font-size:16px}.workspace header h1{font-size:26px}}
+
+.biometric-page { display: grid; gap: 24px; }
+.biometric-card { padding: 24px; display: grid; gap: 16px; }
+.biometric-card h2 { display: flex; align-items: center; gap: 10px; }
+.biometric-card label { display: grid; gap: 8px; max-width: 560px; }
+.biometric-card input, .biometric-card select { padding: 12px; background: var(--panel2); color: var(--white); border: 1px solid var(--line); border-radius: 8px; }
+.biometric-card .biometric-check { display: flex; align-items: center; }
+.biometric-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.biometric-preview { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; }
+.biometric-preview img { max-width: 148px; max-height: 180px; border: 1px solid var(--line); background: white; }
+.biometric-card [role=alert] { color: #ffaaa0; }
+.biometric-card button:disabled { opacity: .5; cursor: not-allowed; }
+
+.attendance-kiosk { background: linear-gradient(125deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 20px; padding: 28px; margin-bottom: 24px; display: grid; gap: 20px; }
+.kiosk-status { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+.scanner-dot { width: 10px; height: 10px; border-radius: 50%; background: #b68d45; }
+.scanner-dot.connected { background: var(--lime); }
+.kiosk-phase { text-transform: uppercase; margin-left: auto; letter-spacing: .1em; }
+.kiosk-instruction { display: flex; align-items: center; gap: 24px; }
+.kiosk-instruction > svg { flex: 0 0 72px; width: 72px; height: 72px; color: var(--lime); }
+.kiosk-instruction h2 { font-size: clamp(28px, 4vw, 46px); margin: 6px 0; }
+.kiosk-instruction p { max-width: 850px; }
+.kiosk-metrics { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; border-top: 1px solid var(--line); padding-top: 20px; }
+.kiosk-metrics strong { font-size: 36px; color: var(--lime); }
+.kiosk-metrics small, .kiosk-help { color: var(--muted); }
+.kiosk-metrics small { margin-left: auto; }
+.kiosk-result { display: flex; align-items: center; gap: 18px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; }
+.kiosk-result.confirmed { border-color: var(--lime); }
+.kiosk-result.ignored, .kiosk-stale { border-color: #b68d45; }
+.kiosk-avatar { width: 64px; height: 64px; flex: 0 0 64px; border-radius: 50%; display: grid; place-items: center; background: var(--lime); color: var(--ink); font-weight: 800; font-size: 24px; }
+.kiosk-result time { color: var(--muted); }
+.kiosk-events > div { display: grid; grid-template-columns: minmax(100px, 1fr) 45px minmax(200px, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.kiosk-events time { color: var(--muted); text-align: right; }
+.kiosk-stale { border: 1px solid #b68d45; border-radius: 12px; padding: 16px; }
+.kiosk-stale ul { margin: 12px 20px; }
+@media (max-width: 760px) { .attendance-kiosk { padding: 18px; } .kiosk-instruction { gap: 14px; } .kiosk-instruction > svg { flex-basis: 40px; width: 40px; height: 40px; } .kiosk-events > div { grid-template-columns: 1fr 45px; } .kiosk-events time { grid-column: 1 / -1; text-align: left; } .kiosk-metrics small { margin-left: 0; } }
+
+.session-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.session-badge.morning { background: rgba(201, 255, 24, 0.15); color: var(--lime); border: 1px solid rgba(201, 255, 24, 0.35); }
+.session-badge.afternoon { background: rgba(255, 170, 0, 0.15); color: #ffb833; border: 1px solid rgba(255, 170, 0, 0.35); }
+.session-badge.evening { background: rgba(147, 112, 219, 0.18); color: #c4a1ff; border: 1px solid rgba(147, 112, 219, 0.35); }
+.kiosk-spending-pill {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.kiosk-spending-pill strong {
+  color: var(--lime);
+  font-size: 14px;
+}
+.kiosk-spending-pill span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   VINO FITNESS STUDIO — Official Brand Identity System
+   ========================================================================== */
+.brand {
+  border: 0;
+  background: none;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.brand:hover {
+  transform: translateY(-1px);
+}
+
+.brand-logo-frame {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 45%, rgba(201, 255, 24, 0.22) 0%, rgba(17, 20, 17, 0.8) 75%);
+  border: 1px solid rgba(201, 255, 24, 0.4);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 16px rgba(201, 255, 24, 0.22);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.brand:hover .brand-logo-frame {
+  transform: scale(1.06);
+  border-color: rgba(201, 255, 24, 0.8);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 24px rgba(201, 255, 24, 0.45);
+}
+
+.brand-logo-img {
+  display: block;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  line-height: 1;
+}
+
+.brand-title {
+  font-family: var(--display, 'Bebas Neue', 'Anton', sans-serif);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--white);
+  line-height: 1;
+  display: block;
+  white-space: nowrap;
+}
+
+.brand-highlight {
+  color: var(--lime);
+  font-style: normal;
+}
+
+.brand-subtitle {
+  display: block;
+  font-family: var(--body, 'Inter', sans-serif);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Size Variants */
+.brand-sm .brand-logo-frame { width: 32px; height: 32px; border-radius: 9px; }
+.brand-sm .brand-logo-img { width: 28px; height: 28px; }
+.brand-sm .brand-title { font-size: 17px; }
+.brand-sm .brand-subtitle { font-size: 7px; margin-top: 3px; }
+
+.brand-md .brand-logo-frame { width: 42px; height: 42px; border-radius: 11px; }
+.brand-md .brand-logo-img { width: 36px; height: 36px; }
+.brand-md .brand-title { font-size: 22px; }
+.brand-md .brand-subtitle { font-size: 8px; }
+
+.brand-lg .brand-logo-frame { width: 54px; height: 54px; border-radius: 14px; }
+.brand-lg .brand-logo-img { width: 46px; height: 46px; }
+.brand-lg .brand-title { font-size: 26px; }
+.brand-lg .brand-subtitle { font-size: 9px; margin-top: 5px; }
+
+.brand-xl .brand-logo-frame { width: 68px; height: 68px; border-radius: 16px; }
+.brand-xl .brand-logo-img { width: 58px; height: 58px; }
+.brand-xl .brand-title { font-size: 32px; }
+.brand-xl .brand-subtitle { font-size: 10px; margin-top: 6px; }
+
+/* Responsive Navigation Bar Brand */
+.landing .nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+}
+.landing .nav .brand {
+  flex-shrink: 0;
+}
+.landing .nav nav {
+  margin: 0 auto;
+}
+
+/* Mini mark & form badge */
+.mini-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #111411;
+  border: 1px solid rgba(201, 255, 24, 0.4);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(201, 255, 24, 0.2);
+  margin-bottom: 8px;
+}
+.brand-mini-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Sidebar Location Chip */
+.location-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 6px;
+  filter: drop-shadow(0 0 8px rgba(201, 255, 24, 0.3));
+}
+
+/* Receipt Brand Logo */
+.receipt-logo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 8px rgba(201, 255, 24, 0.2));
+}
+
+/* Legacy fallback support */
+.brand-mark {
+  background: url('/Gym-Logo-128.png') center/contain no-repeat !important;
+  clip-path: none !important;
+  width: 36px !important;
+  height: 36px !important;
+  filter: drop-shadow(0 0 10px rgba(201, 255, 24, 0.35));
+}
+
+/* ==========================================================================
+   ENHANCED ATTENDANCE & BIOMETRIC TABLE SYSTEM
+   ========================================================================== */
+
+/* Kiosk KPI Cards */
+.kiosk-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.kiosk-kpi-card {
+  background: rgba(23, 26, 23, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.kiosk-kpi-card:hover {
+  border-color: rgba(201, 255, 24, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.kpi-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(201, 255, 24, 0.1);
+  color: var(--lime);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.kpi-value-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.kpi-value-row strong {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.1;
+}
+
+.kiosk-kpi-card.live strong {
+  color: var(--lime);
+}
+
+.kiosk-kpi-card small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Pulsing Live Dot */
+.pulse-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(201, 255, 24, 0.12);
+  border: 1px solid rgba(201, 255, 24, 0.3);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--lime);
+  text-transform: uppercase;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime);
+  animation: pulse-glow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.scanner-status-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.scanner-status-tag.ready {
+  background: rgba(201, 255, 24, 0.15);
+  color: var(--lime);
+  border: 1px solid rgba(201, 255, 24, 0.3);
+}
+
+.scanner-status-tag.idle {
+  background: rgba(182, 141, 69, 0.15);
+  color: #ffb833;
+  border: 1px solid rgba(182, 141, 69, 0.3);
+}
+
+/* Kiosk Live Table */
+.kiosk-live-feed {
+  background: rgba(17, 20, 17, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.kiosk-feed-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(23, 26, 23, 0.5);
+  border-bottom: 1px solid var(--line);
+}
+
+.live-pulse-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--lime);
+  font-weight: 600;
+}
+
+.kiosk-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.kiosk-table th {
+  padding: 12px 18px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  background: rgba(17, 20, 17, 0.4);
+  border-bottom: 1px solid var(--line);
+}
+
+.kiosk-table td {
+  padding: 14px 18px;
+  font-size: 12px;
+  color: var(--white);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+.kiosk-table tbody tr:hover {
+  background: rgba(201, 255, 24, 0.02);
+}
+
+/* Kiosk Punch Direction Pill */
+.kiosk-punch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.kiosk-punch-pill.checkin {
+  background: rgba(201, 255, 24, 0.15);
+  color: var(--lime);
+  border: 1px solid rgba(201, 255, 24, 0.35);
+}
+
+.kiosk-punch-pill.checkout {
+  background: rgba(255, 170, 0, 0.15);
+  color: #ffb833;
+  border: 1px solid rgba(255, 170, 0, 0.35);
+}
+
+.kiosk-verified-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Operations Attendance Table Card */
+.attendance-table-card {
+  background: linear-gradient(135deg, rgba(23, 26, 23, 0.8), rgba(17, 20, 17, 0.95)) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.attendance-table-card .table-scroll {
+  border-radius: 0;
+}
+
+.attendance-table-card table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.attendance-table-card th {
+  padding: 14px 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(13, 15, 13, 0.7);
+  border-bottom: 1px solid var(--line);
+}
+
+.attendance-table-card td {
+  padding: 14px 18px;
+  font-size: 12px;
+  color: var(--white);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+.attendance-table-card tbody tr {
+  transition: background 0.15s ease;
+}
+
+.attendance-table-card tbody tr:hover {
+  background: rgba(201, 255, 24, 0.035);
+}
+
+/* Attendance Cells */
+.attendance-member-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.attendance-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(201, 255, 24, 0.12);
+  color: var(--lime);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 12px;
+  border: 1px solid rgba(201, 255, 24, 0.25);
+  flex-shrink: 0;
+}
+
+.attendance-member-cell div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attendance-member-cell b {
+  font-size: 13px;
+  color: var(--white);
+}
+
+.attendance-member-cell small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.attendance-time-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attendance-time-cell b {
+  font-size: 13px;
+  font-family: monospace;
+  color: var(--white);
+}
+
+.attendance-time-cell small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.attendance-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(201, 255, 24, 0.15);
+  border: 1px solid rgba(201, 255, 24, 0.4);
+  color: var(--lime);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.attendance-duration-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.attendance-duration-pill.live {
+  background: rgba(201, 255, 24, 0.1);
+  color: var(--lime);
+  border: 1px solid rgba(201, 255, 24, 0.25);
+}
+
+.attendance-duration-pill.done {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.attendance-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.attendance-status-badge.present {
+  background: rgba(201, 255, 24, 0.15);
+  color: var(--lime);
+  border: 1px solid rgba(201, 255, 24, 0.3);
+}
+
+.attendance-status-badge.completed {
+  background: rgba(98, 202, 255, 0.12);
+  color: #62caff;
+  border: 1px solid rgba(98, 202, 255, 0.25);
+}
+
+.attendance-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.attendance-channel-badge.biometric {
+  color: var(--lime);
+  background: rgba(201, 255, 24, 0.08);
+  border-color: rgba(201, 255, 24, 0.2);
+}
+
+/* Attendance Quick Filter Tabs */
+.attendance-filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.attendance-tab-btn {
+  background: rgba(23, 26, 23, 0.6);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.attendance-tab-btn:hover {
+  color: var(--white);
+  border-color: rgba(201, 255, 24, 0.3);
+}
+
+.attendance-tab-btn.active {
+  background: rgba(201, 255, 24, 0.12);
+  color: var(--lime);
+  border-color: var(--lime);
+}
+
+.attendance-tab-badge {
+  background: rgba(201, 255, 24, 0.2);
+  color: var(--lime);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.attendance-tab-btn .pulse-dot {
+  width: 7px;
+  height: 7px;
+}
+
+.attendance-table-card .row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.attendance-table-card .row-actions button {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   2-SECOND ATTENDANCE POPUP SYSTEM
+   ========================================================================== */
+
+.attendance-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: popupBackdropFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes popupBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.attendance-popup-modal {
+  position: relative;
+  width: min(440px, 94vw);
+  background: linear-gradient(145deg, #171b17, #0f120f);
+  border-radius: 20px;
+  padding: 28px 24px 24px;
+  text-align: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  animation: popupCardSpringIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes popupCardSpringIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(-14px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.attendance-popup-modal.success {
+  border: 1px solid rgba(201, 255, 24, 0.45);
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.85),
+    0 0 32px rgba(201, 255, 24, 0.16);
+}
+
+.attendance-popup-modal.error {
+  border: 1px solid rgba(255, 77, 79, 0.5);
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.85),
+    0 0 32px rgba(255, 77, 79, 0.18);
+}
+
+.attendance-popup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.attendance-popup-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+}
+
+.attendance-popup-icon-wrap {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+}
+
+.attendance-popup-icon-wrap.success {
+  background: rgba(201, 255, 24, 0.12);
+  border: 1.5px solid var(--lime);
+}
+
+.attendance-popup-icon-wrap.error {
+  background: rgba(255, 77, 79, 0.12);
+  border: 1.5px solid #ff4d4f;
+}
+
+.attendance-popup-title {
+  margin: 0 0 6px;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.attendance-popup-modal.success .attendance-popup-title {
+  color: #f7f8f4;
+}
+
+.attendance-popup-modal.error .attendance-popup-title {
+  color: #ff5c5c;
+}
+
+.attendance-popup-subtitle {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.attendance-popup-member-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 12px 0 10px;
+  text-align: left;
+}
+
+.attendance-popup-member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.attendance-popup-member-info b {
+  font-size: 14px;
+  color: var(--white);
+}
+
+.attendance-popup-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.attendance-popup-spending {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(201, 255, 24, 0.08);
+  border: 1px solid rgba(201, 255, 24, 0.18);
+  color: var(--white);
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.attendance-popup-spending strong {
+  color: var(--lime);
+}
+
+

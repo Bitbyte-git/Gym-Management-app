@@ -1,22 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
-const {
-  checkDeviceStatus,
-  initializeEnrollment,
-  processEnrollment,
-  verifyFingerprint,
-  getEnrollmentStatus,
-  deleteEnrollment,
-  getAllEnrollments,
-} = require('../controllers/biometricController');
-
-router.get('/status', protect, checkDeviceStatus);
-router.post('/enroll/initialize', protect, authorize('member'), initializeEnrollment);
-router.post('/enroll/process', protect, authorize('member'), processEnrollment);
-router.post('/verify', verifyFingerprint); // Public for kiosk mode
-router.get('/enrollment', protect, authorize('member'), getEnrollmentStatus);
-router.delete('/enrollment', protect, authorize('member', 'admin'), deleteEnrollment);
-router.get('/enrollments', protect, authorize('admin'), getAllEnrollments);
-
+const audit = require('../middleware/auditLogger');
+const c = require('../controllers/biometricController');
+router.use(protect);
+router.get('/status', c.checkDeviceStatus);
+router.post('/enroll/initialize', authorize('member', 'admin', 'reception'), c.initializeEnrollment);
+router.post('/enroll/process', authorize('member', 'admin', 'reception'), audit('biometric_enroll', 'biometric'), c.processEnrollment);
+router.post('/verify', authorize('member', 'admin', 'reception'), c.verifyFingerprint);
+router.get('/enrollment', authorize('member', 'admin', 'reception'), c.getEnrollmentStatus);
+router.delete('/enrollment', authorize('member', 'admin'), audit('biometric_delete', 'biometric'), c.deleteEnrollment);
+router.get('/enrollments', authorize('admin'), c.getAllEnrollments);
 module.exports = router;

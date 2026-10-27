@@ -6,6 +6,7 @@ const MemberAttendance = require('../models/MemberAttendance');
 const Payment = require('../models/Payment');
 const TrainerClientAllocation = require('../models/TrainerClientAllocation');
 const MemberSlotAllocation = require('../models/MemberSlotAllocation');
+const { formatDuration, calculateDailySpending } = require('../utils/gymSession');
 
 // @desc    Get member registration report
 // @route   GET /api/reports/registrations
@@ -362,32 +363,51 @@ exports.getMemberAttendanceReport = async (req, res, next) => {
     }
 
     const attendance = await MemberAttendance.find(query)
-      .sort({ attendanceDate: -1 });
+      .sort({ attendanceDate: -1, checkInTime: -1 });
 
     const summary = {
       totalSessions: attendance.length,
       totalDuration: 0,
+      totalDurationFormatted: '0m',
       averageDuration: 0,
+      averageDurationFormatted: '0m',
       presentDays: 0,
     };
 
-    attendance.forEach(a => {
+    // Group records by attendance date to calculate daily spending
+    const dateMap = new Map();
+    for (const a of attendance) {
       summary.totalDuration += a.duration || 0;
       if (a.attendanceStatus === 'present') {
         summary.presentDays++;
       }
-    });
+      const key = a.attendanceDate ? new Date(a.attendanceDate).toISOString().slice(0, 10) : 'unknown';
+      if (!dateMap.has(key)) dateMap.set(key, []);
+      dateMap.get(key).push(a);
+    }
 
+    summary.totalDurationFormatted = formatDuration(summary.totalDuration);
     summary.averageDuration = attendance.length > 0 ? Math.round(summary.totalDuration / attendance.length) : 0;
+    summary.averageDurationFormatted = formatDuration(summary.averageDuration);
+
+    const dailySummaries = [];
+    for (const [dateStr, records] of dateMap.entries()) {
+      dailySummaries.push({
+        date: dateStr,
+        spending: calculateDailySpending(records),
+        recordsCount: records.length,
+      });
+    }
 
     // Get member details
-    const member = await MemberProfile.findById(req.params.memberId).select('memberId fullName');
+    const member = await MemberProfile.findById(req.params.memberId).select('memberId fullName avatarInitials');
 
     res.status(200).json({
       success: true,
       data: {
         member,
         summary,
+        dailySummaries,
         attendance,
       },
     });

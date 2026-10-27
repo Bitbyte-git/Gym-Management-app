@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Loader2, User, Heart, CreditCard, Calendar, UserCheck } from 'lucide-react';
 import { registrationService } from '../services';
 import { openRazorpayCheckout } from '../services/razorpay';
+import { Brand } from '../components/Brand';
 
 const STEPS = [
   { id: 'basic', title: 'Basic Details', icon: User },
@@ -605,14 +606,11 @@ export default function Register() {
   return (
     <main className="auth-page registration-page">
       <section className="auth-art">
-        <button className="brand" onClick={() => navigate('/')}>
-          <span className="brand-mark">P</span>
-          <span>PULSE<span>FIT</span><small>GYM OS</small></span>
-        </button>
+        <Brand onClick={() => navigate('/')} subtitle="UNISEX FITNESS STUDIO" size="md" />
         <div>
-          <p className="eyebrow">JOIN PULSEFIT</p>
+          <p className="eyebrow">JOIN VINO FITNESS STUDIO</p>
           <h1>BEGIN YOUR<br/><em>FITNESS JOURNEY.</em></h1>
-          <p>Register in minutes and start your transformation today.</p>
+          <p>Register in minutes and start your transformation at Vino Fitness Studio.</p>
         </div>
       </section>
       <section className="auth-form registration-form-container">

@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client\"",
     "server": "node server/index.js",
     "client": "vite client",
     "build": "vite build client",
@@ -12,7 +12,8 @@
     "seed": "node server/seed.js",
     "admin:create": "node server/bootstrapAdmin.js",
     "db:indexes": "node server/createIndexes.js",
-    "test:e2e": "node server/tests/browser.cjs"
+    "test:e2e": "node server/tests/browser.cjs",
+    "server:dev": "node --watch server/index.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

@@ -1,206 +1,53 @@
-const { protect, authorize } = require('../middleware/auth');
+const mongoose = require('mongoose');
 const MemberProfile = require('../models/MemberProfile');
 const BiometricEnrollment = require('../models/BiometricEnrollment');
-const {
-  checkRDServiceAvailability,
-  initializeCapture,
-  processEnrollment,
-  verifyFingerprint,
-  getMemberByEnrollment,
-  deleteEnrollment,
-} = require('../services/biometricService');
+const service = require('../services/biometricService');
+const { fail } = require('../services/biometricValidation');
 
-// @desc    Check RD Service availability
-// @route   GET /api/biometrics/status
-// @access  Private
-exports.checkDeviceStatus = async (req, res, next) => {
-  try {
-    const isAvailable = await checkRDServiceAvailability();
-
-    res.status(200).json({
-      success: true,
-      data: {
-        deviceAvailable: isAvailable,
-        deviceType: 'Mantra MFS110 L1',
-        message: isAvailable
-          ? 'Mantra biometric service is available.'
-          : 'The documented Mantra SDK integration is not configured.',
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Initialize fingerprint capture for enrollment
-// @route   POST /api/biometrics/enroll/initialize
-// @access  Private (Member)
+// This application has one gym database and no tenant model. Staff access is gym-wide.
+async function resolveMember(req) {
+  const requested = req.body?.memberId ?? req.query.memberId;
+  if (requested !== undefined && (typeof requested !== 'string' || !mongoose.isObjectIdOrHexString(requested))) fail('A valid member database ID is required');
+  const own = req.user.role === 'member';
+  const member = await MemberProfile.findOne(own ? { user: req.user.id } : { _id: requested });
+  if (own && requested && String(member?._id) !== requested) fail('You cannot access another member enrollment', 403);
+  if (!member) fail('Member profile not found', 404);
+  return member;
+}
+exports.checkDeviceStatus = async (req, res) => res.json({ success: true, data: service.capabilities() });
 exports.initializeEnrollment = async (req, res, next) => {
-  try {
-    const memberProfile = await MemberProfile.findOne({ user: req.user.id });
-    
-    if (!memberProfile) {
-      return res.status(404).json({
-        success: false,
-        error: 'Member profile not found',
-      });
-    }
-
-    const captureSession = await initializeCapture(memberProfile._id);
-
-    res.status(200).json({
-      success: true,
-      data: captureSession,
-    });
-  } catch (error) {
-    next(error);
-  }
+  try { const member = await resolveMember(req); res.json({ success: true, data: await service.initializeCapture(member._id) }); } catch (e) { next(e); }
 };
-
-// @desc    Process captured fingerprint for enrollment
-// @route   POST /api/biometrics/enroll/process
-// @access  Private (Member)
 exports.processEnrollment = async (req, res, next) => {
   try {
-    const { captureData } = req.body;
-
-    if (!captureData) {
-      return res.status(400).json({
-        success: false,
-        error: 'Capture data is required',
-      });
-    }
-
-    const memberProfile = await MemberProfile.findOne({ user: req.user.id });
-    
-    if (!memberProfile) {
-      return res.status(404).json({
-        success: false,
-        error: 'Member profile not found',
-      });
-    }
-
-    const result = await processEnrollment(memberProfile._id, captureData);
-
-    res.status(200).json({
-      success: true,
-      data: result,
+    const member = await resolveMember(req);
+    const data = await service.processEnrollment(member._id, req.body.captureData, {
+      fingerPosition: req.body.fingerPosition, operatorId: req.user.id,
+      replaceEnrollmentReference: req.body.replaceEnrollmentReference,
     });
-  } catch (error) {
-    next(error);
-  }
+    res.status(201).json({ success: true, data });
+  } catch (e) { next(e); }
 };
-
-// @desc    Verify fingerprint for check-in/check-out
-// @route   POST /api/biometrics/verify
-// @access  Public (for kiosk mode) or Private
 exports.verifyFingerprint = async (req, res, next) => {
   try {
-    const { captureData } = req.body;
-
-    if (!captureData) {
-      return res.status(400).json({
-        success: false,
-        error: 'Capture data is required',
-      });
-    }
-
-    const verificationResult = await verifyFingerprint(captureData);
-
-    if (verificationResult.success && verificationResult.enrollmentReference) {
-      // Get member from enrollment reference
-      const member = await getMemberByEnrollment(verificationResult.enrollmentReference);
-      
-      res.status(200).json({
-        success: true,
-        data: {
-          verified: true,
-          member,
-          verificationReference: verificationResult.enrollmentReference,
-        },
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        error: verificationResult.message || 'Fingerprint verification failed',
-      });
-    }
-  } catch (error) {
-    next(error);
-  }
+    await resolveMember(req);
+    const result = await service.verifyFingerprint();
+    res.status(503).json({ success: false, code: result.code, error: result.message });
+  } catch (e) { next(e); }
 };
-
-// @desc    Get member's biometric enrollment status
-// @route   GET /api/biometrics/enrollment
-// @access  Private (Member)
 exports.getEnrollmentStatus = async (req, res, next) => {
   try {
-    const memberProfile = await MemberProfile.findOne({ user: req.user.id });
-    
-    if (!memberProfile) {
-      return res.status(404).json({
-        success: false,
-        error: 'Member profile not found',
-      });
-    }
-
-    const enrollment = await BiometricEnrollment.findOne({ member: memberProfile._id });
-
-    res.status(200).json({
-      success: true,
-      data: {
-        isEnrolled: !!enrollment,
-        enrollmentStatus: enrollment?.enrollmentStatus || 'not_enrolled',
-        enrollmentDate: enrollment?.enrollmentDate,
-        lastVerificationDate: enrollment?.lastVerificationDate,
-        verificationCount: enrollment?.verificationCount || 0,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+    const member = await resolveMember(req);
+    const enrollment = await BiometricEnrollment.findOne({ member: member._id });
+    res.json({ success: true, data: { isEnrolled: enrollment?.isActive === true && enrollment?.enrollmentStatus === 'enrolled', enrollment: service.dto(enrollment) } });
+  } catch (e) { next(e); }
 };
-
-// @desc    Delete biometric enrollment
-// @route   DELETE /api/biometrics/enrollment
-// @access  Private (Member or Admin)
 exports.deleteEnrollment = async (req, res, next) => {
-  try {
-    const memberProfile = await MemberProfile.findOne({ user: req.user.id });
-    
-    if (!memberProfile) {
-      return res.status(404).json({
-        success: false,
-        error: 'Member profile not found',
-      });
-    }
-
-    const result = await deleteEnrollment(memberProfile._id);
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
+  try { const member = await resolveMember(req); res.json({ success: true, data: await service.deleteEnrollment(member._id) }); } catch (e) { next(e); }
 };
-
-// @desc    Admin: Get all biometric enrollments
-// @route   GET /api/biometrics/enrollments
-// @access  Private (Admin)
 exports.getAllEnrollments = async (req, res, next) => {
   try {
-    const enrollments = await BiometricEnrollment.find()
-      .populate('member', 'memberId fullName mobileNumber')
-      .sort({ enrollmentDate: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: enrollments.length,
-      data: enrollments,
-    });
-  } catch (error) {
-    next(error);
-  }
+    const enrollments = await BiometricEnrollment.find().populate('member', 'memberId fullName').sort({ enrollmentDate: -1 }).limit(500);
+    res.json({ success: true, count: enrollments.length, data: enrollments.map(service.dto) });
+  } catch (e) { next(e); }
 };

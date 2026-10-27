@@ -6,89 +6,12 @@ const MemberMembership = require('../models/MemberMembership');
 const MemberSlotAllocation = require('../models/MemberSlotAllocation');
 const GymOperatingHours = require('../models/GymOperatingHours');
 const SystemSetting = require('../models/SystemSetting');
-const { verifyFingerprint, getMemberByEnrollment } = require('../services/biometricService');
+const { verifyFingerprint } = require('../services/biometricService');
 const { dateKeyAt, zonedMidnight, gymDayBounds } = require('../utils/gymDate');
+const { getSessionName, formatDuration, calculateDailySpending } = require('../utils/gymSession');
+const config = require('../config/env');
 
-const displayTime = value => new Date(`2000-01-01T${value}:00`).toLocaleTimeString('en-US', {
-  hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC',
-});
-const displaySlot = slot => `daily, ${displayTime(slot.startTime)} to ${displayTime(slot.endTime)}`;
-
-const getCurrentMembership = async (memberId, now = new Date()) => MemberMembership.findOne({
-  member: memberId,
-  status: 'active',
-  paymentStatus: 'paid',
-  startDate: { $lte: now },
-  endDate: { $gte: now },
-}).sort({ endDate: -1 });
-
-const validateAttendanceAccess = async (member, now = new Date()) => {
-  if (member.registrationStatus !== 'active' || member.membershipStatus !== 'active') {
-    const error = new Error('Member account is not active');
-    error.statusCode = 403;
-    throw error;
-  }
-  const membership = await getCurrentMembership(member._id, now);
-  if (!membership) {
-    const error = new Error('No current, paid membership found');
-    error.statusCode = 403;
-    throw error;
-  }
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const { day: currentDay, time: currentTime } = clockAt(now);
-  const operatingHours = await GymOperatingHours.findOne({ dayOfWeek: currentDay });
-  if (!operatingHours) {
-    const error = new Error('Gym operating hours are not configured for today');
-    error.statusCode = 503;
-    throw error;
-  }
-  if (!operatingHours.isOpen || currentTime < operatingHours.openTime || currentTime >= operatingHours.closeTime || (operatingHours.sessions?.length && !operatingHours.sessions.some(session => currentTime >= session.startTime && currentTime < session.endTime))) {
-    const error = new Error('The gym is currently closed');
-    error.statusCode = 403;
-    throw error;
-  }
-  const timingSetting = await SystemSetting.findOne({ key: 'enforce_slot_timing' });
-  const enforceSlotTiming = timingSetting?.value !== false;
-  let slotAllocation = null;
-  if (enforceSlotTiming) {
-    slotAllocation = await MemberSlotAllocation.findOne({
-      member: member._id,
-      membership: membership._id,
-      status: 'active',
-      startDate: { $lte: now },
-      $or: [{ endDate: null }, { endDate: { $gte: now } }],
-    }).populate('timeSlot');
-    if (!slotAllocation) {
-      const previousAllocation = await MemberSlotAllocation.findOne({
-        member: member._id,
-        status: 'active',
-      }).populate('timeSlot');
-      if (previousAllocation && previousAllocation.endDate && previousAllocation.endDate <= now) {
-        previousAllocation.membership = membership._id;
-        previousAllocation.startDate = membership.startDate;
-        previousAllocation.endDate = membership.endDate;
-        await previousAllocation.save();
-        slotAllocation = previousAllocation;
-      } else if (previousAllocation &&
-          previousAllocation.startDate <= now &&
-          (!previousAllocation.endDate || previousAllocation.endDate >= now)) {
-        const error = new Error('Active time slot allocation does not match the current membership');
-        error.statusCode = 409;
-        throw error;
-      }
-    }
-    if (!slotAllocation?.timeSlot) throw Object.assign(new Error('A current slot allocation is required for attendance'), { statusCode: 403 });
-    if (slotAllocation?.timeSlot) {
-      const slot = slotAllocation.timeSlot;
-      if (slot.status !== 'active' || currentTime < slot.startTime || currentTime >= slot.endTime) {
-        const error = new Error(`Check-in blocked. Assigned time: ${displaySlot(slot)}.`);
-        error.statusCode = 403;
-        throw error;
-      }
-    }
-  }
-  return { membership, slotAllocation };
-};
+const { validateAttendanceAccess } = require('../services/attendanceAccess');
 
 // @desc    Get all attendance records
 // @route   GET /api/attendance
@@ -163,10 +86,34 @@ exports.getMemberAttendance = async (req, res, next) => {
     const attendance = await MemberAttendance.find(query)
       .sort({ attendanceDate: -1, checkInTime: -1 });
 
+    // Group records by attendance date to calculate daily spending
+    const dateMap = new Map();
+    for (const rec of attendance) {
+      const key = rec.attendanceDate ? new Date(rec.attendanceDate).toISOString().slice(0, 10) : 'unknown';
+      if (!dateMap.has(key)) dateMap.set(key, []);
+      dateMap.get(key).push(rec);
+    }
+
+    const dailySummaries = [];
+    let grandTotalMinutes = 0;
+    for (const [dateStr, records] of dateMap.entries()) {
+      const spending = calculateDailySpending(records);
+      grandTotalMinutes += spending.totalMinutes;
+      dailySummaries.push({
+        date: dateStr,
+        spending,
+        recordsCount: records.length,
+        sessionsAttended: spending.sessionsAttended,
+      });
+    }
+
     res.status(200).json({
       success: true,
       count: attendance.length,
+      totalSpendingMinutes: grandTotalMinutes,
+      totalSpendingHoursFormatted: formatDuration(grandTotalMinutes),
       data: attendance,
+      dailySummaries,
     });
   } catch (error) {
     next(error);
@@ -186,13 +133,29 @@ exports.getTodayAttendance = async (req, res, next) => {
         $lt: tomorrow,
       },
     })
-      .populate('member', 'memberId fullName mobileNumber')
+      .populate('member', 'memberId fullName mobileNumber avatarInitials')
       .sort({ checkInTime: -1 });
 
     // Get currently checked-in members
     const currentlyCheckedIn = await MemberAttendance.find({
       sessionOpen: true,
-    }).populate('member', 'memberId fullName');
+    }).populate('member', 'memberId fullName avatarInitials');
+
+    // Group today's records by member to get today's spending for each member
+    const memberMap = new Map();
+    for (const rec of attendance) {
+      const mId = String(rec.member?._id || rec.member || '');
+      if (!memberMap.has(mId)) memberMap.set(mId, []);
+      memberMap.get(mId).push(rec);
+    }
+
+    const dailySpendingByMember = {};
+    let totalGymMinutesToday = 0;
+    for (const [mId, records] of memberMap.entries()) {
+      const spending = calculateDailySpending(records);
+      dailySpendingByMember[mId] = spending;
+      totalGymMinutesToday += spending.totalMinutes;
+    }
 
     res.status(200).json({
       success: true,
@@ -200,8 +163,11 @@ exports.getTodayAttendance = async (req, res, next) => {
         total: attendance.length,
         checkedIn: attendance.length,
         currentlyPresent: currentlyCheckedIn.length,
+        totalGymMinutesToday,
+        totalGymHoursTodayFormatted: formatDuration(totalGymMinutesToday),
         records: attendance,
         currentlyCheckedIn,
+        dailySpendingByMember,
       },
     });
   } catch (error) {
@@ -209,148 +175,15 @@ exports.getTodayAttendance = async (req, res, next) => {
   }
 };
 
-// @desc    Biometric check-in
-// @route   POST /api/attendance/checkin
-// @access  Public (for kiosk mode)
-exports.biometricCheckIn = async (req, res, next) => {
+// No trusted matcher is installed. Browser match flags, IDs and scores cannot authorize punches.
+const unavailableBiometricAttendance = async (req, res, next) => {
   try {
-    const { captureData } = req.body;
-
-    if (!captureData) {
-      return res.status(400).json({
-        success: false,
-        error: 'Capture data is required',
-      });
-    }
-
-    // Verify fingerprint
-    const verificationResult = await verifyFingerprint(captureData);
-
-    if (!verificationResult.success) {
-      return res.status(400).json({
-        success: false,
-        error: verificationResult.message || 'Fingerprint verification failed',
-      });
-    }
-
-    // Get member from enrollment reference
-    const member = await getMemberByEnrollment(verificationResult.enrollmentReference);
-
-    const { membership, slotAllocation } = await validateAttendanceAccess(member);
-
-    // Check for existing open session today
-    const { start: today } = gymDayBounds();
-
-    const existingSession = await MemberAttendance.findOne({
-      member: member._id,
-      sessionOpen: true,
-    });
-
-    if (existingSession) {
-      return res.status(400).json({
-        success: false,
-        error: 'Already checked in today',
-      });
-    }
-
-    // Create attendance record
-    const attendance = await MemberAttendance.create({
-      member: member._id,
-      attendanceDate: today,
-      checkInTime: new Date(),
-      attendanceStatus: 'present',
-      verificationReference: verificationResult.enrollmentReference,
-      deviceId: process.env.MANTRA_DEVICE_ID,
-      slotAllocation: slotAllocation?._id,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Check-in successful',
-      data: {
-        attendance,
-        member: {
-          memberId: member.memberId,
-          fullName: member.fullName,
-        },
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+    const result = await verifyFingerprint();
+    res.status(503).json({ success: false, code: result.code, error: result.message });
+  } catch (error) { next(error); }
 };
-
-// @desc    Biometric check-out
-// @route   POST /api/attendance/checkout
-// @access  Public (for kiosk mode)
-exports.biometricCheckOut = async (req, res, next) => {
-  try {
-    const { captureData } = req.body;
-
-    if (!captureData) {
-      return res.status(400).json({
-        success: false,
-        error: 'Capture data is required',
-      });
-    }
-
-    // Verify fingerprint
-    const verificationResult = await verifyFingerprint(captureData);
-
-    if (!verificationResult.success) {
-      return res.status(400).json({
-        success: false,
-        error: verificationResult.message || 'Fingerprint verification failed',
-      });
-    }
-
-    // Get member from enrollment reference
-    const member = await getMemberByEnrollment(verificationResult.enrollmentReference);
-
-    // Find open attendance session
-    const openAttendance = await MemberAttendance.findOne({
-      member: member._id,
-      sessionOpen: true,
-    });
-
-    if (!openAttendance) {
-      return res.status(400).json({
-        success: false,
-        error: 'No active check-in session found',
-      });
-    }
-
-    const checkOutTime = new Date();
-    const attendance = await MemberAttendance.findOneAndUpdate({
-      _id: openAttendance._id,
-      checkOutTime: null,
-    }, {
-      $set: {
-        checkOutTime,
-        sessionOpen: false,
-        duration: Math.round((checkOutTime - openAttendance.checkInTime) / 60000),
-      },
-    }, { returnDocument: 'after' });
-    if (!attendance) {
-      return res.status(409).json({ success: false, error: 'The attendance session was already checked out' });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Check-out successful',
-      data: {
-        attendance,
-        duration: attendance.duration,
-        member: {
-          memberId: member.memberId,
-          fullName: member.fullName,
-        },
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+exports.biometricCheckIn = unavailableBiometricAttendance;
+exports.biometricCheckOut = unavailableBiometricAttendance;
 
 // @desc    Manual check-in (for reception)
 // @route   POST /api/attendance/manual-checkin
@@ -375,8 +208,22 @@ exports.manualCheckIn = async (req, res, next) => {
     }
     const { slotAllocation } = await validateAttendanceAccess(member);
 
-    // Check for existing open session
-    const { start: today } = gymDayBounds();
+    const now = new Date();
+    const { start: today } = gymDayBounds(now);
+    const currentSession = getSessionName(now, config.gym.timezone);
+
+    // Auto-close open session from a previous day
+    await MemberAttendance.updateMany({
+      member: memberId,
+      sessionOpen: true,
+      attendanceDate: { $lt: today },
+    }, {
+      $set: {
+        sessionOpen: false,
+        notes: 'Auto-closed stale prior day session on manual check-in',
+        updatedAt: now,
+      },
+    });
 
     const existingSession = await MemberAttendance.findOne({
       member: memberId,
@@ -386,23 +233,38 @@ exports.manualCheckIn = async (req, res, next) => {
     if (existingSession) {
       return res.status(400).json({
         success: false,
-        error: 'Already checked in today',
+        error: 'Member currently has an active open session. Please check out first.',
       });
     }
 
     const attendance = await MemberAttendance.create({
       member: memberId,
       attendanceDate: today,
-      checkInTime: new Date(),
+      checkInTime: now,
+      sessionOpen: true,
+      sessionName: currentSession,
       attendanceStatus: 'present',
+      punches: [{
+        punchTime: now,
+        punchType: 'checkin',
+        deviceId: 'MANUAL',
+        receptionist: req.user?._id,
+      }],
       notes,
       deviceId: 'MANUAL',
       slotAllocation: slotAllocation?._id,
     });
 
+    const todayRecords = await MemberAttendance.find({
+      member: memberId,
+      attendanceDate: today,
+    });
+    const dailySpending = calculateDailySpending(todayRecords);
+
     res.status(201).json({
       success: true,
       data: attendance,
+      dailySpending,
     });
   } catch (error) {
     next(error);
@@ -431,26 +293,62 @@ exports.manualCheckOut = async (req, res, next) => {
       });
     }
 
-    const checkOutTime = new Date();
-    const updatedNotes = [attendance.notes, notes].filter(Boolean).join('\n');
+    const now = new Date();
+    const isStale = (now.getTime() - attendance.checkInTime.getTime()) >= (config.biometric.staleHours || 16) * 3600000;
+
+    let checkOutTime;
+    let duration;
+
+    if (req.body.checkOutTime) {
+      checkOutTime = new Date(req.body.checkOutTime);
+      duration = Math.max(0, Math.round((checkOutTime - attendance.checkInTime) / 60000));
+    } else if (isStale) {
+      const defaultMins = Number(req.body.duration) || 60;
+      duration = defaultMins;
+      checkOutTime = new Date(attendance.checkInTime.getTime() + defaultMins * 60000);
+    } else {
+      checkOutTime = now;
+      duration = Math.max(0, Math.round((checkOutTime - attendance.checkInTime) / 60000));
+    }
+
+    const defaultStaleNote = isStale ? 'Reviewed and closed stale visit (60m default workout)' : null;
+    const updatedNotes = [attendance.notes, defaultStaleNote, notes].filter(Boolean).join('\n');
+    const punchRecord = {
+      punchTime: checkOutTime,
+      punchType: 'checkout',
+      deviceId: 'MANUAL',
+      receptionist: req.user?._id,
+    };
+
     const checkedOutAttendance = await MemberAttendance.findOneAndUpdate({
       _id: attendance._id,
-      checkOutTime: null,
+      sessionOpen: true,
     }, {
       $set: {
         checkOutTime,
         sessionOpen: false,
-        duration: Math.round((checkOutTime - attendance.checkInTime) / 60000),
+        duration,
+        staleSessionReviewedByPolicy: isStale,
         ...(updatedNotes ? { notes: updatedNotes } : {}),
       },
+      $push: { punches: punchRecord },
     }, { returnDocument: 'after' });
+
     if (!checkedOutAttendance) {
       return res.status(409).json({ success: false, error: 'The attendance session was already checked out' });
     }
 
+    const { start: today } = gymDayBounds(checkOutTime);
+    const todayRecords = await MemberAttendance.find({
+      member: memberId,
+      attendanceDate: today,
+    });
+    const dailySpending = calculateDailySpending(todayRecords);
+
     res.status(200).json({
       success: true,
       data: checkedOutAttendance,
+      dailySpending,
     });
   } catch (error) {
     next(error);

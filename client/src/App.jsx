@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
@@ -8,7 +9,8 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Register = lazy(() => import('./pages/Register'));
 
 export default function App(){
-  return <Suspense fallback={<div className="page-loading" role="status">Loading PulseFit…</div>}>
+  return <ErrorBoundary>
+    <Suspense fallback={<div className="page-loading" role="status">Loading Vino Fitness Studio…</div>}>
     <Routes>
       <Route path="/" element={<Landing/>}/>
       <Route path="/login" element={<Login/>}/>
@@ -36,4 +38,5 @@ export default function App(){
       <Route path="*" element={<Navigate to="/" replace/>}/>
     </Routes>
   </Suspense>
+  </ErrorBoundary>;
 }

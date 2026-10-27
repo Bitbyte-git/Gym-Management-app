@@ -189,7 +189,7 @@ exports.initializeDefaultSettings = async (req, res, next) => {
       // General settings
       {
         key: 'gym_name',
-        value: 'PulseFit Central',
+        value: 'Vino Fitness Studio',
         category: 'general',
         description: 'Gym name displayed throughout the application',
         isEditable: true,

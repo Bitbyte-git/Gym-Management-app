@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const memberProfileSchema = new mongoose.Schema({
+  attendanceVersion: { type: Number, default: 0, select: false },
+  lastBiometricPunchAt: { type: Date, select: false },
   healthConsentAt: { type: Date },
   user: {
     type: mongoose.Schema.Types.ObjectId,

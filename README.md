@@ -1,6 +1,6 @@
 # PulseFit Gym Management
 
-React/Vite frontend, Express API and MongoDB. The existing landing page and brand assets are preserved. Members register themselves without fingerprint enrollment. Biometrics remain deferred.
+React/Vite frontend, Express API and MongoDB. The existing landing page and brand assets are preserved. Members register themselves without fingerprint enrollment. MFS500 capture/enrollment, local Windows template-search attendance and development matching diagnostics are available; trusted production biometric attendance remains disabled. See [BIOMETRICS.md](BIOMETRICS.md).
 
 ## Local setup
 
@@ -17,6 +17,8 @@ npm.cmd run dev
 ```
 
 Do not overwrite existing environment files. The frontend API URL is configured with `VITE_API_URL`. Server secrets belong only in `server/.env` or the deployment secret manager. DNS uses the operating system resolver unless `DNS_SERVERS` is explicitly configured.
+
+CORS is configured to allow requests from all origins (including local dev servers on any port, preview domains, and production URLs), with support for credentials, custom authorization headers, and standard preflight handling.
 
 ## Demo credentials
 
@@ -81,7 +83,7 @@ Production readiness still depends on deployment-specific Razorpay acceptance te
 
 ## Boundaries and policies
 
-- Biometrics are disabled and are not required for registration, activation or manual attendance.
+- Biometrics are optional for registration/activation. Local Windows development supports SDK template-search attendance; remote production matching remains disabled pending its trusted integration.
 - Manual attendance is limited to admin/reception, enforces membership/payment/slot/hours, and is audited.
 - One active slot and one primary trainer per member. Slots recur on their configured weekday. Trainer capacity is a conservative total active-client limit drawn from matching availability, not arbitrary simultaneous-session booking.
 - Trainer leave is open-ended until administrator reactivation. Scheduled date-range leave is not implemented.
@@ -92,3 +94,5 @@ Production readiness still depends on deployment-specific Razorpay acceptance te
 - Optional expenses, workouts, nutrition, progress and other unfinished modules are excluded from authenticated navigation.
 
 See `IMPLEMENTATION_AUDIT.md` for the module/file map and remaining acceptance items.
+
+Reception scanner lifecycle, transactional attendance sessions, rollout and remaining trusted-identification dependencies: [BIOMETRIC_ATTENDANCE.md](BIOMETRIC_ATTENDANCE.md). Local Windows development now supports fingerprint-only template search with MORFIN Auth; remote production matching needs its trusted integration. Authorized manual attendance is preserved.

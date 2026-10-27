@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck, Loader2, Crown, Headphones, Dumbbell, UserRound, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Brand } from '../components/Brand';
 
 const DEMO_ACCOUNTS = [
   { role: 'admin', label: 'Administrator', email: 'admin@pulsefit.com', password: 'admin123', icon: Crown, description: 'Full gym control' },
@@ -55,10 +56,7 @@ export default function Login() {
   return (
     <main className="auth-page">
       <section className="auth-art">
-        <button className="brand" onClick={() => nav('/')}>
-          <span className="brand-mark">P</span>
-          <span>PULSE<span>FIT</span><small>GYM OS</small></span>
-        </button>
+        <Brand onClick={() => nav('/')} subtitle="UNISEX FITNESS STUDIO" size="md" />
         <div>
           <p className="eyebrow">WELCOME BACK</p>
           <h1>YOUR GYM.<br/><em>FULLY IN MOTION.</em></h1>
@@ -71,9 +69,11 @@ export default function Login() {
           <ArrowLeft/> Back to home
         </button>
         <form className="login-form" onSubmit={submit}>
-          <span className="mini-mark">P</span>
-          <h2>Sign in to PulseFit</h2>
-          <p>Access your performance workspace.</p>
+          <div className="mini-mark">
+            <img src="/Gym-Logo-128.png" alt="Vino Fitness Studio" className="brand-mini-logo" />
+          </div>
+          <h2>Sign in to Vino Fitness Studio</h2>
+          <p>Access your studio performance workspace.</p>
           
           {error && <div className="error-message" style={{ color: '#ff4444', marginBottom: '1rem', padding: '0.5rem', background: 'rgba(255,68,68,0.1)', borderRadius: '4px' }}>{error}</div>}
           
