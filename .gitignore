@@ -8,6 +8,7 @@ dist/
 .env
 .env.*
 !client/.env.example
+!client/.env.production
 !server/.env.example
 
 # Logs
