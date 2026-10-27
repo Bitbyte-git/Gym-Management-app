@@ -3,11 +3,17 @@ const local = require('./localMorFinIdentifier');
 
 module.exports = {
   available: () => {
+    if (config.biometric.identificationMode === 'disabled') return false;
     if (config.biometric.identificationMode === 'kiosk-assisted') return true;
-    return local.available();
+    if (local.available()) return true;
+    // On remote cloud deployment, automatically enable kiosk-assisted mode
+    return true;
   },
   status: () => {
-    if (config.biometric.identificationMode === 'kiosk-assisted') {
+    if (config.biometric.identificationMode === 'disabled') {
+      return { enabled: false, reason: 'Biometric identification is disabled in settings.' };
+    }
+    if (config.biometric.identificationMode === 'kiosk-assisted' || !local.available()) {
       return {
         enabled: true,
         mode: 'kiosk-assisted',
@@ -17,7 +23,7 @@ module.exports = {
     return local.status();
   },
   identify: async input => {
-    if (config.biometric.identificationMode === 'kiosk-assisted') {
+    if (config.biometric.identificationMode === 'kiosk-assisted' || !local.available()) {
       if (input.memberId && input.enrollmentReference) {
         return {
           outcome: 'identified',

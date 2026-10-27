@@ -55,7 +55,7 @@ const config = {
     rearmSeconds: Number(process.env.BIOMETRIC_REARM_SECONDS || 5),
     staleHours: Number(process.env.BIOMETRIC_STALE_SESSION_HOURS || 16),
     stalePolicy: process.env.BIOMETRIC_STALE_SESSION_POLICY || 'review',
-    identificationMode: process.env.BIOMETRIC_IDENTIFICATION_MODE || 'disabled',
+    identificationMode: process.env.BIOMETRIC_IDENTIFICATION_MODE || 'kiosk-assisted',
     localServiceUrl: process.env.MORFIN_AUTH_SERVICE_URL || 'https://localhost:8030/morfinauth',
     searchMaxCandidates: Number(process.env.BIOMETRIC_SEARCH_MAX_CANDIDATES || 100),
     searchTimeoutMs: Number(process.env.BIOMETRIC_SEARCH_TIMEOUT_MS || 15000),
