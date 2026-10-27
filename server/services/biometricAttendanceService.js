@@ -128,11 +128,7 @@ async function identify({ stationToken, verificationToken, probeTemplate, templa
   if (verification.state !== 'issued' || verification.expiresAt <= new Date()) throw error('VERIFICATION_EXPIRED', 'Verification is expired or no longer usable');
   if (!engine.available()) return engine.identify(); // Explicit unavailable response, never a fabricated match.
 
-  if (config.biometric.identificationMode === 'kiosk-assisted') {
-    if (!matchedMemberId || !matchedEnrollmentReference) {
-      await Verification.updateOne({ _id: verification._id, state: 'issued' }, { $set: { state: 'rejected' } });
-      throw error('UNKNOWN_FINGERPRINT', 'Fingerprint is not recognized. No attendance recorded.', 422);
-    }
+  if (matchedMemberId && matchedEnrollmentReference) {
     const result = await engine.identify({
       memberId: matchedMemberId,
       enrollmentReference: matchedEnrollmentReference,

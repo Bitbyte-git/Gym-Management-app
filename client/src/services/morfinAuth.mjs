@@ -185,11 +185,14 @@ export function createMorFinAuth({ baseUrl = 'https://localhost:8030/morfinauth'
       };
     });
   }
-  const verify = ({ probeTemplate, galleryTemplate, templateFormat = 'FMR_V2005', ...options }) => {
-    if (templateFormat !== 'FMR_V2005') return Promise.reject(new Error('Only FMR_V2005 diagnostics are enabled'));
-    return withDevice(options, async () => matchResult(await post('verify', {
-      ProbTemplate: dataField(probeTemplate, 'probe template'), GalleryTemplate: dataField(galleryTemplate, 'gallery template'), TmpFormat: 0,
-    }, options)));
+  const verify = async ({ probeTemplate, galleryTemplate, templateFormat = 'FMR_V2005', ...options }) => {
+    if (templateFormat !== 'FMR_V2005') throw new Error('Only FMR_V2005 diagnostics are enabled');
+    const data = await post('verify', {
+      ProbTemplate: dataField(probeTemplate, 'probe template'),
+      GalleryTemplate: dataField(galleryTemplate, 'gallery template'),
+      TmpFormat: 0,
+    }, options);
+    return matchResult(data);
   };
   const match = ({ galleryTemplate, templateFormat = 'FMR_V2005', ...options }) => {
     if (templateFormat !== 'FMR_V2005') return Promise.reject(new Error('Only FMR_V2005 diagnostics are enabled'));

@@ -34,7 +34,7 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
           if (!current(generation, signal)) { await close(opened.stationToken); return; }
           station = opened.stationToken;
           let candidates = [];
-          if (policy.mode === 'kiosk-assisted' && typeof transport.candidates === 'function') {
+          if (typeof transport.candidates === 'function') {
             candidates = await transport.candidates(signal).catch(() => []);
           }
           let needsDeviceReset = false;
@@ -55,13 +55,14 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
               if (!current(generation, signal)) break;
               emit({ phase: 'identifying', device: handle.device, message: 'Identifying member...' });
 
-              if (policy.mode === 'kiosk-assisted') {
-                if (!candidates || candidates.length === 0) {
-                  candidates = await transport.candidates(signal).catch(() => []);
-                }
+              if (typeof transport.candidates === 'function' && (!candidates || candidates.length === 0)) {
+                candidates = await transport.candidates(signal).catch(() => []);
+              }
+
+              if (candidates && candidates.length > 0) {
                 let match = null;
                 const startMatch = Date.now();
-                for (const candidate of (candidates || [])) {
+                for (const candidate of candidates) {
                   if (!current(generation, signal)) break;
                   try {
                     const check = await scanner.verify({
@@ -70,7 +71,7 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
                       templateFormat: 'FMR_V2005',
                       signal,
                     });
-                    if (check.matched) {
+                    if (check && check.matched) {
                       match = candidate;
                       break;
                     }
