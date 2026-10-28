@@ -182,7 +182,7 @@ export default function AttendanceKiosk({ user, onRecorded }) {
             </span>
           )}
         </div>
-        <p style={{ margin: '4px 0', fontWeight: 600, color: result.recorded ? 'var(--lime)' : '#b68d45' }}>
+        <p style={{ margin: '4px 0', fontWeight: 600, color: result.recorded ? 'var(--color-primary)' : 'var(--badge-leave-text)' }}>
           {result.recorded
             ? (result.action === 'checkin' ? 'CHECKED IN' : `CHECKED OUT (${result.sessionDurationFormatted || '0m'} session workout)`)
             : (result.action === 'review' ? 'REVIEW REQUIRED' : 'ATTENDANCE ALREADY RECORDED')}

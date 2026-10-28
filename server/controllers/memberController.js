@@ -166,6 +166,16 @@ exports.updateMember = async (req, res, next) => {
         member[field] = req.body[field];
       }
     }
+
+    if (req.user.role === 'admin' && req.body.registrationStatus) {
+      member.registrationStatus = req.body.registrationStatus;
+      if (['completed', 'pending'].includes(req.body.registrationStatus)) {
+        await User.updateOne({ _id: member.user }, { $set: { isActive: true } });
+      } else if (req.body.registrationStatus === 'suspended') {
+        await User.updateOne({ _id: member.user }, { $set: { isActive: false }, $unset: { refreshTokenHash: 1 } });
+      }
+    }
+
     await member.save();
 
     res.status(200).json({

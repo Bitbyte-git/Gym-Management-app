@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services';
 import { CalendarDays, Loader2, Plus, RefreshCw, Download } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
@@ -139,6 +140,7 @@ const unpack = (data, key) => Array.isArray(data) ? data : key && Array.isArray(
 const csvCell = value => '"' + String(value ?? '').replace(/^[=+@\-\t\r]/, "'$&").replaceAll('"', '""') + '"';
 
 export default function Operations({ section, user, query = '' }) {
+  const nav = useNavigate();
   const isAdmin = user.role === 'admin';
   const staff = ['admin', 'reception'].includes(user.role);
   const definition = modules[section];
@@ -324,13 +326,25 @@ export default function Operations({ section, user, query = '' }) {
   const createAllowed = staff && (isAdmin || ['memberships', 'allocations'].includes(section));
   const rowActions = row => {
     const buttons = [];
-    const add = (title, method, url, fields, defaults) => buttons.push(<button className="outline-btn" disabled={busy} key={title} onClick={() => begin(title, method, url, fields, row, defaults)}>{title}</button>);
+    const add = (title, method, url, fields, defaults) => {
+      let btnClass = 'outline-btn';
+      if (/^edit/i.test(title)) btnClass = 'outline-btn btn-edit';
+      else if (/leave|freeze|suspend/i.test(title)) btnClass = 'outline-btn btn-warning';
+      else if (/deactivate|delete|cancel|remove|refund/i.test(title)) btnClass = 'outline-btn btn-destructive';
+      buttons.push(<button className={btnClass} disabled={busy} key={title} onClick={() => begin(title, method, url, fields, row, defaults)}>{title}</button>);
+    };
     const canEdit = (isAdmin && section !== 'profile') ||
       (user.role === 'reception' && section === 'slots') ||
       (section === 'profile' && user.role === 'member');
     if (definition?.edit && canEdit) add('Edit', 'put', section === 'profile' ? definition.url : `${definition.url}/${row._id}`, definition.edit);
     if (section === 'members') buttons.push(<button className="outline-btn" disabled={busy} key="details" onClick={() => openMemberProfile(row)}>View profile</button>);
-    if (section === 'members' && isAdmin) add('Suspend', 'delete', `/members/${row._id}`, []);
+    if (section === 'members' && isAdmin) {
+      if (row.registrationStatus === 'suspended') {
+        add('Reactivate', 'put', `/members/${row._id}`, [field('registrationStatus', 'Status', 'select', ['completed', 'pending'])], { registrationStatus: 'completed' });
+      } else {
+        add('Suspend', 'delete', `/members/${row._id}`, []);
+      }
+    }
     if (section === 'trainers' && isAdmin) {
       add(row.status === 'on_leave' ? 'Return from leave' : 'Place on leave', 'post', `/trainer-availabilities/${row.status === 'on_leave' ? 'reactivate' : 'leave'}/${row._id}`, row.status === 'on_leave' ? [] : [field('reason', 'Leave reason')]);
       add('Deactivate', 'delete', `/trainers/${row._id}`, []);
@@ -467,6 +481,19 @@ export default function Operations({ section, user, query = '' }) {
         );
       }
     }
+    if (section === 'members' && key === 'fullName') {
+      const name = value || 'Unnamed member';
+      const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'M';
+      return (
+        <div className="attendance-member-cell">
+          <span className="attendance-avatar" style={{ width: 34, height: 34, fontSize: 11, borderRadius: 8 }}>{initials}</span>
+          <div>
+            <b>{name}</b>
+            <small>{row.user?.email || row.mobileNumber || 'Member'}</small>
+          </div>
+        </div>
+      );
+    }
     if (section === 'payments' && key === 'member') {
       const name = value?.fullName || 'Unknown member';
       return <div className="payment-member"><i>{name.split(' ').map(part => part[0]).join('').slice(0, 2)}</i><span><b>{name}</b><small>{value?.memberId || 'Member'}</small></span></div>;
@@ -478,7 +505,7 @@ export default function Operations({ section, user, query = '' }) {
       const session = String(value || 'morning').toLowerCase();
       return <span className={`session-badge ${session}`}>{session}</span>;
     }
-    if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus'].includes(key)) return <span className={`status ${String(value || '').toLowerCase()}`}>{label(String(value || 'unknown'))}</span>;
+    if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus', 'membershipStatus'].includes(key)) return <span className={`status ${String(value || '').toLowerCase()}`}>{label(String(value || 'unknown'))}</span>;
     return valueText(value, key);
   };
   const help = sectionHelp[section];
@@ -501,6 +528,7 @@ export default function Operations({ section, user, query = '' }) {
       </>}
       <button className="outline-btn" onClick={() => setRevision(v => v + 1)}><RefreshCw size={16}/> Reload</button>
       <button className="outline-btn" disabled={!visible.length} onClick={exportRows}><Download size={16}/> Download CSV</button>
+      {section === 'members' && staff && <button className="lime-btn" onClick={() => nav('/register')}><Plus size={16}/> Register member</button>}
       {definition?.create && createAllowed && <button className="lime-btn" onClick={() => begin('Create ' + label(section), 'post', definition.url, definition.create)}><Plus size={16}/> Create</button>}
       {section === 'attendance' && staff && <>
         <button className="lime-btn" onClick={() => begin('Manual check-in', 'post', '/attendance/manual-checkin', [member, field('notes', 'Entry reason')])}>Check in member</button>

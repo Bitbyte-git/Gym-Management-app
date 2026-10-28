@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { api, dashboardService, memberService } from '../services';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
-const CHART_COLORS = ['#c9ff18', '#7fa80c', '#ecb338', '#54b8a7', '#e06a5f'];
+const CHART_COLORS = ['#C6FF00', '#58D68D', '#F6B94A', '#7CC7E8', '#FF6B72'];
 const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0);
 const gymDateKey = (value = new Date()) => {
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
@@ -330,7 +330,7 @@ function AdminAnalytics({ stats, onNavigate }) {
   const slots = stats?.slotUtilization || [];
   const paymentMethods = stats?.paymentMethodDistribution || [];
   const paymentTotal = paymentMethods.reduce((sum, item) => sum + item.value, 0);
-  const tooltipStyle = { background: '#171a17', border: '1px solid #343a31', borderRadius: 8, color: '#f7f8f4' };
+  const tooltipStyle = { background: '#151912', border: '1px solid #252D1B', borderRadius: 8, color: '#F5F7F2' };
   return <>
     <section className="analytics-summary">
       <article><span>Currently inside</span><strong>{stats.currentlyCheckedIn || 0}</strong><small>Members checked in now</small></article>
@@ -342,8 +342,8 @@ function AdminAnalytics({ stats, onNavigate }) {
       <article className="analytics-card analytics-wide">
         <ChartTitle eyebrow="ATTENDANCE" title="Check-ins over the last 7 days"/>
         <div className="chart-body"><ResponsiveContainer width="100%" height="100%"><AreaChart data={attendance} margin={{ left: -20, right: 8, top: 10 }}>
-          <defs><linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c9ff18" stopOpacity={0.34}/><stop offset="100%" stopColor="#c9ff18" stopOpacity={0}/></linearGradient></defs>
-          <CartesianGrid stroke="#252a23" vertical={false}/><XAxis dataKey="date" tickFormatter={value => new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { weekday: 'short' })} axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={tooltipStyle}/><Area type="monotone" dataKey="checkIns" stroke="#c9ff18" strokeWidth={3} fill="url(#attendanceFill)"/>
+          <defs><linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C6FF00" stopOpacity={0.25}/><stop offset="100%" stopColor="#C6FF00" stopOpacity={0}/></linearGradient></defs>
+          <CartesianGrid stroke="#252D1B" vertical={false}/><XAxis dataKey="date" tickFormatter={value => new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { weekday: 'short' })} axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={tooltipStyle}/><Area type="monotone" dataKey="checkIns" stroke="#C6FF00" strokeWidth={3} fill="url(#attendanceFill)"/>
         </AreaChart></ResponsiveContainer></div>
       </article>
       <article className="analytics-card">
@@ -352,7 +352,7 @@ function AdminAnalytics({ stats, onNavigate }) {
       </article>
       <article className="analytics-card analytics-wide">
         <ChartTitle eyebrow="REVENUE" title="Completed payments over 6 months" value={money(revenue.reduce((sum, item) => sum + item.revenue, 0))}/>
-        <div className="chart-body"><ResponsiveContainer width="100%" height="100%"><BarChart data={revenue} margin={{ left: 4, right: 8, top: 10 }}><CartesianGrid stroke="#252a23" vertical={false}/><XAxis dataKey="label" axisLine={false} tickLine={false}/><YAxis tickFormatter={value => `₹${Math.round(value / 1000)}k`} axisLine={false} tickLine={false}/><Tooltip contentStyle={tooltipStyle} formatter={value => money(value)}/><Bar dataKey="revenue" fill="#c9ff18" radius={[6, 6, 0, 0]} maxBarSize={42}/></BarChart></ResponsiveContainer></div>
+        <div className="chart-body"><ResponsiveContainer width="100%" height="100%"><BarChart data={revenue} margin={{ left: 4, right: 8, top: 10 }}><CartesianGrid stroke="#252D1B" vertical={false}/><XAxis dataKey="label" axisLine={false} tickLine={false}/><YAxis tickFormatter={value => `₹${Math.round(value / 1000)}k`} axisLine={false} tickLine={false}/><Tooltip contentStyle={tooltipStyle} formatter={value => money(value)}/><Bar dataKey="revenue" fill="#C6FF00" radius={[6, 6, 0, 0]} maxBarSize={42}/></BarChart></ResponsiveContainer></div>
       </article>
       <article className="analytics-card">
         <ChartTitle eyebrow="CAPACITY" title="Daily slot utilization"/>

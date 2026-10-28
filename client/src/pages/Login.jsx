@@ -75,7 +75,7 @@ export default function Login() {
           <h2>Sign in to Vino Fitness Studio</h2>
           <p>Access your studio performance workspace.</p>
           
-          {error && <div className="error-message" style={{ color: '#ff4444', marginBottom: '1rem', padding: '0.5rem', background: 'rgba(255,68,68,0.1)', borderRadius: '4px' }}>{error}</div>}
+          {error && <div className="error-message" role="alert">{error}</div>}
           
           <label>Workspace role
             <select value={role} onChange={e => setRole(e.target.value)}>

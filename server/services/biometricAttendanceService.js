@@ -234,7 +234,8 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
         result = { ...result, action: 'review', code: 'STALE_SESSION', message: 'An old open visit needs receptionist review. Use the authorized manual checkout after review.' };
       } else {
         // If an open session exists from a previous day, auto-close it so today's visit proceeds cleanly
-        if (openSession && openSession.attendanceDate < dayBounds.start) {
+        // (unless stalePolicy is allow_checkout, in which case the member can check out)
+        if (openSession && openSession.attendanceDate < dayBounds.start && !(stale && config.biometric.stalePolicy === 'allow_checkout')) {
           await Attendance.updateOne({ _id: openSession._id }, {
             $set: {
               sessionOpen: false,

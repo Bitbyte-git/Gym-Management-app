@@ -44,7 +44,7 @@ async function verified(station) {
   await service.identify({ stationToken: station.stationToken, verificationToken: v.verificationToken, probeTemplate: probe, templateFormat: 'FMR_V2005' }, operator.id);
   return { stationToken: station.stationToken, verificationToken: v.verificationToken, eventId: v.eventId };
 }
-async function age(member, hours = .05) {
+async function age(member, hours = .1) {
   const at = new Date(Date.now() - hours * 3600000);
   await Member.updateOne({ _id: member.id }, { $set: { lastBiometricPunchAt: at } });
   await Attendance.updateMany({ member: member.id }, { $set: { checkInTime: at } });

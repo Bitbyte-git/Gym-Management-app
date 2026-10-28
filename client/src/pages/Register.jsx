@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Loader2, User, Heart, CreditCard, Calendar, UserCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, User, Heart, CreditCard, Calendar, UserCheck, ShieldCheck, Edit3, Clock, Sparkles, Activity, CheckCircle2 } from 'lucide-react';
 import { registrationService } from '../services';
 import { openRazorpayCheckout } from '../services/razorpay';
 import { Brand } from '../components/Brand';
@@ -381,7 +381,21 @@ export default function Register() {
     <form onSubmit={handleHealthSubmit} className="registration-form">
       <h2>Health & Fitness Information</h2>
       <p>Optional medical details may be left blank. Your gym uses these details to support your training; access is restricted to you and authorized administrators.</p>
-      <label className="remember"><input type="checkbox" required checked={healthConsent} onChange={e => setHealthConsent(e.target.checked)}/> I consent to the gym storing my health and fitness information for my membership.</label>
+      <div className={`health-consent-card ${healthConsent ? 'is-consented' : ''}`}>
+        <label className="health-consent-label" htmlFor="health-consent-input">
+          <input
+            id="health-consent-input"
+            type="checkbox"
+            required
+            checked={healthConsent}
+            onChange={e => setHealthConsent(e.target.checked)}
+          />
+          <div className="health-consent-text">
+            <span className="health-consent-title">Health Data Consent <em className="required-star">*</em></span>
+            <span className="health-consent-desc">I consent to the gym storing my health and fitness information for my membership.</span>
+          </div>
+        </label>
+      </div>
       <div className="form-grid">
         <label>
           Height (cm) *
@@ -566,42 +580,295 @@ export default function Register() {
     </div>
   );
 
-  const renderReview = () => (
-    <div className="review-step">
-      <h2>Review Your Registration</h2>
-      <p>Fingerprint enrollment is not required. Save your registration, then pay securely with Razorpay. Your membership activates after payment verification. Capacity is confirmed during activation.</p>
-      <div className="review-content">
-        <div className="review-section">
-          <h3>Personal Details</h3>
-          <p><strong>Name:</strong> {basicData.firstName} {basicData.lastName}</p>
-          <p><strong>Email:</strong> {basicData.email}</p>
-          <p><strong>Mobile:</strong> {basicData.mobile}</p>
-          <p><strong>DOB:</strong> {basicData.dateOfBirth}</p>
+  const formatGoal = (goal) => {
+    if (!goal) return 'General Fitness';
+    const map = {
+      muscle_gain: 'Muscle Gain & Strength',
+      weight_loss: 'Weight Loss & Fat Burn',
+      endurance: 'Endurance & Stamina',
+      flexibility: 'Flexibility & Mobility',
+      general_fitness: 'General Fitness & Health',
+    };
+    return map[goal] || goal.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const formatExperience = (exp) => {
+    if (!exp) return 'Beginner';
+    const map = {
+      beginner: 'Beginner (0 - 1 yr)',
+      intermediate: 'Intermediate (1 - 3 yrs)',
+      advanced: 'Advanced (3+ yrs)',
+    };
+    return map[exp] || exp.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const calculateBMI = () => {
+    const h = parseFloat(healthData.height);
+    const w = parseFloat(healthData.weight);
+    if (!h || !w || h <= 0 || w <= 0) return null;
+    const heightInMeters = h / 100;
+    const bmiVal = (w / (heightInMeters * heightInMeters)).toFixed(1);
+    let category = 'Normal';
+    if (bmiVal < 18.5) category = 'Underweight';
+    else if (bmiVal >= 25 && bmiVal < 30) category = 'Overweight';
+    else if (bmiVal >= 30) category = 'Obese';
+    return { value: bmiVal, category };
+  };
+
+  const renderReview = () => {
+    const bmi = calculateBMI();
+    return (
+      <div className="review-step">
+        <div className="review-header-block">
+          <span className="review-step-badge">FINAL STEP 05/05</span>
+          <h2>Review Your Registration</h2>
+          <p className="review-subtitle">
+            Verify your information before completing registration and launching secure checkout.
+          </p>
         </div>
-        <div className="review-section">
-          <h3>Health Details</h3>
-          <p><strong>Height:</strong> {healthData.height} cm</p>
-          <p><strong>Weight:</strong> {healthData.weight} kg</p>
-          <p><strong>Fitness Goal:</strong> {healthData.fitnessGoal}</p>
+
+        {/* Security & Biometrics Alert Banner */}
+        <div className="review-notice-banner">
+          <div className="review-notice-icon-box">
+            <ShieldCheck size={26} />
+          </div>
+          <div className="review-notice-body">
+            <div className="review-notice-tag">ZERO HARDWARE ENROLLMENT REQUIRED</div>
+            <h4>Instant Digital Activation & Secure Razorpay Checkout</h4>
+            <p>
+              Fingerprint enrollment is not required. Save your registration, then pay securely with Razorpay. 
+              Your membership activates after payment verification. Capacity is confirmed during activation.
+            </p>
+          </div>
         </div>
-        <div className="review-section">
-          <h3>Membership</h3>
-          <p><strong>Plan:</strong> {selectedPlan?.name}</p>
-          <p><strong>Price:</strong> ₹{selectedPlan?.price}</p>
-          <p><strong>Requested time slot:</strong> {selectedSlot?.name} ({selectedSlot?.startTime} - {selectedSlot?.endTime})</p>
-          {selectedTrainer && <p><strong>Trainer:</strong> {selectedTrainer.fullName}</p>}
+
+        {/* Review Cards Grid */}
+        <div className="review-cards-grid">
+          {/* Card 1: Personal Details */}
+          <div className="review-card">
+            <div className="review-card-head">
+              <div className="review-card-title">
+                <User size={18} className="review-title-icon" />
+                <span>Personal Details</span>
+              </div>
+              <button 
+                type="button" 
+                className="review-edit-btn" 
+                onClick={() => setCurrentStep(0)}
+                title="Edit Personal Details"
+              >
+                <Edit3 size={13} /> Edit
+              </button>
+            </div>
+            <div className="review-card-body">
+              <div className="review-row">
+                <span className="review-label">Name</span>
+                <span className="review-value review-highlight-val">
+                  {basicData.firstName} {basicData.lastName}
+                </span>
+              </div>
+              <div className="review-row">
+                <span className="review-label">Email</span>
+                <span className="review-value">{basicData.email || '—'}</span>
+              </div>
+              <div className="review-row">
+                <span className="review-label">Mobile</span>
+                <span className="review-value">{basicData.mobile || '—'}</span>
+              </div>
+              <div className="review-row">
+                <span className="review-label">DOB</span>
+                <span className="review-value">{basicData.dateOfBirth || '—'}</span>
+              </div>
+              {basicData.gender && (
+                <div className="review-row">
+                  <span className="review-label">Gender</span>
+                  <span className="review-value" style={{ textTransform: 'capitalize' }}>
+                    {basicData.gender}
+                  </span>
+                </div>
+              )}
+              {basicData.emergencyContactName && (
+                <div className="review-row">
+                  <span className="review-label">Emergency</span>
+                  <span className="review-value">
+                    {basicData.emergencyContactName} {basicData.emergencyContactPhone && `(${basicData.emergencyContactPhone})`}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card 2: Health Details */}
+          <div className="review-card">
+            <div className="review-card-head">
+              <div className="review-card-title">
+                <Activity size={18} className="review-title-icon" />
+                <span>Health Details</span>
+              </div>
+              <button 
+                type="button" 
+                className="review-edit-btn" 
+                onClick={() => setCurrentStep(1)}
+                title="Edit Health Details"
+              >
+                <Edit3 size={13} /> Edit
+              </button>
+            </div>
+            <div className="review-card-body">
+              {/* Stat Chips */}
+              <div className="review-stats-chips">
+                <div className="review-stat-chip">
+                  <span className="chip-label">HEIGHT</span>
+                  <strong>{healthData.height ? `${healthData.height} cm` : '—'}</strong>
+                </div>
+                <div className="review-stat-chip">
+                  <span className="chip-label">WEIGHT</span>
+                  <strong>{healthData.weight ? `${healthData.weight} kg` : '—'}</strong>
+                </div>
+                {bmi && (
+                  <div className="review-stat-chip">
+                    <span className="chip-label">BMI</span>
+                    <strong>{bmi.value} <small>({bmi.category})</small></strong>
+                  </div>
+                )}
+              </div>
+
+              <div className="review-row">
+                <span className="review-label">Fitness Goal</span>
+                <span className="review-goal-badge">
+                  {formatGoal(healthData.fitnessGoal)}
+                </span>
+              </div>
+              <div className="review-row">
+                <span className="review-label">Experience</span>
+                <span className="review-value">{formatExperience(healthData.exerciseExperience)}</span>
+              </div>
+              <div className="review-row">
+                <span className="review-label">Medical Consent</span>
+                <span className="review-consent-pill">
+                  <CheckCircle2 size={13} /> Signed & Agreed
+                </span>
+              </div>
+              {healthData.healthNotes && (
+                <div className="review-row">
+                  <span className="review-label">Health Notes</span>
+                  <span className="review-value">{healthData.healthNotes}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card 3: Membership Details */}
+          <div className="review-card review-card-plan">
+            <div className="review-card-head">
+              <div className="review-card-title">
+                <Sparkles size={18} className="review-title-icon" />
+                <span>Membership</span>
+              </div>
+              <button 
+                type="button" 
+                className="review-edit-btn" 
+                onClick={() => setCurrentStep(2)}
+                title="Change Membership Plan"
+              >
+                <Edit3 size={13} /> Change
+              </button>
+            </div>
+            <div className="review-card-body">
+              <div className="review-plan-banner">
+                <div className="plan-name-wrap">
+                  <span className="plan-tag">SELECTED PLAN</span>
+                  <h3>{selectedPlan?.name || 'Annual'}</h3>
+                </div>
+                <div className="plan-price-wrap">
+                  <span className="price-tag">₹{Number(selectedPlan?.price || 0).toLocaleString('en-IN')}</span>
+                  <small>Full Access</small>
+                </div>
+              </div>
+
+              <div className="review-row">
+                <span className="review-label">Requested time slot</span>
+                <span className="review-slot-pill">
+                  <Clock size={13} /> {selectedSlot?.name || 'Assigned'} ({selectedSlot?.startTime || '10:00'} - {selectedSlot?.endTime || '13:00'})
+                </span>
+              </div>
+
+              <div className="review-row">
+                <span className="review-label">Trainer</span>
+                <span className="review-value">
+                  {selectedTrainer ? (
+                    <span className="review-trainer-name">
+                      {selectedTrainer.fullName} ({selectedTrainer.specialization || 'Trainer'})
+                    </span>
+                  ) : (
+                    <span className="review-self-guided">Self-Guided (No Trainer)</span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Order Breakdown / Receipt Summary */}
+        <div className="review-receipt-summary">
+          <div className="receipt-head">
+            <span className="receipt-head-title">SUMMARY RECEIPT</span>
+            <span className="receipt-badge">SSL SECURE CHECKOUT</span>
+          </div>
+          <div className="receipt-lines">
+            <div className="receipt-line">
+              <span>{selectedPlan?.name || 'Membership'} Plan Fee</span>
+              <span>₹{Number(selectedPlan?.price || 0).toLocaleString('en-IN')}</span>
+            </div>
+            <div className="receipt-line">
+              <span>Slot Reservation & Facility Pass</span>
+              <span className="receipt-free">Included</span>
+            </div>
+            <div className="receipt-line">
+              <span>Digital Onboarding & QR Access</span>
+              <span className="receipt-free">FREE</span>
+            </div>
+            <div className="receipt-divider" />
+            <div className="receipt-line receipt-total">
+              <div>
+                <strong>Total Amount Payable</strong>
+                <small>One-time payment • Immediate activation</small>
+              </div>
+              <strong className="receipt-price-total">₹{Number(selectedPlan?.price || 0).toLocaleString('en-IN')}</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="form-actions review-actions">
+          <button type="button" className="outline-btn" onClick={() => setCurrentStep(4)}>
+            <ArrowLeft size={16} /> Back
+          </button>
+          <button 
+            type="button" 
+            className="lime-btn review-pay-btn" 
+            onClick={handleCompleteRegistration} 
+            disabled={loading || !selectedPlan || !selectedSlot}
+          >
+            {loading ? (
+              <><Loader2 className="animate-spin" size={18} /> Processing Registration...</>
+            ) : (
+              <><ShieldCheck size={18} /> Complete Registration & Pay ₹{Number(selectedPlan?.price || 0).toLocaleString('en-IN')}</>
+            )}
+          </button>
+        </div>
+
+        {/* Security Footer Notes */}
+        <div className="review-security-footer">
+          <span><ShieldCheck size={13} /> 256-Bit Bank-Grade Encryption</span>
+          <span>•</span>
+          <span><CreditCard size={13} /> UPI / Cards / NetBanking</span>
+          <span>•</span>
+          <span><CheckCircle2 size={13} /> Instant Activation</span>
         </div>
       </div>
-      <div className="form-actions">
-        <button type="button" className="outline-btn" onClick={() => setCurrentStep(4)}>
-          <ArrowLeft/> Back
-        </button>
-        <button className="lime-btn" onClick={handleCompleteRegistration} disabled={loading || !selectedPlan || !selectedSlot}>
-          {loading ? <><Loader2 className="animate-spin"/> Processing...</> : <>Complete Registration</>}
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <main className="auth-page registration-page">
@@ -633,19 +900,40 @@ export default function Register() {
         {error && <div className="error-message">{error}</div>}
 
         {completed ? (
-          <section className="review-step">
-            <Check size={56} style={{ color: 'var(--lime)' }} />
-            <h2>{registrationStatus === 'completed' ? 'Membership activated' : 'Registration saved - payment pending'}</h2>
-            {registrationStatus === 'completed' ? <>
-              <p>Your payment has been verified. Sign in to access your member dashboard.</p>
-              <button className="lime-btn" onClick={() => navigate('/login')}>Sign in</button>
-            </> : <>
-              <p>Your details are saved securely. Complete Razorpay payment to activate your membership; biometrics are not required. Your requested slot is confirmed during activation.</p>
-              <button className="lime-btn" disabled={loading} onClick={beginCheckout}>Pay with Razorpay</button>
-              <button className="outline-btn" disabled={loading} onClick={restoreDraft}>Refresh payment status</button>
-              <p>If you closed Checkout, you can retry payment. If payment was taken but activation is pending, contact reception before paying again.</p>
-            </>}
-
+          <section className="review-step completed-step">
+            <div className="completed-card">
+              <div className="completed-icon-wrap">
+                <Check size={48} />
+              </div>
+              <h2>{registrationStatus === 'completed' ? 'Membership Activated!' : 'Registration Saved — Ready for Payment'}</h2>
+              <p className="completed-desc">
+                {registrationStatus === 'completed' 
+                  ? 'Your payment has been verified. Welcome to Vino Fitness Studio! Sign in to access your member dashboard.' 
+                  : 'Your profile has been saved securely. Complete your Razorpay payment to activate your membership; biometrics are not required. Your requested slot is confirmed during activation.'}
+              </p>
+              
+              <div className="completed-actions">
+                {registrationStatus === 'completed' ? (
+                  <button className="lime-btn" onClick={() => navigate('/login')}>
+                    Sign in to Member Dashboard
+                  </button>
+                ) : (
+                  <>
+                    <button className="lime-btn pay-now-btn" disabled={loading} onClick={beginCheckout}>
+                      <CreditCard size={18} /> Pay with Razorpay (₹{Number(selectedPlan?.price || 0).toLocaleString('en-IN')})
+                    </button>
+                    <button className="outline-btn" disabled={loading} onClick={restoreDraft}>
+                      Refresh Payment Status
+                    </button>
+                  </>
+                )}
+              </div>
+              {registrationStatus !== 'completed' && (
+                <small className="completed-help">
+                  If you closed the payment window, click "Pay with Razorpay" above to retry.
+                </small>
+              )}
+            </div>
           </section>
         ) : resumeMode ? <form className="registration-form" onSubmit={resume}>
           <h2>Resume your registration</h2>

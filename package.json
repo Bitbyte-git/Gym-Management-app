@@ -8,7 +8,7 @@
     "client": "vite client",
     "build": "vite build client",
     "preview": "vite preview client",
-    "test": "node --test server/tests/*.test.js",
+    "test": "node --test --test-concurrency=1 server/tests/*.test.js",
     "seed": "node server/seed.js",
     "admin:create": "node server/bootstrapAdmin.js",
     "db:indexes": "node server/createIndexes.js",

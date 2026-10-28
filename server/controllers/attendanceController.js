@@ -302,16 +302,15 @@ exports.manualCheckOut = async (req, res, next) => {
     if (req.body.checkOutTime) {
       checkOutTime = new Date(req.body.checkOutTime);
       duration = Math.max(0, Math.round((checkOutTime - attendance.checkInTime) / 60000));
-    } else if (isStale) {
-      const defaultMins = Number(req.body.duration) || 60;
-      duration = defaultMins;
-      checkOutTime = new Date(attendance.checkInTime.getTime() + defaultMins * 60000);
+    } else if (req.body.duration !== undefined) {
+      duration = Number(req.body.duration) || 0;
+      checkOutTime = new Date(attendance.checkInTime.getTime() + duration * 60000);
     } else {
       checkOutTime = now;
       duration = Math.max(0, Math.round((checkOutTime - attendance.checkInTime) / 60000));
     }
 
-    const defaultStaleNote = isStale ? 'Reviewed and closed stale visit (60m default workout)' : null;
+    const defaultStaleNote = isStale ? 'Reviewed and closed stale visit' : null;
     const updatedNotes = [attendance.notes, defaultStaleNote, notes].filter(Boolean).join('\n');
     const punchRecord = {
       punchTime: checkOutTime,
