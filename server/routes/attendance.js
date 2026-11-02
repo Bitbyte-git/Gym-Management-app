@@ -22,7 +22,7 @@ router.post('/checkout', protect, authorize('admin', 'reception', 'member'), bio
 
 // Automatic member identification uses server-issued sessions; no browser identity assertions.
 const biometric = require('../controllers/biometricAttendanceController');
-router.use('/biometric', protect, authorize('admin', 'reception'), require('../middleware/localBiometricWorkstation'));
+router.use('/biometric', protect, authorize('admin', 'reception', 'kiosk'), require('../middleware/localBiometricWorkstation'));
 router.get('/biometric/capabilities', biometric.capabilities);
 router.get('/biometric/overview', biometric.overview);
 router.get('/biometric/candidates', biometric.candidates);

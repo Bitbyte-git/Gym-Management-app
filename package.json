@@ -30,6 +30,7 @@
     "lucide-react": "latest",
     "mongoose": "^9.11.2",
     "multer": "^2.4.0",
+    "pdfkit": "^0.20.2",
     "react": "latest",
     "react-dom": "latest",
     "react-router-dom": "latest",

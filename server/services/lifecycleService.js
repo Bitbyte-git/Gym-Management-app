@@ -5,12 +5,14 @@ const MemberSlotAllocation = require('../models/MemberSlotAllocation');
 const GymTimeSlot = require('../models/GymTimeSlot');
 const Notification = require('../models/Notification');
 const SystemSetting = require('../models/SystemSetting');
+const { autoCloseExpiredAttendance } = require('./attendanceAutoCheckout');
 let running = false;
 const reconcile = async () => {
   if (running) return;
   running = true;
   try {
     const now = new Date();
+    await autoCloseExpiredAttendance(now);
     await MemberMembership.updateMany({ status: 'active', endDate: { $lt: now } }, { $set: { status: 'expired' } });
     const allocations = await MemberSlotAllocation.find({ status: 'active', endDate: { $lt: now } }).select('_id');
     for (const allocation of allocations) {

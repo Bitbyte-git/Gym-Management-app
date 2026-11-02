@@ -10,6 +10,7 @@ const { verifyFingerprint } = require('../services/biometricService');
 const { dateKeyAt, zonedMidnight, gymDayBounds } = require('../utils/gymDate');
 const { getSessionName, formatDuration, calculateDailySpending } = require('../utils/gymSession');
 const config = require('../config/env');
+const { autoCloseExpiredAttendance } = require('../services/attendanceAutoCheckout');
 
 const { validateAttendanceAccess } = require('../services/attendanceAccess');
 
@@ -125,6 +126,7 @@ exports.getMemberAttendance = async (req, res, next) => {
 // @access  Private (Admin, Reception)
 exports.getTodayAttendance = async (req, res, next) => {
   try {
+    await autoCloseExpiredAttendance();
     const { start: today, end: tomorrow } = gymDayBounds();
 
     const attendance = await MemberAttendance.find({
@@ -212,7 +214,8 @@ exports.manualCheckIn = async (req, res, next) => {
     const { start: today } = gymDayBounds(now);
     const currentSession = getSessionName(now, config.gym.timezone);
 
-    // Auto-close open session from a previous day
+    // Auto-close open session if its session window ended or from a previous day
+    await autoCloseExpiredAttendance(now, { member: memberId });
     await MemberAttendance.updateMany({
       member: memberId,
       sessionOpen: true,

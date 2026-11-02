@@ -19,6 +19,8 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { addMonthsClamped } = require('../utils/date');
 const config = require('../config/env');
+const { sendPaymentReceiptWhatsApp } = require('../utils/whatsappReceipt');
+const { generateReceiptPdfBuffer } = require('../utils/pdfReceiptGenerator');
 
 // Generate unique transaction ID
 const generateTransactionId = () => {
@@ -595,3 +597,78 @@ exports.getRevenueReport = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Send Payment Receipt PDF via WhatsApp (Tendigit API)
+// @route   POST /api/payments/:id/send-whatsapp
+// @access  Private (Admin, Reception)
+exports.sendReceiptWhatsApp = async (req, res, next) => {
+  try {
+    const payment = await Payment.findById(req.params.id)
+      .populate('member', 'memberId fullName mobileNumber address dateOfBirth emergencyContactPhone')
+      .populate({
+        path: 'membership',
+        populate: { path: 'membershipPlan', select: 'name duration price durationUnit' },
+      });
+
+    if (!payment) {
+      return res.status(404).json({ success: false, error: 'Payment not found' });
+    }
+
+    const { contactOverride } = req.body || {};
+    const result = await sendPaymentReceiptWhatsApp({
+      payment,
+      contactOverride,
+    });
+
+    const updatedPayment = await Payment.findById(payment._id)
+      .populate('member', 'memberId fullName mobileNumber address')
+      .populate({
+        path: 'membership',
+        populate: { path: 'membershipPlan', select: 'name duration price durationUnit' },
+      });
+
+    return res.status(result.success ? 200 : 400).json({
+      success: result.success,
+      message: result.message,
+      contact: result.contact,
+      error: result.error,
+      data: updatedPayment,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Download or view receipt PDF directly (public access for WhatsApp cloud & users)
+// @route   GET /api/payments/public/:id/receipt-pdf
+// @access  Public
+exports.downloadReceiptPdf = async (req, res, next) => {
+  try {
+    const payment = await Payment.findById(req.params.id)
+      .populate('member', 'memberId fullName mobileNumber address dateOfBirth emergencyContactPhone')
+      .populate({
+        path: 'membership',
+        populate: { path: 'membershipPlan', select: 'name duration price durationUnit' },
+      });
+
+    if (!payment) {
+      return res.status(404).json({ success: false, error: 'Payment not found' });
+    }
+
+    const pdfBuffer = await generateReceiptPdfBuffer(payment);
+    const filename = `Receipt-${payment.transactionId || payment._id}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Length', pdfBuffer.length);
+    if (req.query.download === 'true') {
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    } else {
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    }
+
+    return res.status(200).send(pdfBuffer);
+  } catch (error) {
+    next(error);
+  }
+};
+

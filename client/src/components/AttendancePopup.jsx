@@ -1,14 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { CheckCircle2, AlertCircle, X, ArrowDownRight, ArrowUpRight, Flame } from 'lucide-react';
 
 export default function AttendancePopup({ popup, onClose }) {
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   useEffect(() => {
     if (!popup) return;
     const timer = setTimeout(() => {
-      onClose();
-    }, 2000); // Silent auto-dismiss after exactly 2 seconds
+      onCloseRef.current?.();
+    }, 2000); // Automatically close this popup after exactly 2s
     return () => clearTimeout(timer);
-  }, [popup?.id, onClose]);
+  }, [popup]);
 
   if (!popup) return null;
 

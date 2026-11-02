@@ -116,6 +116,7 @@ const PORT = config.port;
 const start = async () => {
   config.validate();
   await connectDB();
+  await require('./services/kioskBootstrap').ensureKioskAccount();
   await require('./services/lifecycleService').reconcile();
   const lifecycleTimer = setInterval(() => require('./services/lifecycleService').reconcile().catch(error => console.error(JSON.stringify({ event: 'lifecycle_error', message: error.message }))), 60000);
   lifecycleTimer.unref();

@@ -69,6 +69,31 @@ const paymentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  pdfUrl: {
+    type: String,
+    default: null,
+  },
+  whatsappStatus: {
+    type: String,
+    enum: ['Not Sent', 'Sent', 'Failed'],
+    default: 'Not Sent',
+  },
+  whatsappSentAt: {
+    type: Date,
+    default: null,
+  },
+  whatsappRecipient: {
+    type: String,
+    default: null,
+  },
+  whatsappResponse: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null,
+  },
+  whatsappError: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -13,7 +13,8 @@ const { decodeBase64 } = require('./biometricValidation');
 const { decrypt } = require('./biometricCrypto');
 const { validateAttendanceAccess } = require('./attendanceAccess');
 const { gymDayBounds } = require('../utils/gymDate');
-const { getSessionName, formatDuration, calculateDailySpending } = require('../utils/gymSession');
+const { getSessionName, getSessionEndTime, isSessionExpired, calculateAutoCheckout, formatDuration, calculateDailySpending } = require('../utils/gymSession');
+const { autoCloseExpiredAttendance } = require('./attendanceAutoCheckout');
 const error = (code, message, statusCode = 409) => Object.assign(new Error(message), { code, statusCode });
 const hash = token => {
   if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) throw error('INVALID_SESSION', 'Invalid biometric session', 400);
@@ -21,11 +22,11 @@ const hash = token => {
 };
 const retention = now => new Date(now.getTime() + 24 * 3600000);
 const actor = async (userId, session = null) => {
-  const query = { _id: userId, isActive: true, role: { $in: ['admin', 'reception'] } };
+  const query = { _id: userId, isActive: true, role: { $in: ['admin', 'reception', 'kiosk'] } };
   const user = session
     ? await User.findOneAndUpdate(query, { $inc: { biometricVersion: 1 } }, { session, returnDocument: 'after' })
     : await User.findOne(query);
-  if (!user) throw error('NOT_AUTHORIZED', 'Reception or administrator access is required', 403);
+  if (!user) throw error('NOT_AUTHORIZED', 'Reception, kiosk, or administrator access is required', 403);
 };
 const capabilities = () => ({
   identificationAvailable: engine.available(),
@@ -229,22 +230,31 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
         throw error('BRANCH_MISMATCH', 'This open visit belongs to another branch and requires staff review', 403);
       }
 
+      // If an open session exists whose session window has ended or belongs to a prior day, auto-checkout at session end time
+      if (openSession && (openSession.attendanceDate < dayBounds.start || isSessionExpired(openSession, now, config.gym.timezone))) {
+        const autoData = calculateAutoCheckout(openSession, now, config.gym.timezone);
+        const autoPunch = {
+          punchTime: autoData.checkOutTime,
+          punchType: 'checkout',
+          deviceId: 'AUTO_SESSION_END',
+        };
+        await Attendance.updateOne({ _id: openSession._id }, {
+          $set: {
+            checkOutTime: autoData.checkOutTime,
+            sessionOpen: false,
+            duration: autoData.duration,
+            notes: [openSession.notes, autoData.notes].filter(Boolean).join('\n'),
+            updatedAt: now,
+          },
+          $push: { punches: autoPunch },
+        }, { session });
+        openSession = null;
+      }
+
       const stale = openSession && now.getTime() - openSession.checkInTime.getTime() >= config.biometric.staleHours * 3600000;
       if (stale && config.biometric.stalePolicy === 'review') {
         result = { ...result, action: 'review', code: 'STALE_SESSION', message: 'An old open visit needs receptionist review. Use the authorized manual checkout after review.' };
       } else {
-        // If an open session exists from a previous day, auto-close it so today's visit proceeds cleanly
-        // (unless stalePolicy is allow_checkout, in which case the member can check out)
-        if (openSession && openSession.attendanceDate < dayBounds.start && !(stale && config.biometric.stalePolicy === 'allow_checkout')) {
-          await Attendance.updateOne({ _id: openSession._id }, {
-            $set: {
-              sessionOpen: false,
-              notes: [openSession.notes, 'Auto-closed stale prior day session'].filter(Boolean).join('\n'),
-              updatedAt: now,
-            },
-          }, { session });
-          openSession = null;
-        }
 
         const punchRecord = {
           punchTime: now,
@@ -403,6 +413,7 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
 }
 async function overview() {
   const now = new Date(), cutoff = new Date(now.getTime() - config.biometric.staleHours * 3600000);
+  await autoCloseExpiredAttendance(now);
   const [count, rows, stale] = await Promise.all([
     Attendance.countDocuments({ sessionOpen: true }),
     Attendance.find().select('member checkInTime checkOutTime').populate('member', 'fullName memberId avatarInitials').sort({ updatedAt: -1 }).limit(20),

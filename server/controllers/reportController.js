@@ -467,7 +467,7 @@ exports.getExpiringMembershipsReport = async (req, res, next) => {
       endDate: { $gte: new Date(), $lte: thresholdDate },
     })
       .populate('member', 'memberId fullName mobileNumber')
-      .populate('membershipPlan', 'name')
+      .populate('membershipPlan', 'name price duration')
       .sort({ endDate: 1 });
 
     const summary = {

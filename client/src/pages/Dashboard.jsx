@@ -3,7 +3,7 @@ import Biometrics from './Biometrics';
 import { Brand } from '../components/Brand';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Dumbbell, CreditCard, CalendarCheck, ReceiptIndianRupee, ChartNoAxesCombined, Search, Plus, ArrowUpRight, LogOut, Menu, X, ChevronRight, WalletCards, UserCheck, Clock3, Flame, Utensils, Target, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Users, Dumbbell, CreditCard, CalendarCheck, ReceiptIndianRupee, ChartNoAxesCombined, Search, Plus, ArrowUpRight, LogOut, Menu, X, ChevronRight, WalletCards, UserCheck, Clock3, Flame, Utensils, Target, Loader2, Fingerprint } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api, dashboardService, memberService } from '../services';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
@@ -408,6 +408,14 @@ function MemberOverview({ user, stats, onNavigate }) {
           <span>MEMBERSHIP</span>
           <b>{membership?.status?.toUpperCase() || 'NO ACTIVE PLAN'}</b>
           <h2>{membership?.membershipPlan?.name || 'Membership not active'}</h2>
+          {membership?.membershipPlan && (
+            <div className="membership-plan-cost-badge">
+              <strong>{money(membership.membershipPlan.price ?? membership.totalAmount)}</strong>
+              {membership.membershipPlan.duration && (
+                <small>· {membership.membershipPlan.duration} {membership.membershipPlan.duration === 1 ? 'Month' : 'Months'}</small>
+              )}
+            </div>
+          )}
           <p>{membership
             ? `${new Date(membership.startDate).toLocaleDateString()} — ${new Date(membership.endDate).toLocaleDateString()}`
             : 'Contact reception to review membership options.'}</p>

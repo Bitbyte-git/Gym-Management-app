@@ -12,9 +12,10 @@ const dateKeyAt = (date = new Date(), timeZone = config.gym.timezone) => {
   return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
 };
 
-const zonedMidnight = (dateKey, timeZone = config.gym.timezone) => {
+const zonedTime = (dateKey, timeStr = '00:00:00', timeZone = config.gym.timezone) => {
   const [year, month, day] = dateKey.split('-').map(Number);
-  const target = Date.UTC(year, month - 1, day);
+  const [hour = 0, minute = 0, second = 0] = timeStr.split(':').map(Number);
+  const target = Date.UTC(year, month - 1, day, hour, minute, second);
   let instant = target;
   for (let iteration = 0; iteration < 2; iteration += 1) {
     const parts = dateParts(new Date(instant), timeZone);
@@ -23,6 +24,8 @@ const zonedMidnight = (dateKey, timeZone = config.gym.timezone) => {
   }
   return new Date(instant);
 };
+
+const zonedMidnight = (dateKey, timeZone = config.gym.timezone) => zonedTime(dateKey, '00:00:00', timeZone);
 
 const addCalendarDays = (dateKey, amount) => {
   const [year, month, day] = dateKey.split('-').map(Number);
@@ -35,4 +38,4 @@ const gymDayBounds = (date = new Date()) => {
   return { start: zonedMidnight(key), end: zonedMidnight(addCalendarDays(key, 1)), key };
 };
 
-module.exports = { dateKeyAt, zonedMidnight, addCalendarDays, gymDayBounds };
+module.exports = { dateParts, dateKeyAt, zonedTime, zonedMidnight, addCalendarDays, gymDayBounds };

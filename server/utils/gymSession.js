@@ -1,4 +1,5 @@
 const config = require('../config/env');
+const { dateKeyAt, zonedTime } = require('./gymDate');
 
 const SESSIONS = {
   morning: {
@@ -116,10 +117,57 @@ const calculateDailySpending = (records = []) => {
   };
 };
 
+/**
+ * Returns the exact Date object corresponding to the end of a session for a given attendance date/record.
+ * - morning: 11:59:00 on that date
+ * - afternoon: 15:59:00 on that date
+ * - evening: 22:00:00 on that date
+ */
+const getSessionEndTime = (dateOrRecord, sessionNameOverride, timeZone = config.gym.timezone) => {
+  const date = dateOrRecord instanceof Date
+    ? dateOrRecord
+    : (dateOrRecord?.checkInTime || dateOrRecord?.attendanceDate || new Date());
+  const sessionKey = sessionNameOverride || dateOrRecord?.sessionName || getSessionName(date, timeZone);
+  const sessionDef = SESSIONS[sessionKey] || SESSIONS.morning;
+  const key = dateKeyAt(date, timeZone);
+  return zonedTime(key, sessionDef.endTime, timeZone);
+};
+
+/**
+ * Returns true if an attendance session has passed its scheduled end time.
+ */
+const isSessionExpired = (record, now = new Date(), timeZone = config.gym.timezone) => {
+  if (!record) return false;
+  const sessionEndTime = getSessionEndTime(record, record.sessionName, timeZone);
+  return now.getTime() >= sessionEndTime.getTime();
+};
+
+/**
+ * Computes checkout parameters (checkOutTime, duration, sessionOpen: false) for an unclosed visit
+ * clamped to the official session end time so attendance does not run continuously.
+ */
+const calculateAutoCheckout = (record, now = new Date(), timeZone = config.gym.timezone) => {
+  const checkInTime = new Date(record.checkInTime || now);
+  const sessionEndTime = getSessionEndTime(record, record.sessionName, timeZone);
+  const checkOutTime = sessionEndTime.getTime() > checkInTime.getTime()
+    ? sessionEndTime
+    : new Date(checkInTime.getTime() + 60000);
+  const duration = Math.max(1, Math.round((checkOutTime.getTime() - checkInTime.getTime()) / 60000));
+  return {
+    checkOutTime,
+    duration,
+    sessionOpen: false,
+    notes: 'Auto-closed at session end (member forgot to checkout)',
+  };
+};
+
 module.exports = {
   SESSIONS,
   timeInGymTimezone,
   getSessionName,
+  getSessionEndTime,
+  isSessionExpired,
+  calculateAutoCheckout,
   formatDuration,
   formatDecimalHours,
   calculateDailySpending,

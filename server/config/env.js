@@ -27,6 +27,8 @@ function biometricKeys() {
 const config = {
   port: process.env.PORT === undefined ? 5000 : Number(process.env.PORT),
   nodeEnv,
+  appUrl: process.env.APP_URL || 'http://localhost:5000',
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   mongodbUri: process.env.MONGODB_URI,
   mongodbFallbackHosts: (process.env.MONGODB_FALLBACK_HOSTS || '')
     .split(',')
@@ -69,6 +71,19 @@ const config = {
       webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
     },
   },
+  whatsapp: {
+    licenseNumber: process.env.TENDIGIT_LICENSE_NUMBER,
+    apiKey: process.env.TENDIGIT_API_KEY,
+    templateName: process.env.TENDIGIT_TEMPLATE_NAME || 'Sample_bill_pdf',
+    endpoint: process.env.TENDIGIT_ENDPOINT || 'https://login.tendigit.in/api/sendtemplate.php',
+    paramCount: Number(process.env.TENDIGIT_PARAM_COUNT || 1),
+  },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+    folder: process.env.CLOUDINARY_FOLDER || 'gym-receipts',
+  },
   sms: {
     enabled: process.env.SMS_ENABLED === 'true',
     twilio: {
@@ -89,7 +104,7 @@ const config = {
   gym: {
     branchId: process.env.GYM_BRANCH_ID || 'main',
     timezone: process.env.GYM_TIMEZONE || 'Asia/Kolkata',
-    name: process.env.GYM_NAME || 'Vino Fitness Studio',
+    name: process.env.GYM_NAME || 'PulseFit Central',
     address: process.env.GYM_ADDRESS || 'MG Road, Bengaluru',
     phone: process.env.GYM_PHONE,
     email: process.env.GYM_EMAIL,

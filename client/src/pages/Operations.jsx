@@ -1,11 +1,11 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services';
-import { CalendarDays, Loader2, Plus, RefreshCw, Download } from 'lucide-react';
+import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
-import AttendanceKiosk from '../components/AttendanceKiosk';
+// AttendanceKiosk biometric scanner delegated to standalone Kiosk (/kiosk)
 import AttendancePopup from '../components/AttendancePopup';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -29,7 +29,7 @@ const modules = {
   memberships: { url: '/memberships', columns: ['member', 'membershipPlan', 'startDate', 'endDate', 'pendingAmount', 'status', 'paymentStatus'], create: [member, plan, slot] },
   membership: { url: '/memberships', columns: ['membershipPlan', 'startDate', 'endDate', 'pendingAmount', 'status', 'paymentStatus'] },
   attendance: { url: '/attendance', columns: ['member', 'sessionName', 'checkInTime', 'checkOutTime', 'duration', 'attendanceStatus', 'deviceId'] },
-  payments: { url: '/payments', columns: ['member', 'transactionId', 'amount', 'paymentMethod', 'paymentStatus', 'paymentDate'] },
+  payments: { url: '/payments', columns: ['member', 'transactionId', 'amount', 'paymentMethod', 'paymentStatus', 'whatsappStatus', 'paymentDate'] },
   allocations: { url: '/trainer-allocations', columns: ['member', 'trainer', 'startDate', 'endDate', 'status'], create: [member, trainer, field('notes', 'Notes', 'optional')] },
   slotAllocations: { url: '/time-slots/allocations', columns: ['member', 'timeSlot', 'startDate', 'endDate', 'status'] },
   slots: { url: '/time-slots', columns: ['name', 'startTime', 'endTime', 'currentCapacity', 'maxCapacity', 'status'],
@@ -377,7 +377,22 @@ export default function Operations({ section, user, query = '' }) {
       }
     }
     if (section === 'payments') {
-      if (row.paymentStatus === 'completed' || row.paymentStatus === 'refunded') buttons.push(<button className="outline-btn" key="receipt" disabled={busy} onClick={() => openReceipt(row)}>Receipt</button>);
+      if (row.paymentStatus === 'completed' || row.paymentStatus === 'refunded') {
+        buttons.push(<button className="outline-btn" key="receipt" disabled={busy} onClick={() => openReceipt(row)}>Receipt</button>);
+        if (staff) {
+          buttons.push(
+            <button
+              className="outline-btn whatsapp-btn-table"
+              key="whatsapp"
+              disabled={busy}
+              onClick={() => openReceipt(row)}
+              title="Open WhatsApp Receipt"
+            >
+              WhatsApp
+            </button>
+          );
+        }
+      }
       if (isAdmin && row.paymentStatus === 'completed' && row.paymentMethod === 'online_gateway') add('Refund online', 'post', `/payments/${row._id}/refund`, [field('reason', 'Refund reason')]);
       if (isAdmin && row.paymentStatus === 'completed' && row.paymentMethod === 'cash') add('Refund cash', 'post', `/payments/${row._id}/refund`, [field('reason', 'Refund reason'), field('cashRefunded', 'I confirm cash has been returned', 'checkbox')]);
     }
@@ -501,6 +516,10 @@ export default function Operations({ section, user, query = '' }) {
     if (section === 'payments' && key === 'transactionId') return <code className="transaction-reference" title={value}>{value}</code>;
     if (section === 'payments' && key === 'amount') return <strong className="payment-amount">{valueText(value, key)}</strong>;
     if (section === 'payments' && key === 'paymentMethod') return <span className={`payment-method ${value}`}>{value === 'online_gateway' ? 'Razorpay' : label(value || 'unknown')}</span>;
+    if (section === 'payments' && key === 'whatsappStatus') {
+      const status = value || 'Not Sent';
+      return <span className={`whatsapp-status-badge ${status.toLowerCase().replace(/\s+/g, '-')}`}>{status}</span>;
+    }
     if (key === 'sessionName') {
       const session = String(value || 'morning').toLowerCase();
       return <span className={`session-badge ${session}`}>{session}</span>;
@@ -519,7 +538,28 @@ export default function Operations({ section, user, query = '' }) {
       <div><span>Purpose</span><h2>{help[0]}</h2><p>{help[1]}</p></div>
       <ol>{help[2].map((step, index) => <li key={step}><b>{index + 1}</b>{step}</li>)}</ol>
     </section>}
-    {section === 'attendance' && staff && <AttendanceKiosk user={user} onRecorded={() => setRevision(value => value + 1)} />}
+    {section === 'attendance' && staff && (
+      <div className="attendance-kiosk-notice-banner">
+        <div className="kiosk-notice-info">
+          <div className="kiosk-notice-pill">
+            <Fingerprint size={16} />
+            <span>BIOMETRIC TERMINAL ACTIVE</span>
+          </div>
+          <h3>Biometric Attendance Kiosk</h3>
+          <p>
+            Member fingerprint punches are captured exclusively at the dedicated Attendance Kiosk. Reception staff can review records, track live occupancy, or perform manual check-in/out below.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="outline-btn kiosk-open-btn"
+          onClick={() => window.open('/kiosk', '_blank')}
+          title="Open Biometric Attendance Kiosk in New Tab"
+        >
+          <Fingerprint size={15} /> Open Attendance Kiosk
+        </button>
+      </div>
+    )}
     <div className="toolbar operation-tools">
       {section === 'reports' && <label className="report-type-filter"><span>Report</span><select value={report} onChange={e => setReport(e.target.value)}>{reportTypes.map(type => <option key={type} value={type}>{reportLabels[type]}</option>)}</select></label>}
       {['reports', 'attendance', 'payments'].includes(section) && <>
@@ -533,6 +573,9 @@ export default function Operations({ section, user, query = '' }) {
       {section === 'attendance' && staff && <>
         <button className="lime-btn" onClick={() => begin('Manual check-in', 'post', '/attendance/manual-checkin', [member, field('notes', 'Entry reason')])}>Check in member</button>
         <button className="outline-btn" onClick={() => begin('Manual check-out', 'post', '/attendance/manual-checkout', [member, field('notes', 'Exit reason')])}>Check out member</button>
+        <button className="outline-btn" onClick={() => window.open('/kiosk', '_blank')} title="Open Biometric Attendance Kiosk Terminal">
+          <Fingerprint size={15}/> Open Kiosk
+        </button>
       </>}
       {section === 'notifications' && isAdmin && <>
         <button className="outline-btn" onClick={() => begin('Send in-app expiry reminders', 'post', '/notifications/membership-expiry-reminder')}>Send expiry reminders</button>
@@ -583,7 +626,16 @@ export default function Operations({ section, user, query = '' }) {
       </form>
     </div>}
     {details && <MemberProfileModal member={details} onClose={() => setDetails(null)}/>}
-    {receipt && <PaymentReceipt payment={receipt} onClose={() => setReceipt(null)}/>}
+    {receipt && (
+      <PaymentReceipt
+        payment={receipt}
+        onClose={() => setReceipt(null)}
+        onPaymentUpdate={(updated) => {
+          setRows((prev) => prev.map((r) => (r._id === updated._id ? { ...r, ...updated } : r)));
+          setReceipt(updated);
+        }}
+      />
+    )}
     <AttendancePopup popup={attendancePopup} onClose={() => setAttendancePopup(null)} />
     {section === 'attendance' && (
       <div className="attendance-filter-tabs">

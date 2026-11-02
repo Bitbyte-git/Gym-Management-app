@@ -11,6 +11,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const DEFAULT_ACCOUNTS = [
   { email: 'admin@pulsefit.com', password: 'admin123', role: 'admin' },
   { email: 'reception@pulsefit.com', password: 'reception123', role: 'reception' },
+  { email: 'kiosk@pulsefit.com', password: 'kiosk123', role: 'kiosk' },
   { email: 'member@pulsefit.com', password: 'member123', role: 'member' },
   { email: 'trainer@pulsefit.com', password: 'trainer123', role: 'trainer' },
 ];

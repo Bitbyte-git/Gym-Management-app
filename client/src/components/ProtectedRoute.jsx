@@ -15,7 +15,7 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   }
 
   if (allowedRoles.length > 0 && (!user.role || !allowedRoles.includes(user.role))) {
-    const targetPath = user.role ? `/${user.role}` : '/login';
+    const targetPath = user.role === 'kiosk' ? '/kiosk' : user.role ? `/${user.role}` : '/login';
     return <Navigate to={targetPath} replace />;
   }
 

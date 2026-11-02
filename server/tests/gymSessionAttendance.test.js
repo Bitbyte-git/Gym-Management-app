@@ -195,3 +195,65 @@ test('5-minute Check-in Grace Period: punch within 5 min reconfirms check-in wit
   assert.equal(checkOutTime, p4);
   assert.equal(duration, 48); // 48m workout
 });
+
+test('Session end time calculation and isSessionExpired detection', () => {
+  const { getSessionEndTime, isSessionExpired, calculateAutoCheckout } = require('../utils/gymSession');
+
+  // Morning check-in: 08:00 AM IST on 2026-10-28
+  const morningCheckIn = new Date('2026-10-28T08:00:00+05:30');
+  const morningEnd = getSessionEndTime(morningCheckIn, 'morning', 'Asia/Kolkata');
+  // 11:59 AM IST = 06:29 UTC
+  assert.equal(morningEnd.toISOString(), '2026-10-28T06:29:00.000Z');
+
+  // At 10:30 AM (during morning session) -> NOT expired
+  const duringMorning = new Date('2026-10-28T10:30:00+05:30');
+  assert.equal(isSessionExpired({ checkInTime: morningCheckIn, sessionName: 'morning' }, duringMorning, 'Asia/Kolkata'), false);
+
+  // At 12:05 PM (afternoon session begins) -> Morning session IS expired
+  const afterMorning = new Date('2026-10-28T12:05:00+05:30');
+  assert.equal(isSessionExpired({ checkInTime: morningCheckIn, sessionName: 'morning' }, afterMorning, 'Asia/Kolkata'), true);
+
+  // Afternoon check-in: 01:00 PM IST -> ends at 03:59 PM (10:29 UTC)
+  const afternoonCheckIn = new Date('2026-10-28T13:00:00+05:30');
+  const afternoonEnd = getSessionEndTime(afternoonCheckIn, 'afternoon', 'Asia/Kolkata');
+  assert.equal(afternoonEnd.toISOString(), '2026-10-28T10:29:00.000Z');
+
+  // Evening check-in: 06:00 PM IST -> ends at 10:00 PM (16:30 UTC)
+  const eveningCheckIn = new Date('2026-10-28T18:00:00+05:30');
+  const eveningEnd = getSessionEndTime(eveningCheckIn, 'evening', 'Asia/Kolkata');
+  assert.equal(eveningEnd.toISOString(), '2026-10-28T16:30:00.000Z');
+});
+
+test('Auto-checkout at session end: duration does NOT run continuously when member forgets to check out', () => {
+  const { calculateAutoCheckout } = require('../utils/gymSession');
+
+  // Case 1: Member checked in at 8:00 AM (Morning session: 05:00 - 11:59) and forgot to check out
+  const morningCheckIn = new Date('2026-10-28T08:00:00+05:30');
+  // Later at 5:00 PM (9 hours later)
+  const nowEvening = new Date('2026-10-28T17:00:00+05:30');
+
+  const auto = calculateAutoCheckout({ checkInTime: morningCheckIn, sessionName: 'morning' }, nowEvening, 'Asia/Kolkata');
+
+  // Verify checkout time is clamped to Morning session end (11:59:00 AM IST), NOT 5:00 PM!
+  assert.equal(auto.checkOutTime.toISOString(), '2026-10-28T06:29:00.000Z');
+  // Duration: 08:00 to 11:59 = 239 minutes (3h 59m), NOT 540 minutes (9 hours)!
+  assert.equal(auto.duration, 239);
+  assert.equal(auto.sessionOpen, false);
+  assert.ok(auto.notes.includes('Auto-closed at session end'));
+
+  // Case 2: Member checked in at 1:00 PM (Afternoon session: 12:00 - 15:59) and forgot to check out
+  const afternoonCheckIn = new Date('2026-10-28T13:00:00+05:30');
+  const nowNight = new Date('2026-10-28T21:00:00+05:30');
+  const autoAfternoon = calculateAutoCheckout({ checkInTime: afternoonCheckIn, sessionName: 'afternoon' }, nowNight, 'Asia/Kolkata');
+  assert.equal(autoAfternoon.checkOutTime.toISOString(), '2026-10-28T10:29:00.000Z'); // 15:59 IST
+  assert.equal(autoAfternoon.duration, 179); // 13:00 to 15:59 = 179 min (2h 59m)
+  assert.equal(autoAfternoon.sessionOpen, false);
+
+  // Case 3: Member checked in at 7:00 PM (Evening session: 16:00 - 22:00) and forgot to check out
+  const eveningCheckIn = new Date('2026-10-28T19:00:00+05:30');
+  const nextMorning = new Date('2026-10-29T06:00:00+05:30');
+  const autoEvening = calculateAutoCheckout({ checkInTime: eveningCheckIn, sessionName: 'evening' }, nextMorning, 'Asia/Kolkata');
+  assert.equal(autoEvening.checkOutTime.toISOString(), '2026-10-28T16:30:00.000Z'); // 22:00 IST
+  assert.equal(autoEvening.duration, 180); // 19:00 to 22:00 = 180 min (3h)
+  assert.equal(autoEvening.sessionOpen, false);
+});
