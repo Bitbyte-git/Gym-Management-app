@@ -22,7 +22,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [activeDemo, setActiveDemo] = useState('');
   const [error, setError] = useState('');
-  const demoEnabled = import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true';
+  const demoEnabled = import.meta.env.VITE_DEMO_MODE !== 'false';
 
   const signIn = async credentials => {
     setError('');
@@ -112,6 +112,33 @@ export default function Login() {
               </button>
             </div>
           </label>
+          <button className="lime-btn full" type="submit" disabled={loading} style={{ marginTop: '20px' }}>
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={18} /> Signing in...
+              </>
+            ) : (
+              <>
+                Sign in securely <ArrowRight size={18} />
+              </>
+            )}
+          </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '14px', marginBottom: '8px', fontSize: '12px' }}>
+            <button
+              type="button"
+              style={{ background: 'none', border: 'none', color: 'var(--color-primary, #C6FF00)', cursor: 'pointer', padding: 0, fontSize: '12px', fontWeight: 600 }}
+              onClick={() => nav('/register')}
+            >
+              New member? Register yourself
+            </button>
+            <button
+              type="button"
+              style={{ background: 'none', border: 'none', color: '#9aa897', cursor: 'pointer', padding: 0, fontSize: '12px' }}
+              onClick={() => nav('/register')}
+            >
+              Pending registration? Resume
+            </button>
+          </div>
           {demoEnabled && <section className="demo-access" aria-label="Demo accounts">
             <div className="demo-access-head"><div><span>LIVE DEMO</span><h3>Explore every workspace</h3></div><small>One-click secure demo access</small></div>
             <div className="demo-account-grid">
