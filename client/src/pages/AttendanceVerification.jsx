@@ -233,7 +233,7 @@ export default function AttendanceVerification({ standalone = true }) {
   const isCapturing = state.phase === 'capturing';
   const isIdentifying = state.phase === 'identifying' || state.phase === 'recording';
   const isReady = isCapturing || state.phase === 'initializing' || state.phase === 'rearming';
-  const showVerifiedAvatar = Boolean(lastPunch && !isCapturing && !isIdentifying && !pausedState);
+  const showVerifiedAvatar = Boolean(lastPunch && !isIdentifying && !pausedState);
 
   return (
     <div
@@ -361,9 +361,6 @@ export default function AttendanceVerification({ standalone = true }) {
                   >
                     <span>{lastPunch.avatarInitials || lastPunch.name?.slice(0, 2).toUpperCase() || 'VF'}</span>
                   </div>
-                  <div className="scanner-verified-check-pill" title="Verified Identity">
-                    <CheckCircle2 size={20} color="#0b130a" strokeWidth={2.8} />
-                  </div>
                 </div>
               ) : (
                 <>
@@ -398,21 +395,19 @@ export default function AttendanceVerification({ standalone = true }) {
                 ? 'Verifying your identity…'
                 : state.phase === 'initializing'
                 ? 'Initializing scanner…'
-                : lastPunch
-                ? `Welcome, ${lastPunch.name}!`
                 : 'Please place your fingerprint'}
             </h2>
 
             <p className="verification-sub-instruction">
               {pausedState
                 ? 'Click "Resume" to enable automatic member attendance.'
+                : isCapturing && state.message
+                ? state.message
                 : isCapturing
                 ? 'Touch and hold your registered finger firmly on the sensor.'
                 : isIdentifying
                 ? 'Matching record with studio database. Please keep steady.'
-                : lastPunch
-                ? `${lastPunch.action.toUpperCase()} VERIFIED (${lastPunch.session}) • Ready for next scan`
-                : state.message || 'Place your enrolled finger on the sensor to mark attendance.'}
+                : state.message || (lastPunch ? `Checked ${lastPunch.action?.toLowerCase().includes('out') ? 'out' : 'in'} (${lastPunch.session})` : 'Place your enrolled finger on the sensor to mark attendance.')}
             </p>
           </div>
 

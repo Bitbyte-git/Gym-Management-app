@@ -151,8 +151,28 @@ exports.updateMemberProfile = async (req, res, next) => {
 
 exports.uploadMemberAvatar = async (req, res, next) => {
   try {
-    let imageInput = null;
+    let member;
+    if (req.params.id) {
+      member = await MemberProfile.findById(req.params.id);
+    } else {
+      member = await MemberProfile.findOne({ user: req.user.id });
+    }
 
+    if (!member) {
+      return res.status(404).json({ success: false, error: 'Member profile not found' });
+    }
+
+    if (req.body && req.body.profilePicture) {
+      member.profilePicture = req.body.profilePicture;
+      await member.save();
+      return res.status(200).json({
+        success: true,
+        data: member,
+        message: 'Profile picture updated successfully',
+      });
+    }
+
+    let imageInput = null;
     if (req.file && req.file.buffer) {
       imageInput = req.file.buffer;
     } else if (req.body && req.body.image) {
@@ -161,11 +181,6 @@ exports.uploadMemberAvatar = async (req, res, next) => {
 
     if (!imageInput) {
       return res.status(400).json({ success: false, error: 'Please provide an image' });
-    }
-
-    const member = await MemberProfile.findOne({ user: req.user.id });
-    if (!member) {
-      return res.status(404).json({ success: false, error: 'Member profile not found' });
     }
 
     const uploadResult = await cloudinaryService.uploadAvatar(imageInput);

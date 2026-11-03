@@ -662,7 +662,16 @@ export default function Operations({ section, user, query = '' }) {
         <div className="form-actions"><button type="button" className="outline-btn" disabled={busy} onClick={() => setAction(null)}>Cancel</button><button className="lime-btn" disabled={busy}>{busy ? 'Saving?' : 'Confirm'}</button></div>
       </form>
     </div>}
-    {details && <MemberProfileModal member={details} onClose={() => setDetails(null)}/>}
+    {details && (
+      <MemberProfileModal
+        member={details}
+        onClose={() => setDetails(null)}
+        onUpdate={(updated) => {
+          setDetails(updated);
+          loadOperations?.();
+        }}
+      />
+    )}
     {receipt && (
       <PaymentReceipt
         payment={receipt}

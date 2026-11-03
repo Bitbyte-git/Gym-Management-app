@@ -29,4 +29,6 @@ router
   .put(protect, authorizeMemberParam('id', { allowTrainer: false }), auditLogger('update', 'member'), updateMember)
   .delete(protect, authorize('admin'), auditLogger('deactivate', 'member'), deleteMember);
 
+router.post('/:id/avatar', protect, authorize('admin', 'reception'), upload.single('avatar'), auditLogger('upload_avatar', 'member'), uploadMemberAvatar);
+
 module.exports = router;

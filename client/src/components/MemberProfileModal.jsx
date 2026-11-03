@@ -1,4 +1,6 @@
-import { Activity, CalendarDays, HeartPulse, Mail, MapPin, Phone, ShieldCheck, UserRound, X } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Activity, CalendarDays, HeartPulse, Mail, MapPin, Phone, ShieldCheck, UserRound, X, Camera, Loader2 } from 'lucide-react';
+import api from '../services/api';
 
 const text = value => value === undefined || value === null || value === '' ? 'Not provided' : String(value).replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase());
 const date = value => value ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(value)) : 'Not provided';
@@ -8,33 +10,81 @@ const Info = ({ icon: Icon, label, value }) => <div className="profile-info">
   <span><Icon size={16}/></span><div><small>{label}</small><strong>{value}</strong></div>
 </div>;
 
-export default function MemberProfileModal({ member, onClose }) {
+export default function MemberProfileModal({ member, onClose, onUpdate }) {
   const account = member.user || {};
   const active = member.membershipStatus === 'active' && account.isActive !== false;
+  const [profilePic, setProfilePic] = useState(member.profilePicture);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const fileInputRef = useRef(null);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError('');
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const res = await api.post(`/members/${member._id}/avatar`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const updatedPic = res.data?.data?.profilePicture;
+      if (updatedPic) {
+        setProfilePic(updatedPic);
+        onUpdate?.(res.data.data);
+      }
+    } catch (err) {
+      setUploadError(err.response?.data?.error || 'Failed to upload photo');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return <div className="member-modal-overlay" role="dialog" aria-modal="true" aria-label={`${member.fullName} member profile`}>
     <article className="member-profile-modal">
       <header className="member-profile-hero">
         <button className="member-modal-close" onClick={onClose} aria-label="Close member profile"><X size={19}/></button>
-        {member.profilePicture ? (
-          <img
-            src={member.profilePicture}
-            alt={member.fullName}
-            className="member-profile-avatar-img"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
-            }}
+        <div className="member-profile-avatar-wrap">
+          {profilePic ? (
+            <img
+              src={profilePic}
+              alt={member.fullName}
+              className="member-profile-avatar-img"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+              }}
+            />
+          ) : null}
+          <div
+            className="member-profile-avatar"
+            style={{ display: profilePic ? 'none' : 'grid' }}
+          >
+            {initials(member.fullName)}
+          </div>
+          <button
+            type="button"
+            className="member-profile-avatar-edit-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            title="Upload / Change Member Photo"
+            aria-label="Upload photo"
+          >
+            {uploading ? <Loader2 size={13} className="spin" /> : <Camera size={13} />}
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePhotoUpload}
+            accept="image/*"
+            style={{ display: 'none' }}
           />
-        ) : null}
-        <div
-          className="member-profile-avatar"
-          style={{ display: member.profilePicture ? 'none' : 'grid' }}
-        >
-          {initials(member.fullName)}
         </div>
         <div className="member-profile-identity">
           <span>MEMBER PROFILE</span><h2>{member.fullName}</h2>
           <p>{member.memberId} <i/> Joined {date(member.createdAt)}</p>
+          {uploadError && <small className="avatar-upload-err">{uploadError}</small>}
         </div>
         <div className={`member-profile-status ${active ? 'active' : ''}`}><span/>{active ? 'Active member' : text(member.membershipStatus || 'Inactive')}</div>
       </header>
