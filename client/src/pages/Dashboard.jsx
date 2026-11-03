@@ -450,7 +450,18 @@ function MemberOverview({ user, stats, onNavigate }) {
         <article className="coach">
           <p>YOUR PROFILE</p>
           <div>
-            <i>{member?.avatarInitials || 'M'}</i>
+            {member?.profilePicture ? (
+              <img
+                src={member.profilePicture}
+                alt={member?.fullName || 'Profile'}
+                style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid var(--color-primary, #C6FF00)' }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+                }}
+              />
+            ) : null}
+            <i style={{ display: member?.profilePicture ? 'none' : 'grid' }}>{member?.avatarInitials || 'M'}</i>
             <h3>{member?.fullName || user?.name || 'Member'}<small>{member?.fitnessGoal?.replaceAll('_', ' ') || 'Fitness goal not set'}</small></h3>
           </div>
           <span>{member?.height ? `${member.height} cm` : 'Height not recorded'} · {member?.weight ? `${member.weight} kg` : 'Weight not recorded'}</span>
@@ -484,7 +495,18 @@ function MemberTable({ compact = false, rows = [], onViewAll }) {
               <tr key={m._id}>
                 <td>
                   <div className="member-cell">
-                    <i>{m.avatarInitials || m.fullName?.split(' ').map(n => n[0]).join('') || 'M'}</i>
+                    {m.profilePicture ? (
+                      <img
+                        src={m.profilePicture}
+                        alt={m.fullName || 'Member'}
+                        style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid var(--color-primary, #C6FF00)', flexShrink: 0 }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+                        }}
+                      />
+                    ) : null}
+                    <i style={{ display: m.profilePicture ? 'none' : 'grid' }}>{m.avatarInitials || m.fullName?.split(' ').map(n => n[0]).join('') || 'M'}</i>
                     <span>
                       <b>{m.fullName || 'Unknown'}</b>
                       <small>{m.memberId || m._id}</small>
