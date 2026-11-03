@@ -335,6 +335,121 @@
   filter: drop-shadow(0 0 10px rgba(255, 87, 87, 0.5));
 }
 
+/* Verified Member Avatar Active in Core Circle */
+.scanner-target-ring.verified-avatar-active .scanner-halo-ring.outer-halo {
+  border-color: rgba(198, 255, 0, 0.7);
+  box-shadow: 0 0 25px rgba(198, 255, 0, 0.25);
+  animation: rotateHalo 30s linear infinite;
+}
+
+.scanner-target-ring.verified-avatar-active .scanner-halo-ring.inner-halo {
+  border-color: #C6FF00;
+  box-shadow: 0 0 45px rgba(198, 255, 0, 0.55), inset 0 0 35px rgba(198, 255, 0, 0.35);
+}
+
+.scanner-core-circle.has-avatar {
+  border-color: #C6FF00;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), 0 0 40px rgba(198, 255, 0, 0.5);
+  padding: 0;
+}
+
+.scanner-avatar-display {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  animation: popInAvatar 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scanner-center-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.scanner-center-avatar-initials {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #243818 0%, #0d170a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C6FF00;
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-shadow: 0 0 24px rgba(198, 255, 0, 0.7);
+  user-select: none;
+}
+
+.scanner-verified-check-pill {
+  position: absolute;
+  bottom: 10px;
+  right: calc(50% - 16px);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #C6FF00;
+  box-shadow: 0 4px 18px rgba(198, 255, 0, 0.8), 0 0 0 3px #080d07;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleInCheck 0.35s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  z-index: 6;
+}
+
+.kiosk-instruction-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--lime, #C6FF00);
+  box-shadow: 0 0 12px rgba(198, 255, 0, 0.4);
+}
+
+.kiosk-instruction-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(198, 255, 0, 0.15);
+  border: 2px solid var(--lime, #C6FF00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--lime, #C6FF00);
+}
+
+@keyframes popInAvatar {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleInCheck {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* --------------------------------------------------------------------------
    PROMPT & DIRECTIVE TEXT
    -------------------------------------------------------------------------- */

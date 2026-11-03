@@ -160,7 +160,32 @@ export default function AttendanceKiosk({ user, onRecorded }) {
   return <section className="attendance-kiosk" aria-label="Automatic fingerprint attendance">
     <AttendancePopup popup={popup} onClose={() => setPopup(null)} />
     <div className="kiosk-status"><span className={'scanner-dot ' + (state.device ? 'connected' : '')} /><span>{state.device ? state.device.model + ' connected' : 'Scanner connection not confirmed'}</span><span className="kiosk-phase">{state.phase}</span>{overview?.identificationAvailable && overview?.developmentOnly && <span>Local development matching</span>}</div>
-    <div className="kiosk-instruction"><Fingerprint aria-hidden="true" /><div><p className="eyebrow">BIOMETRIC ATTENDANCE</p><h2>{state.phase === 'capturing' ? 'Place your finger' : state.code === 'SCANNER_IN_USE' ? 'Scanner in use in another tab' : state.code === 'IDENTIFICATION_UNAVAILABLE' ? 'Automatic attendance unavailable' : state.phase === 'paused' ? 'Scanning paused' : 'Member check-in / check-out'}</h2><p role="status" aria-live="polite">{state.message}</p></div></div>
+    <div className="kiosk-instruction">
+      {result?.recorded && result.member ? (
+        result.member.profilePicture ? (
+          <img
+            src={result.member.profilePicture}
+            alt={result.member.fullName || 'Member'}
+            className="kiosk-instruction-avatar"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'flex';
+            }}
+          />
+        ) : (
+          <div className="kiosk-instruction-avatar-fallback">
+            {result.member.avatarInitials || result.member.fullName?.slice(0, 2).toUpperCase() || 'VF'}
+          </div>
+        )
+      ) : (
+        <Fingerprint aria-hidden="true" />
+      )}
+      <div>
+        <p className="eyebrow">BIOMETRIC ATTENDANCE</p>
+        <h2>{state.phase === 'capturing' ? 'Place your finger' : state.code === 'SCANNER_IN_USE' ? 'Scanner in use in another tab' : state.code === 'IDENTIFICATION_UNAVAILABLE' ? 'Automatic attendance unavailable' : state.phase === 'paused' ? 'Scanning paused' : result?.recorded ? `Welcome, ${result.member?.fullName || 'Member'}!` : 'Member check-in / check-out'}</h2>
+        <p role="status" aria-live="polite">{state.message}</p>
+      </div>
+    </div>
     <details><summary>Workstation SDK configuration</summary><label>Client key, only if supplied by Mantra<input type="password" autoComplete="off" disabled={active || draining} onChange={event => { clientKey.current = event.target.value; }} /></label></details>
     <div className="biometric-actions">
       <button className="outline-btn" disabled={draining} onClick={pause}><Pause size={16} /> Pause</button>

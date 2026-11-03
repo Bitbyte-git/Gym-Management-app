@@ -233,6 +233,7 @@ export default function AttendanceVerification({ standalone = true }) {
   const isCapturing = state.phase === 'capturing';
   const isIdentifying = state.phase === 'identifying' || state.phase === 'recording';
   const isReady = isCapturing || state.phase === 'initializing' || state.phase === 'rearming';
+  const showVerifiedAvatar = Boolean(lastPunch && !isCapturing && !isIdentifying && !pausedState);
 
   return (
     <div
@@ -325,19 +326,55 @@ export default function AttendanceVerification({ standalone = true }) {
           {/* Circular Interactive Scanner Target */}
           <div
             className={`scanner-target-ring ${
-              isCapturing ? 'active-capturing' : isIdentifying ? 'identifying' : pausedState ? 'paused' : 'waiting'
+              showVerifiedAvatar
+                ? 'verified-avatar-active'
+                : isCapturing
+                ? 'active-capturing'
+                : isIdentifying
+                ? 'identifying'
+                : pausedState
+                ? 'paused'
+                : 'waiting'
             }`}
           >
             <div className="scanner-halo-ring outer-halo" />
             <div className="scanner-halo-ring inner-halo" />
 
-            <div className="scanner-core-circle">
-              <Fingerprint
-                className={`scanner-finger-icon ${isCapturing ? 'finger-scanning' : ''}`}
-                size={82}
-                strokeWidth={1.8}
-              />
-              {isCapturing && <div className="scanner-laser-bar" />}
+            <div className={`scanner-core-circle ${showVerifiedAvatar ? 'has-avatar' : ''}`}>
+              {showVerifiedAvatar ? (
+                <div className="scanner-avatar-display">
+                  {lastPunch.profilePicture ? (
+                    <img
+                      src={lastPunch.profilePicture}
+                      alt={lastPunch.name}
+                      className="scanner-center-avatar-img"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.parentElement?.querySelector('.scanner-center-avatar-initials');
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="scanner-center-avatar-initials"
+                    style={{ display: lastPunch.profilePicture ? 'none' : 'flex' }}
+                  >
+                    <span>{lastPunch.avatarInitials || lastPunch.name?.slice(0, 2).toUpperCase() || 'VF'}</span>
+                  </div>
+                  <div className="scanner-verified-check-pill" title="Verified Identity">
+                    <CheckCircle2 size={20} color="#0b130a" strokeWidth={2.8} />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Fingerprint
+                    className={`scanner-finger-icon ${isCapturing ? 'finger-scanning' : ''}`}
+                    size={82}
+                    strokeWidth={1.8}
+                  />
+                  {isCapturing && <div className="scanner-laser-bar" />}
+                </>
+              )}
             </div>
           </div>
 
@@ -361,6 +398,8 @@ export default function AttendanceVerification({ standalone = true }) {
                 ? 'Verifying your identity…'
                 : state.phase === 'initializing'
                 ? 'Initializing scanner…'
+                : lastPunch
+                ? `Welcome, ${lastPunch.name}!`
                 : 'Please place your fingerprint'}
             </h2>
 
@@ -371,6 +410,8 @@ export default function AttendanceVerification({ standalone = true }) {
                 ? 'Touch and hold your registered finger firmly on the sensor.'
                 : isIdentifying
                 ? 'Matching record with studio database. Please keep steady.'
+                : lastPunch
+                ? `${lastPunch.action.toUpperCase()} VERIFIED (${lastPunch.session}) • Ready for next scan`
                 : state.message || 'Place your enrolled finger on the sensor to mark attendance.'}
             </p>
           </div>
