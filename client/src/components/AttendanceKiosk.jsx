@@ -4,6 +4,7 @@ import api from '../services/api';
 import { createMorFinAuth } from '../services/morfinAuth.mjs';
 import { createAttendanceScanner } from '../services/attendanceScanner.mjs';
 import AttendancePopup from './AttendancePopup';
+import { parseBiometricFeedback } from '../utils/biometricErrors';
 
 const initial = { phase: 'initializing', message: 'Checking scanner...' };
 export default function AttendanceKiosk({ user, onRecorded }) {
@@ -88,13 +89,12 @@ export default function AttendanceKiosk({ user, onRecorded }) {
         next.code === 'UNKNOWN_FINGERPRINT' ||
         next.code === 'POOR_CAPTURE' ||
         next.code === 'AMBIGUOUS_FINGERPRINT' ||
-        (next.phase === 'result' && !next.result?.recorded)
+        (next.phase === 'result' && !next.result?.recorded) ||
+        next.phase === 'error' ||
+        next.phase === 'disconnected'
       ) {
-        triggerPopup({
-          type: 'error',
-          title: 'Try again, not Matched',
-          subtitle: next.message || 'Fingerprint not recognized. Please scan your finger again.',
-        });
+        const feedback = parseBiometricFeedback(next);
+        triggerPopup(feedback);
       }
     } });
     controller.current = flow;
@@ -149,11 +149,8 @@ export default function AttendanceKiosk({ user, onRecorded }) {
     } catch (err) {
       const errTxt = err.response?.data?.error || err.message || 'Could not close stale visit';
       setControlError(errTxt);
-      triggerPopup({
-        type: 'error',
-        title: 'Try again, not Matched',
-        subtitle: errTxt,
-      });
+      const feedback = parseBiometricFeedback({ message: errTxt, member: row.member });
+      triggerPopup(feedback);
     }
   };
 

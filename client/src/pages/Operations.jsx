@@ -7,6 +7,7 @@ import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
 // AttendanceKiosk biometric scanner delegated to standalone Kiosk (/kiosk)
 import AttendancePopup from '../components/AttendancePopup';
+import { parseBiometricFeedback } from '../utils/biometricErrors';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const field = (name, label, type = 'text', options) => ({ name, label, type, options });
@@ -277,11 +278,12 @@ export default function Operations({ section, user, query = '' }) {
       const errMsg = friendlyError(err.response?.data?.error || 'Unable to save. Your changes have not been confirmed.');
       setError(errMsg);
       if (action?.url?.startsWith('/attendance/manual-')) {
+        const feedback = parseBiometricFeedback({ message: errMsg, code: err.response?.data?.code });
         setAttendancePopup({
           id: Date.now(),
-          type: 'error',
-          title: 'Try again, not Matched',
-          subtitle: errMsg,
+          type: feedback.type,
+          title: feedback.title,
+          subtitle: feedback.subtitle,
         });
       }
     }

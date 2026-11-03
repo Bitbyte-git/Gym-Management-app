@@ -23,6 +23,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createMorFinAuth } from '../services/morfinAuth.mjs';
 import { createAttendanceScanner } from '../services/attendanceScanner.mjs';
 import AttendancePopup from '../components/AttendancePopup';
+import { parseBiometricFeedback } from '../utils/biometricErrors';
 import { Brand } from '../components/Brand';
 import '../attendance-kiosk.css';
 
@@ -169,13 +170,12 @@ export default function AttendanceVerification({ standalone = true }) {
           next.code === 'UNKNOWN_FINGERPRINT' ||
           next.code === 'POOR_CAPTURE' ||
           next.code === 'AMBIGUOUS_FINGERPRINT' ||
-          (next.phase === 'result' && !next.result?.recorded)
+          (next.phase === 'result' && !next.result?.recorded) ||
+          next.phase === 'error' ||
+          next.phase === 'disconnected'
         ) {
-          triggerPopup({
-            type: 'error',
-            title: 'Try again, not Matched',
-            subtitle: next.message || 'Fingerprint not recognized. Please scan your finger again.',
-          });
+          const feedback = parseBiometricFeedback(next);
+          triggerPopup(feedback);
         }
       },
     });
