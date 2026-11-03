@@ -64,7 +64,7 @@ export default function AttendanceVerification({ standalone = true }) {
         avatarInitials: data.member.avatarInitials,
         action: data.action || 'Check in',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        session: data.sessionName || getSessionName(),
+        session: (data.sessionName || getSessionName()).toLowerCase().replace(' session', ''),
       });
     }
   };
@@ -86,6 +86,28 @@ export default function AttendanceVerification({ standalone = true }) {
   useEffect(() => {
     let live = true;
     let exiting = false;
+
+    // Load recent punch on initial terminal mount
+    api.get('/attendance/biometric/overview')
+      .then((res) => {
+        if (!live) return;
+        const latestEvent = res.data?.data?.events?.[0];
+        if (latestEvent && latestEvent.member) {
+          setLastPunch((current) => {
+            if (current) return current;
+            return {
+              name: latestEvent.member.fullName || 'Member',
+              memberId: latestEvent.member.memberId || '',
+              profilePicture: latestEvent.member.profilePicture || null,
+              avatarInitials: latestEvent.member.avatarInitials,
+              action: latestEvent.action === 'checkout' ? 'Check out' : 'Check in',
+              time: new Date(latestEvent.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+              session: getSessionName().toLowerCase().replace(' session', ''),
+            };
+          });
+        }
+      })
+      .catch(() => {});
 
     const unpack = (request) => request.then((r) => r.data.data);
     const transport = {

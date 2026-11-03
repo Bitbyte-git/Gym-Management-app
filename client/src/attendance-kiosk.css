@@ -717,6 +717,29 @@
   }
 }
 
+@media (max-height: 720px) {
+  .verification-header {
+    padding: 12px 24px;
+  }
+  .scanner-target-ring {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 12px;
+  }
+  .scanner-core-circle {
+    width: 154px;
+    height: 154px;
+  }
+  .verification-main-heading {
+    font-size: 28px;
+    margin: 4px 0 2px;
+  }
+  .verification-recent-indicator {
+    margin-top: 14px;
+    padding: 8px 18px;
+  }
+}
+
 /* --------------------------------------------------------------------------
    RECEPTION / OPERATIONS ATTENDANCE KIOSK NOTICE BANNER
    -------------------------------------------------------------------------- */
