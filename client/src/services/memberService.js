@@ -8,4 +8,7 @@ export const memberService = {
   delete: (id) => api.delete(`/members/${id}`),
   getProfile: () => api.get('/members/profile'),
   updateProfile: (data) => api.put('/members/profile', data),
+  uploadAvatar: (formData) => api.post('/members/profile/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 };

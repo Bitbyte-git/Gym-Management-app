@@ -400,7 +400,7 @@ exports.getMemberAttendanceReport = async (req, res, next) => {
     }
 
     // Get member details
-    const member = await MemberProfile.findById(req.params.memberId).select('memberId fullName avatarInitials');
+    const member = await MemberProfile.findById(req.params.memberId).select('memberId fullName avatarInitials profilePicture');
 
     res.status(200).json({
       success: true,

@@ -28,4 +28,15 @@ export const registrationService = {
   saveSelection: (data) => api.post('/registration/selection', data, withRegistrationToken()),
   getSummary: () => api.get('/registration/summary', withRegistrationToken()),
   complete: (data) => api.post('/registration/complete', data, withRegistrationToken()),
+  uploadAvatar: (formDataOrData) => {
+    const isFormData = typeof FormData !== 'undefined' && formDataOrData instanceof FormData;
+    const baseConfig = withRegistrationToken();
+    return api.post('/registration/upload-avatar', formDataOrData, {
+      ...baseConfig,
+      headers: {
+        ...(baseConfig.headers || {}),
+        ...(isFormData ? { 'Content-Type': 'multipart/form-data' } : {}),
+      },
+    });
+  },
 };

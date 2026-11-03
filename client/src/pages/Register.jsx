@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Loader2, User, Heart, CreditCard, Calendar, UserCheck, ShieldCheck, Edit3, Clock, Sparkles, Activity, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, User, Heart, CreditCard, Calendar, UserCheck, ShieldCheck, Edit3, Clock, Sparkles, Activity, CheckCircle2, Camera, Upload, Trash2, ChevronLeft, ChevronRight, Cloud, CloudUpload } from 'lucide-react';
 import { registrationService } from '../services';
 import { openRazorpayCheckout } from '../services/razorpay';
 import { Brand } from '../components/Brand';
+import { DEFAULT_AVATARS } from '../data';
 
 const STEPS = [
   { id: 'basic', title: 'Basic Details', icon: User },
@@ -16,9 +17,59 @@ const STEPS = [
 
 export default function Register() {
   const navigate = useNavigate();
+  const avatarScrollRef = useRef(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUploadNotice, setAvatarUploadNotice] = useState('');
+
+  const scrollAvatars = (direction) => {
+    if (avatarScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -260 : 260;
+      avatarScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const handleCustomPhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file (JPG, PNG, WebP)');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size should be less than 5MB');
+      return;
+    }
+
+    const localPreview = URL.createObjectURL(file);
+    setBasicData((prev) => ({ ...prev, profilePicture: localPreview }));
+    setUploadingAvatar(true);
+    setError('');
+    setAvatarUploadNotice('Uploading image to Cloudinary...');
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await registrationService.uploadAvatar(formData);
+      const cloudinaryUrl = response.data.data?.url;
+      if (cloudinaryUrl) {
+        setBasicData((prev) => ({ ...prev, profilePicture: cloudinaryUrl }));
+        setAvatarUploadNotice('Image successfully stored in Cloudinary!');
+        setTimeout(() => setAvatarUploadNotice(''), 4500);
+      }
+    } catch (err) {
+      const errMessage = err.response?.data?.error || err.message || 'Failed to upload image to Cloudinary';
+      setError(errMessage);
+      setAvatarUploadNotice('');
+    } finally {
+      setUploadingAvatar(false);
+      e.target.value = '';
+    }
+  };
   
   // Form data
   const [basicData, setBasicData] = useState({
@@ -33,6 +84,7 @@ export default function Register() {
     address: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
+    profilePicture: '',
   });
 
   const [healthData, setHealthData] = useState({
@@ -79,6 +131,7 @@ export default function Register() {
         address: details.address || '',
         emergencyContactName: details.emergencyContactName || '',
         emergencyContactPhone: details.emergencyContactPhone || '',
+        profilePicture: details.profilePicture || '',
       }));
       if (draft.healthDetails) setHealthData((current) => ({ ...current, ...draft.healthDetails }));
       setSelectedPlan(draft.selection?.plan || null);
@@ -267,6 +320,158 @@ export default function Register() {
   const renderBasicDetails = () => (
     <form onSubmit={handleBasicSubmit} className="registration-form">
       <h2>Basic Information</h2>
+
+      {/* Select Profile Picture Section */}
+      <div className="profile-picture-section">
+        <div className="profile-picture-header">
+          <div>
+            <label className="profile-picture-label">
+              <Camera size={18} /> Select Profile Picture
+            </label>
+            <p className="profile-picture-hint">
+              Choose your profile avatar from the studio collection or upload your photo. This picture will appear on your profile and on attendance punching verification!
+            </p>
+          </div>
+          {basicData.profilePicture && (
+            <button
+              type="button"
+              className="profile-picture-clear-btn"
+              onClick={() => setBasicData({ ...basicData, profilePicture: '' })}
+              title="Reset to Initials"
+            >
+              <Trash2 size={13} /> Reset to Initials
+            </button>
+          )}
+        </div>
+
+        {/* Selected preview & upload controls */}
+        <div className="profile-picture-top-bar">
+          <div className="profile-picture-preview-wrap">
+            {basicData.profilePicture ? (
+              <img
+                src={basicData.profilePicture}
+                alt="Selected profile"
+                className="profile-picture-preview-img"
+              />
+            ) : (
+              <div className="profile-picture-preview-placeholder">
+                {((basicData.firstName?.[0] || '') + (basicData.lastName?.[0] || '')).toUpperCase() || 'VF'}
+              </div>
+            )}
+            <span className="profile-picture-badge" title={basicData.profilePicture ? 'Custom Profile Picture Active' : 'Default Initials'}>
+              {basicData.profilePicture ? <Check size={14} strokeWidth={3} /> : <User size={14} />}
+            </span>
+          </div>
+
+          <div className="profile-picture-actions-wrap">
+            <div className="profile-picture-status-info">
+              <div className="profile-status-tags-row">
+                <span className="profile-status-tag">
+                  {basicData.profilePicture ? 'Selected Profile Photo' : 'Using Default Initials'}
+                </span>
+                {basicData.profilePicture?.includes('cloudinary.com') && (
+                  <span className="profile-status-tag cloudinary">
+                    <Cloud size={11} /> Cloudinary Stored
+                  </span>
+                )}
+              </div>
+              <p className="profile-status-desc">
+                {basicData.profilePicture
+                  ? (basicData.profilePicture?.includes('cloudinary.com')
+                      ? 'Real user image stored in Cloudinary! This picture will appear on the attendance screen.'
+                      : 'Great choice! This image will appear on the attendance screen when you punch in or out.')
+                  : 'Select an avatar from the studio collection or upload your real photo to Cloudinary.'}
+              </p>
+              {avatarUploadNotice && (
+                <div className="profile-upload-notice-pill">
+                  {uploadingAvatar ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} color="var(--lime)" />}
+                  <span>{avatarUploadNotice}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="profile-picture-upload-row">
+              <label className={`profile-picture-upload-btn ${uploadingAvatar ? 'disabled' : ''}`}>
+                {uploadingAvatar ? (
+                  <><Loader2 size={14} className="animate-spin" /> Uploading to Cloudinary...</>
+                ) : (
+                  <><CloudUpload size={14} /> Upload to Cloudinary</>
+                )}
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  style={{ display: 'none' }}
+                  disabled={uploadingAvatar}
+                  onChange={handleCustomPhotoUpload}
+                />
+              </label>
+              <span className="profile-picture-upload-hint">Uploads real user photo to Cloudinary CDN (up to 5MB)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable Avatar Carousel Area */}
+        <div className="profile-avatar-carousel-container">
+          <div className="profile-carousel-header">
+            <span className="profile-picture-options-title">
+              Studio Avatars <span className="carousel-count">({DEFAULT_AVATARS.length} Available • Scroll to select)</span>
+            </span>
+            <div className="carousel-nav-buttons">
+              <button
+                type="button"
+                className="carousel-arrow-btn"
+                onClick={() => scrollAvatars('left')}
+                title="Scroll Left"
+                aria-label="Scroll avatars left"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                className="carousel-arrow-btn"
+                onClick={() => scrollAvatars('right')}
+                title="Scroll Right"
+                aria-label="Scroll avatars right"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="profile-picture-scroll-track" ref={avatarScrollRef}>
+            {DEFAULT_AVATARS.map((avatar) => {
+              const isSelected = basicData.profilePicture === avatar.url || basicData.profilePicture === avatar.fallbackUrl;
+              return (
+                <button
+                  key={avatar.id}
+                  type="button"
+                  className={`profile-avatar-choice ${isSelected ? 'selected' : ''}`}
+                  onClick={() => setBasicData({ ...basicData, profilePicture: avatar.url })}
+                  title={`Select ${avatar.label}`}
+                  aria-label={`Select ${avatar.label}`}
+                >
+                  <img
+                    src={avatar.url}
+                    alt={avatar.label}
+                    onError={(e) => {
+                      if (avatar.fallbackUrl && e.currentTarget.src !== avatar.fallbackUrl) {
+                        e.currentTarget.src = avatar.fallbackUrl;
+                      }
+                    }}
+                  />
+                  {isSelected && (
+                    <span className="avatar-choice-check">
+                      <Check size={13} strokeWidth={3} />
+                    </span>
+                  )}
+                  <span className="avatar-choice-label">{avatar.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       <div className="form-grid">
         <label>
           First Name *
@@ -661,6 +866,21 @@ export default function Register() {
               </button>
             </div>
             <div className="review-card-body">
+              <div className="review-profile-pic-row">
+                {basicData.profilePicture ? (
+                  <img src={basicData.profilePicture} alt="Profile" className="review-profile-avatar-img" />
+                ) : (
+                  <div className="review-profile-avatar-placeholder">
+                    {((basicData.firstName?.[0] || '') + (basicData.lastName?.[0] || '')).toUpperCase() || 'VF'}
+                  </div>
+                )}
+                <div>
+                  <h4 className="review-profile-name">{basicData.firstName} {basicData.lastName}</h4>
+                  <span className="review-profile-sub">
+                    {basicData.profilePicture ? 'Profile Picture Selected' : 'Default Initials Avatar'}
+                  </span>
+                </div>
+              </div>
               <div className="review-row">
                 <span className="review-label">Name</span>
                 <span className="review-value review-highlight-val">

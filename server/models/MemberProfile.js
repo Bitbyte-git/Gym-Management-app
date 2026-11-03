@@ -95,9 +95,13 @@ const memberProfileSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  // Profile image - using default avatar system
+  // Profile image - using default avatar system or selected photo
   avatarInitials: {
     type: String,
+  },
+  profilePicture: {
+    type: String,
+    trim: true,
   },
   createdAt: {
     type: Date,

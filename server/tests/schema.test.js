@@ -4,6 +4,8 @@ const GymTimeSlot = require('../models/GymTimeSlot');
 const TrainerAvailability = require('../models/TrainerAvailability');
 const MemberAttendance = require('../models/MemberAttendance');
 const TrainerProfile = require('../models/TrainerProfile');
+const MemberProfile = require('../models/MemberProfile');
+const RegistrationDraft = require('../models/RegistrationDraft');
 const dateRange = require('../utils/dateRange');
 
 test('time slot schema rejects overlapping-invalid time order and invalid capacity', async () => {
@@ -51,4 +53,11 @@ test('report date ranges use inclusive Bengaluru calendar days', () => {
   const range = dateRange('2026-10-20', '2026-10-21');
   assert.equal(range.$gte.toISOString(), '2026-10-19T18:30:00.000Z');
   assert.equal(range.$lt.toISOString(), '2026-10-21T18:30:00.000Z');
+});
+
+test('member profile and registration draft schemas support profilePicture field', () => {
+  assert.ok(MemberProfile.schema.path('profilePicture'), 'MemberProfile schema must have profilePicture path');
+  assert.equal(MemberProfile.schema.path('profilePicture').instance, 'String');
+  assert.ok(RegistrationDraft.schema.path('basicDetails.profilePicture'), 'RegistrationDraft schema must have basicDetails.profilePicture path');
+  assert.equal(RegistrationDraft.schema.path('basicDetails.profilePicture').instance, 'String');
 });

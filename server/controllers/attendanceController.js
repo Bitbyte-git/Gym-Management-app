@@ -32,7 +32,7 @@ exports.getAttendance = async (req, res, next) => {
     }
 
     const attendance = await MemberAttendance.find(query)
-      .populate('member', 'memberId fullName mobileNumber')
+      .populate('member', 'memberId fullName mobileNumber avatarInitials profilePicture')
       .populate('slotAllocation')
       .sort({ attendanceDate: -1, checkInTime: -1 });
 
@@ -52,7 +52,7 @@ exports.getAttendance = async (req, res, next) => {
 exports.getAttendanceRecord = async (req, res, next) => {
   try {
     const attendance = await MemberAttendance.findById(req.params.id)
-      .populate('member', 'memberId fullName mobileNumber')
+      .populate('member', 'memberId fullName mobileNumber avatarInitials profilePicture')
       .populate('slotAllocation');
 
     if (!attendance) {
@@ -135,13 +135,13 @@ exports.getTodayAttendance = async (req, res, next) => {
         $lt: tomorrow,
       },
     })
-      .populate('member', 'memberId fullName mobileNumber avatarInitials')
+      .populate('member', 'memberId fullName mobileNumber avatarInitials profilePicture')
       .sort({ checkInTime: -1 });
 
     // Get currently checked-in members
     const currentlyCheckedIn = await MemberAttendance.find({
       sessionOpen: true,
-    }).populate('member', 'memberId fullName avatarInitials');
+    }).populate('member', 'memberId fullName avatarInitials profilePicture');
 
     // Group today's records by member to get today's spending for each member
     const memberMap = new Map();
@@ -264,9 +264,12 @@ exports.manualCheckIn = async (req, res, next) => {
     });
     const dailySpending = calculateDailySpending(todayRecords);
 
+    const populatedAttendance = await MemberAttendance.findById(attendance._id)
+      .populate('member', 'memberId fullName mobileNumber avatarInitials profilePicture');
+
     res.status(201).json({
       success: true,
-      data: attendance,
+      data: populatedAttendance || attendance,
       dailySpending,
     });
   } catch (error) {
@@ -347,9 +350,12 @@ exports.manualCheckOut = async (req, res, next) => {
     });
     const dailySpending = calculateDailySpending(todayRecords);
 
+    const populatedCheckedOut = await MemberAttendance.findById(checkedOutAttendance._id)
+      .populate('member', 'memberId fullName mobileNumber avatarInitials profilePicture');
+
     res.status(200).json({
       success: true,
-      data: checkedOutAttendance,
+      data: populatedCheckedOut || checkedOutAttendance,
       dailySpending,
     });
   } catch (error) {

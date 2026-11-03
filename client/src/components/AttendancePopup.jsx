@@ -11,13 +11,15 @@ export default function AttendancePopup({ popup, onClose }) {
     if (!popup) return;
     const timer = setTimeout(() => {
       onCloseRef.current?.();
-    }, 2000); // Automatically close this popup after exactly 2s
+    }, 3500); // 3.5s auto-dismiss allows comfortable view of member photo and stats
     return () => clearTimeout(timer);
   }, [popup]);
 
   if (!popup) return null;
 
   const isSuccess = popup.type === 'success';
+  const member = popup.member;
+  const hasPhoto = Boolean(member?.profilePicture);
 
   return (
     <div className="attendance-popup-overlay" role="dialog" aria-modal="true" onClick={onClose}>
@@ -46,13 +48,33 @@ export default function AttendancePopup({ popup, onClose }) {
             {popup.subtitle || (isSuccess ? 'Your visit has been recorded successfully.' : 'Fingerprint not recognized. Please scan your finger again.')}
           </p>
 
-          {isSuccess && popup.member && (
+          {isSuccess && member && (
             <div className="attendance-popup-member-card">
-              <span className="attendance-avatar">
-                {popup.member.avatarInitials || popup.member.fullName?.slice(0, 2).toUpperCase() || 'VF'}
-              </span>
+              <div className="attendance-popup-avatar-container">
+                {hasPhoto ? (
+                  <img
+                    src={member.profilePicture}
+                    alt={member.fullName || 'Member'}
+                    className="attendance-popup-avatar-img"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector('.attendance-avatar');
+                      if (fallback) fallback.style.display = 'grid';
+                    }}
+                  />
+                ) : null}
+                <span
+                  className="attendance-avatar"
+                  style={{ display: hasPhoto ? 'none' : 'grid' }}
+                >
+                  {member.avatarInitials || member.fullName?.slice(0, 2).toUpperCase() || 'VF'}
+                </span>
+              </div>
               <div className="attendance-popup-member-info">
-                <b>{popup.member.fullName || 'Member'}</b>
+                <div className="attendance-popup-member-name-row">
+                  <b>{member.fullName || 'Member'}</b>
+                  {member.memberId && <span className="attendance-member-code">{member.memberId}</span>}
+                </div>
                 <div className="attendance-popup-tags">
                   {popup.action && (
                     <span className={`kiosk-punch-pill ${popup.action.toLowerCase().includes('in') ? 'checkin' : 'checkout'}`}>

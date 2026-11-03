@@ -13,6 +13,7 @@ const Payment = require('../models/Payment');
 const RegistrationDraft = require('../models/RegistrationDraft');
 const { generateMemberId } = require('../services/memberService');
 const { addMonthsClamped } = require('../utils/date');
+const cloudinaryService = require('../services/cloudinaryService');
 
 const makeError = (message, statusCode = 400) => Object.assign(new Error(message), { statusCode });
 const tokenHash = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -57,6 +58,7 @@ exports.submitBasicDetails = async (req, res, next) => {
       address,
       emergencyContactName,
       emergencyContactPhone,
+      profilePicture,
     } = req.body;
 
     const normalizedEmail = String(email || '').trim().toLowerCase();
@@ -97,6 +99,7 @@ exports.submitBasicDetails = async (req, res, next) => {
         address,
         emergencyContactName: String(emergencyContactName).trim(),
         emergencyContactPhone: String(emergencyContactPhone).trim(),
+        profilePicture: profilePicture !== undefined ? (profilePicture ? String(profilePicture).trim() : null) : draft.basicDetails?.profilePicture,
       };
     } else {
       if (await User.exists({ email: normalizedEmail })) {
@@ -123,6 +126,7 @@ exports.submitBasicDetails = async (req, res, next) => {
               address,
               emergencyContactName: emergencyContactName.trim(),
               emergencyContactPhone: String(emergencyContactPhone).trim(),
+              profilePicture: profilePicture ? String(profilePicture).trim() : undefined,
             },
           });
           await draft.save({ session });
@@ -394,4 +398,55 @@ exports.resumeRegistration = async (req, res, next) => {
     draft.tokenHash = tokenHash(rawToken); draft.lastActivityAt = new Date(); await draft.save();
     res.json({ success: true, data: { registrationToken: rawToken, status: draft.status } });
   } catch (error) { next(error); }
+};
+
+exports.uploadAvatar = async (req, res, next) => {
+  try {
+    let imageInput = null;
+
+    if (req.file && req.file.buffer) {
+      imageInput = req.file.buffer;
+    } else if (req.body && req.body.image) {
+      imageInput = req.body.image;
+    }
+
+    if (!imageInput) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide an image file or base64 image data',
+      });
+    }
+
+    const uploadResult = await cloudinaryService.uploadAvatar(imageInput);
+    const photoUrl = uploadResult.secureUrl || uploadResult.url;
+
+    // If an in-progress draft exists with this request token, link photo immediately
+    try {
+      const draft = await getDraft(req, { required: false });
+      if (draft && draft.basicDetails) {
+        draft.basicDetails.profilePicture = photoUrl;
+        await draft.save();
+      }
+    } catch {
+      // Ignored if draft does not exist yet
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        url: photoUrl,
+        publicId: uploadResult.publicId,
+        format: uploadResult.format,
+      },
+      message: 'Avatar uploaded successfully to Cloudinary',
+    });
+  } catch (error) {
+    if (error.code === 'CLOUDINARY_NOT_CONFIGURED') {
+      return res.status(503).json({
+        success: false,
+        error: error.message,
+      });
+    }
+    next(error);
+  }
 };

@@ -22,6 +22,7 @@ const registrationDraftSchema = new mongoose.Schema({
     address: { type: String, trim: true },
     emergencyContactName: { type: String, required: true, trim: true },
     emergencyContactPhone: { type: String, required: true, match: /^[0-9]{10}$/ },
+    profilePicture: { type: String, trim: true },
   },
   healthDetails: {
     height: { type: Number, min: 1 },

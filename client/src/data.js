@@ -15,3 +15,48 @@ export const revenueData = [
 export const attendanceData = [
   {day:'Mon', value:142},{day:'Tue', value:168},{day:'Wed', value:153},{day:'Thu', value:186},{day:'Fri', value:177},{day:'Sat', value:214},{day:'Sun', value:98}
 ];
+
+export const DEFAULT_AVATARS = [
+  {
+    id: 'avatar-1',
+    label: 'Athlete 1',
+    url: '/avatars/avatar1.jpeg',
+    fallbackUrl: '/WhatsApp Image 2026-11-03 at 1.29.24 PM.jpeg',
+  },
+  {
+    id: 'avatar-2',
+    label: 'Athlete 2',
+    url: '/avatars/avatar2.jpeg',
+    fallbackUrl: '/WhatsApp Image 2026-11-03 at 1.29.24 PM (1).jpeg',
+  },
+  {
+    id: 'avatar-3',
+    label: 'Athlete 3',
+    url: '/avatars/avatar3.jpeg',
+    fallbackUrl: '/WhatsApp Image 2026-11-03 at 1.29.24 PM (2).jpeg',
+  },
+  {
+    id: 'avatar-4',
+    label: 'Athlete 4',
+    url: '/avatars/avatar4.jpeg',
+    fallbackUrl: '/WhatsApp Image 2026-11-03 at 1.29.25 PM.jpeg',
+  },
+  {
+    id: 'avatar-5',
+    label: 'Athlete 5',
+    url: '/avatars/avatar5.jpeg',
+    fallbackUrl: '/WhatsApp Image 2026-11-03 at 1.29.25 PM (1).jpeg',
+  },
+  {
+    id: 'avatar-6',
+    label: 'Athlete 6',
+    url: '/avatars/avatar6.jpeg',
+    fallbackUrl: '/WhatsApp Image 2026-11-03 at 1.29.26 PM.jpeg',
+  },
+  {
+    id: 'avatar-7',
+    label: 'Athlete 7',
+    url: '/avatars/avatar7.jpeg',
+    fallbackUrl: '/WhatsApp Image 2026-11-03 at 1.29.26 PM (1).jpeg',
+  },
+];

@@ -213,7 +213,13 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
     const latched = String(station.lastRecordedMember || '') === String(member._id) && !station.sameMemberArmed;
     let result = {
       eventId, recorded: false, action: 'duplicate', timestamp: now.toISOString(),
-      member: { id: member.id, memberId: member.memberId, fullName: member.fullName, avatarInitials: member.avatarInitials || member.fullName.split(' ').map(p => p[0]).join('').slice(0, 2) },
+      member: {
+        id: member.id,
+        memberId: member.memberId,
+        fullName: member.fullName,
+        avatarInitials: member.avatarInitials || member.fullName.split(' ').map(p => p[0]).join('').slice(0, 2),
+        profilePicture: member.profilePicture || null,
+      },
       timeZone: config.gym.timezone,
     };
     if (remaining || latched) {
@@ -416,7 +422,7 @@ async function overview() {
   await autoCloseExpiredAttendance(now);
   const [count, rows, stale] = await Promise.all([
     Attendance.countDocuments({ sessionOpen: true }),
-    Attendance.find().select('member checkInTime checkOutTime').populate('member', 'fullName memberId avatarInitials').sort({ updatedAt: -1 }).limit(20),
+    Attendance.find().select('member checkInTime checkOutTime').populate('member', 'fullName memberId avatarInitials profilePicture').sort({ updatedAt: -1 }).limit(20),
     Attendance.find({ sessionOpen: true, checkInTime: { $lte: cutoff } }).select('member checkInTime').populate('member', 'fullName memberId').sort({ checkInTime: 1 }).limit(20),
   ]);
   const events = rows.flatMap(row => [

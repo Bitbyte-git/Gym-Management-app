@@ -172,7 +172,24 @@ export default function AttendanceKiosk({ user, onRecorded }) {
     {draining && <p>Waiting for the current finite capture to finish before releasing the scanner.</p>}
     {controlError && <p role="alert">{controlError}</p>}
     {result && <article className={'kiosk-result ' + (result.recorded ? 'confirmed' : 'ignored')}>
-      <span className="kiosk-avatar" aria-label="Member default avatar">{result.member?.avatarInitials || 'VF'}</span>
+      {result.member?.profilePicture ? (
+        <img
+          src={result.member.profilePicture}
+          alt={result.member?.fullName || 'Member'}
+          className="kiosk-avatar-img"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+          }}
+        />
+      ) : null}
+      <span
+        className="kiosk-avatar"
+        style={{ display: result.member?.profilePicture ? 'none' : 'grid' }}
+        aria-label="Member default avatar"
+      >
+        {result.member?.avatarInitials || 'VF'}
+      </span>
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <h3 style={{ margin: 0 }}>{result.member?.fullName}</h3>

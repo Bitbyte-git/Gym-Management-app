@@ -264,7 +264,12 @@ export default function Operations({ section, user, query = '' }) {
           type: 'success',
           title: 'Thank you! Attendance marked',
           subtitle: result.data.message || (isCheckout ? 'Member check-out recorded successfully.' : 'Member check-in recorded successfully.'),
-          member: selectedMember ? { fullName: selectedMember.fullName, memberId: selectedMember.memberId } : null,
+          member: selectedMember ? {
+            fullName: selectedMember.fullName,
+            memberId: selectedMember.memberId,
+            profilePicture: selectedMember.profilePicture,
+            avatarInitials: selectedMember.avatarInitials,
+          } : null,
           action: isCheckout ? 'Check out' : 'Check in',
         });
       }
@@ -426,7 +431,23 @@ export default function Operations({ section, user, query = '' }) {
         const phone = value?.mobileNumber || '';
         return (
           <div className="attendance-member-cell">
-            <span className="attendance-avatar">{initials}</span>
+            {value?.profilePicture ? (
+              <img
+                src={value.profilePicture}
+                alt={name}
+                className="attendance-avatar-img-sm"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+                }}
+              />
+            ) : null}
+            <span
+              className="attendance-avatar"
+              style={{ display: value?.profilePicture ? 'none' : 'grid' }}
+            >
+              {initials}
+            </span>
             <div>
               <b>{name}</b>
               <small>{memberId ? `${memberId}` : ''}{phone ? (memberId ? ` · ${phone}` : phone) : (!memberId ? 'Member' : '')}</small>
@@ -501,7 +522,23 @@ export default function Operations({ section, user, query = '' }) {
       const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'M';
       return (
         <div className="attendance-member-cell">
-          <span className="attendance-avatar" style={{ width: 34, height: 34, fontSize: 11, borderRadius: 8 }}>{initials}</span>
+          {row.profilePicture ? (
+            <img
+              src={row.profilePicture}
+              alt={name}
+              className="attendance-avatar-img-sm"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+              }}
+            />
+          ) : null}
+          <span
+            className="attendance-avatar"
+            style={{ width: 34, height: 34, fontSize: 11, borderRadius: 8, display: row.profilePicture ? 'none' : 'grid' }}
+          >
+            {initials}
+          </span>
           <div>
             <b>{name}</b>
             <small>{row.user?.email || row.mobileNumber || 'Member'}</small>

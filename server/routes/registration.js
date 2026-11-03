@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const upload = require('../middleware/upload');
 const {
   submitBasicDetails,
   submitHealthDetails,
@@ -9,8 +10,10 @@ const {
   submitSelection,
   completeRegistration,
   getRegistrationSummary,
+  uploadAvatar,
 } = require('../controllers/registrationController');
 
+router.post('/upload-avatar', upload.single('avatar'), uploadAvatar);
 router.post('/resume', require('../controllers/registrationController').resumeRegistration);
 router.post('/basic-details', submitBasicDetails);
 router.post('/health-details', submitHealthDetails);

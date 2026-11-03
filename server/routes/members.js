@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize, authorizeMemberParam } = require('../middleware/auth');
 const auditLogger = require('../middleware/auditLogger');
+const upload = require('../middleware/upload');
 const {
   getMembers,
   getMember,
   createMember,
   getMemberProfile,
   updateMemberProfile,
+  uploadMemberAvatar,
   updateMember,
   deleteMember,
 } = require('../controllers/memberController');
@@ -19,6 +21,7 @@ router
 
 router.get('/profile', protect, authorize('member'), getMemberProfile);
 router.put('/profile', protect, authorize('member'), auditLogger('update_profile', 'member'), updateMemberProfile);
+router.post('/profile/avatar', protect, authorize('member'), upload.single('avatar'), auditLogger('upload_avatar', 'member'), uploadMemberAvatar);
 
 router
   .route('/:id')

@@ -60,6 +60,8 @@ export default function AttendanceVerification({ standalone = true }) {
       setLastPunch({
         name: data.member.fullName || 'Member',
         memberId: data.member.memberId || '',
+        profilePicture: data.member.profilePicture || null,
+        avatarInitials: data.member.avatarInitials,
         action: data.action || 'Check in',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         session: data.sessionName || getSessionName(),
@@ -376,8 +378,22 @@ export default function AttendanceVerification({ standalone = true }) {
           {/* Subtle Live Last Punch Notification Card */}
           {lastPunch && (
             <div className="verification-recent-indicator" role="status" aria-live="polite">
-              <div className="recent-punch-avatar">
-                {lastPunch.name.slice(0, 2).toUpperCase()}
+              {lastPunch.profilePicture ? (
+                <img
+                  src={lastPunch.profilePicture}
+                  alt={lastPunch.name}
+                  className="recent-punch-avatar-img"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+                  }}
+                />
+              ) : null}
+              <div
+                className="recent-punch-avatar"
+                style={{ display: lastPunch.profilePicture ? 'none' : 'grid' }}
+              >
+                {lastPunch.avatarInitials || lastPunch.name.slice(0, 2).toUpperCase()}
               </div>
               <div className="recent-punch-details">
                 <div className="recent-punch-line1">

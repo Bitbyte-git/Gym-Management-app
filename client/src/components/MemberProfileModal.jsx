@@ -15,7 +15,23 @@ export default function MemberProfileModal({ member, onClose }) {
     <article className="member-profile-modal">
       <header className="member-profile-hero">
         <button className="member-modal-close" onClick={onClose} aria-label="Close member profile"><X size={19}/></button>
-        <div className="member-profile-avatar">{initials(member.fullName)}</div>
+        {member.profilePicture ? (
+          <img
+            src={member.profilePicture}
+            alt={member.fullName}
+            className="member-profile-avatar-img"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+            }}
+          />
+        ) : null}
+        <div
+          className="member-profile-avatar"
+          style={{ display: member.profilePicture ? 'none' : 'grid' }}
+        >
+          {initials(member.fullName)}
+        </div>
         <div className="member-profile-identity">
           <span>MEMBER PROFILE</span><h2>{member.fullName}</h2>
           <p>{member.memberId} <i/> Joined {date(member.createdAt)}</p>

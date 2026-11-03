@@ -87,6 +87,7 @@ const config = {
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET,
     folder: process.env.CLOUDINARY_FOLDER || 'gym-receipts',
+    avatarsFolder: process.env.CLOUDINARY_AVATARS_FOLDER || 'gym-avatars',
   },
   sms: {
     enabled: process.env.SMS_ENABLED === 'true',

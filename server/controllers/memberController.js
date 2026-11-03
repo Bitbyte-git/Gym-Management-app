@@ -1,5 +1,6 @@
 const MemberProfile = require('../models/MemberProfile');
 const User = require('../models/User');
+const cloudinaryService = require('../services/cloudinaryService');
 
 const memberEditableFields = [
   'fullName',
@@ -17,6 +18,7 @@ const memberEditableFields = [
   'recentOperations',
   'healthNotes',
   'physicalLimitations',
+  'profilePicture',
 ];
 
 // @desc    Get all members
@@ -143,6 +145,42 @@ exports.updateMemberProfile = async (req, res, next) => {
     await member.save();
     res.status(200).json({ success: true, data: member });
   } catch (error) {
+    next(error);
+  }
+};
+
+exports.uploadMemberAvatar = async (req, res, next) => {
+  try {
+    let imageInput = null;
+
+    if (req.file && req.file.buffer) {
+      imageInput = req.file.buffer;
+    } else if (req.body && req.body.image) {
+      imageInput = req.body.image;
+    }
+
+    if (!imageInput) {
+      return res.status(400).json({ success: false, error: 'Please provide an image' });
+    }
+
+    const member = await MemberProfile.findOne({ user: req.user.id });
+    if (!member) {
+      return res.status(404).json({ success: false, error: 'Member profile not found' });
+    }
+
+    const uploadResult = await cloudinaryService.uploadAvatar(imageInput);
+    member.profilePicture = uploadResult.secureUrl || uploadResult.url;
+    await member.save();
+
+    res.status(200).json({
+      success: true,
+      data: member,
+      message: 'Profile picture uploaded to Cloudinary successfully',
+    });
+  } catch (error) {
+    if (error.code === 'CLOUDINARY_NOT_CONFIGURED') {
+      return res.status(503).json({ success: false, error: error.message });
+    }
     next(error);
   }
 };
