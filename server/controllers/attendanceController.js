@@ -19,7 +19,7 @@ const { validateAttendanceAccess } = require('../services/attendanceAccess');
 // @access  Private (Admin, Reception)
 exports.getAttendance = async (req, res, next) => {
   try {
-    const { startDate, endDate, memberId } = req.query;
+    const { startDate, endDate, memberId, sessionName, attendanceStatus } = req.query;
     
     let query = {};
     
@@ -29,6 +29,14 @@ exports.getAttendance = async (req, res, next) => {
     
     if (memberId) {
       query.member = memberId;
+    }
+
+    if (sessionName && sessionName !== 'all') {
+      query.sessionName = sessionName;
+    }
+
+    if (attendanceStatus && attendanceStatus !== 'all') {
+      query.attendanceStatus = attendanceStatus;
     }
 
     const attendance = await MemberAttendance.find(query)

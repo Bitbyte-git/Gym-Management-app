@@ -1,10 +1,11 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services';
-import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint } from 'lucide-react';
+import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
+import { TableSkeleton } from '../components/Skeleton';
 // AttendanceKiosk biometric scanner delegated to standalone Kiosk (/kiosk)
 import AttendancePopup from '../components/AttendancePopup';
 import { parseBiometricFeedback } from '../utils/biometricErrors';
@@ -139,6 +140,7 @@ const summaryItems = summary => Object.entries(summary || {}).flatMap(([key, val
 ).filter(item => item.value !== undefined).slice(0, 8);
 const unpack = (data, key) => Array.isArray(data) ? data : key && Array.isArray(data?.[key]) ? data[key] : data?._id ? [data] : [];
 const csvCell = value => '"' + String(value ?? '').replace(/^[=+@\-\t\r]/, "'$&").replaceAll('"', '""') + '"';
+const filterableSections = ['members', 'trainers', 'memberships', 'membership', 'attendance', 'payments', 'slots', 'slotAllocations', 'allocations', 'users'];
 
 export default function Operations({ section, user, query = '' }) {
   const nav = useNavigate();
@@ -166,7 +168,78 @@ export default function Operations({ section, user, query = '' }) {
   const [slotLoading, setSlotLoading] = useState(false);
   const [attendanceTab, setAttendanceTab] = useState('all');
   const [attendancePopup, setAttendancePopup] = useState(null);
-  useEffect(() => { setPage(1); setRows([]); setAction(null); setReceipt(null); setDetails(null); }, [section, query]);
+  const initialFilters = {
+    status: 'all',
+    membershipStatus: 'all',
+    paymentStatus: 'all',
+    paymentMethod: 'all',
+    session: 'all',
+    attendanceStatus: 'all',
+    gender: 'all',
+    specialization: 'all',
+    plan: 'all',
+    role: 'all',
+  };
+  const [filters, setFilters] = useState(initialFilters);
+  const [datePreset, setDatePreset] = useState('');
+
+  const handleFilterChange = (key, val) => {
+    setFilters(prev => ({ ...prev, [key]: val }));
+    setPage(1);
+  };
+
+  const applyDatePreset = (preset) => {
+    setDatePreset(preset);
+    const today = new Date();
+    const formatDate = d => d.toISOString().slice(0, 10);
+
+    if (preset === 'today') {
+      const d = formatDate(today);
+      setStartDate(d);
+      setEndDate(d);
+    } else if (preset === 'yesterday') {
+      const y = new Date(today);
+      y.setDate(y.getDate() - 1);
+      const d = formatDate(y);
+      setStartDate(d);
+      setEndDate(d);
+    } else if (preset === '7days') {
+      const s = new Date(today);
+      s.setDate(s.getDate() - 7);
+      setStartDate(formatDate(s));
+      setEndDate(formatDate(today));
+    } else if (preset === 'month') {
+      const s = new Date(today.getFullYear(), today.getMonth(), 1);
+      setStartDate(formatDate(s));
+      setEndDate(formatDate(today));
+    } else if (preset === 'clear') {
+      setStartDate('');
+      setEndDate('');
+    }
+    setPage(1);
+  };
+
+  const activeFilterCount = Object.values(filters).filter(v => v !== 'all').length + (startDate || endDate ? 1 : 0);
+  const resetAllFilters = () => {
+    setFilters(initialFilters);
+    setStartDate('');
+    setEndDate('');
+    setDatePreset('');
+    setPage(1);
+  };
+
+  useEffect(() => {
+    setPage(1);
+    setRows([]);
+    setAction(null);
+    setReceipt(null);
+    setDetails(null);
+    setFilters(initialFilters);
+    setStartDate('');
+    setEndDate('');
+    setDatePreset('');
+  }, [section]);
+
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -181,7 +254,23 @@ export default function Operations({ section, user, query = '' }) {
         if (section === 'coach') url = `/trainer-allocations/member/${user.profile?._id}`;
         if (section === 'schedule') url = `/time-slots/member/${user.profile?._id}`;
         if (!url) { setRows([]); return; }
-        const response = await api.get(url, { params: { page, limit: 25, search: query || undefined, startDate: startDate || undefined, endDate: endDate || undefined } });
+        const params = {
+          page,
+          limit: 25,
+          search: query || undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+          status: filters.status !== 'all' ? filters.status : undefined,
+          membershipStatus: filters.membershipStatus !== 'all' ? filters.membershipStatus : undefined,
+          paymentStatus: filters.paymentStatus !== 'all' ? filters.paymentStatus : undefined,
+          paymentMethod: filters.paymentMethod !== 'all' ? filters.paymentMethod : undefined,
+          sessionName: filters.session !== 'all' ? filters.session : undefined,
+          attendanceStatus: filters.attendanceStatus !== 'all' ? filters.attendanceStatus : undefined,
+          gender: filters.gender !== 'all' ? filters.gender : undefined,
+          specialization: filters.specialization !== 'all' ? filters.specialization : undefined,
+          role: filters.role !== 'all' ? filters.role : undefined,
+        };
+        const response = await api.get(url, { params });
         if (!active) return;
         const data = response.data.data;
         let list = unpack(data, definition?.key);
@@ -194,7 +283,7 @@ export default function Operations({ section, user, query = '' }) {
       finally { if (active) setLoading(false); }
     };
     load(); return () => { active = false; };
-  }, [section, user, query, page, revision, report, startDate, endDate]);
+  }, [section, user, query, page, revision, report, startDate, endDate, filters]);
 
   const begin = async (title, method, url, fields = [], row = {}, defaults = {}) => {
     setError(''); setNotice(''); setBusy(true);
@@ -326,6 +415,39 @@ export default function Operations({ section, user, query = '' }) {
   let visible = rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
   if (section === 'attendance' && attendanceTab === 'active') {
     visible = visible.filter(row => Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present')));
+  }
+  if (filters.status !== 'all') {
+    visible = visible.filter(row => (row.registrationStatus || row.status) === filters.status);
+  }
+  if (filters.membershipStatus !== 'all') {
+    visible = visible.filter(row => (row.membershipStatus || row.status) === filters.membershipStatus);
+  }
+  if (filters.paymentStatus !== 'all') {
+    visible = visible.filter(row => row.paymentStatus === filters.paymentStatus);
+  }
+  if (filters.paymentMethod !== 'all') {
+    visible = visible.filter(row => row.paymentMethod === filters.paymentMethod);
+  }
+  if (filters.session !== 'all') {
+    visible = visible.filter(row => (row.sessionName || '').toLowerCase() === filters.session.toLowerCase());
+  }
+  if (filters.attendanceStatus !== 'all') {
+    visible = visible.filter(row => (row.attendanceStatus || '').toLowerCase() === filters.attendanceStatus.toLowerCase());
+  }
+  if (filters.gender !== 'all') {
+    visible = visible.filter(row => (row.gender || '').toLowerCase() === filters.gender.toLowerCase());
+  }
+  if (filters.specialization !== 'all') {
+    visible = visible.filter(row => (row.specialization || '').toLowerCase().includes(filters.specialization.toLowerCase()));
+  }
+  if (filters.plan !== 'all') {
+    visible = visible.filter(row => {
+      const p = row.membershipPlan?.name || row.membershipPlan || row.name || '';
+      return p.toLowerCase().includes(filters.plan.toLowerCase());
+    });
+  }
+  if (filters.role !== 'all') {
+    visible = visible.filter(row => (row.role || '').toLowerCase() === filters.role.toLowerCase());
   }
   let columns = section === 'reports' ? reportColumns[report] || [] : definition?.columns || [];
   if (user.role === 'trainer' && section === 'members') columns = ['member', 'startDate', 'status'];
@@ -599,6 +721,219 @@ export default function Operations({ section, user, query = '' }) {
         </button>
       </div>
     )}
+    {filterableSections.includes(section) && (
+      <div className="section-filter-bar">
+        <div className="filter-bar-header">
+          <SlidersHorizontal size={14} />
+          <span>Filter</span>
+        </div>
+
+        {/* Section: Members */}
+        {section === 'members' && (
+          <>
+            <div className="filter-item">
+              <label>Registration</label>
+              <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)}>
+                <option value="all">All Registrations</option>
+                <option value="active">Active</option>
+                <option value="pending_registration">Pending Registration</option>
+                <option value="pending_payment">Pending Payment</option>
+                <option value="pending_biometric">Pending Biometric</option>
+                <option value="suspended">Suspended</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Membership</label>
+              <select value={filters.membershipStatus} onChange={e => handleFilterChange('membershipStatus', e.target.value)}>
+                <option value="all">All Memberships</option>
+                <option value="active">Active Plan</option>
+                <option value="expired">Expired</option>
+                <option value="frozen">Frozen</option>
+                <option value="none">No Plan</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {/* Section: Trainers */}
+        {section === 'trainers' && (
+          <>
+            <div className="filter-item">
+              <label>Status</label>
+              <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)}>
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="on_leave">On Leave</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Gender</label>
+              <select value={filters.gender} onChange={e => handleFilterChange('gender', e.target.value)}>
+                <option value="all">All Genders</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Specialization</label>
+              <select value={filters.specialization} onChange={e => handleFilterChange('specialization', e.target.value)}>
+                <option value="all">All Specializations</option>
+                <option value="strength">Strength & Conditioning</option>
+                <option value="cardio">Cardio & Weight Loss</option>
+                <option value="functional">HIIT & Functional</option>
+                <option value="yoga">Yoga & Mobility</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {/* Section: Memberships */}
+        {['memberships', 'membership'].includes(section) && (
+          <>
+            <div className="filter-item">
+              <label>Status</label>
+              <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)}>
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="expired">Expired</option>
+                <option value="frozen">Frozen</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Payment</label>
+              <select value={filters.paymentStatus} onChange={e => handleFilterChange('paymentStatus', e.target.value)}>
+                <option value="all">All Payment Statuses</option>
+                <option value="paid">Fully Paid</option>
+                <option value="pending">Pending</option>
+                <option value="partial">Partial</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Plan</label>
+              <select value={filters.plan} onChange={e => handleFilterChange('plan', e.target.value)}>
+                <option value="all">All Plans</option>
+                <option value="basic">Basic Plan</option>
+                <option value="standard">Standard Plan</option>
+                <option value="premium">Premium Plan</option>
+                <option value="annual">Annual Plan</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {/* Section: Attendance */}
+        {section === 'attendance' && (
+          <>
+            <div className="filter-item">
+              <label>Session</label>
+              <select value={filters.session} onChange={e => handleFilterChange('session', e.target.value)}>
+                <option value="all">All Sessions</option>
+                <option value="morning">Morning (5AM–12PM)</option>
+                <option value="afternoon">Afternoon (12PM–4PM)</option>
+                <option value="evening">Evening (4PM–10PM)</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Status</label>
+              <select value={filters.attendanceStatus} onChange={e => handleFilterChange('attendanceStatus', e.target.value)}>
+                <option value="all">All Statuses</option>
+                <option value="present">Present</option>
+                <option value="late">Late Arrival</option>
+                <option value="early_leave">Early Departure</option>
+                <option value="absent">Absent</option>
+              </select>
+            </div>
+            <div className="filter-presets-group">
+              <button type="button" className={`filter-preset-btn ${datePreset === 'today' ? 'active' : ''}`} onClick={() => applyDatePreset('today')}>Today</button>
+              <button type="button" className={`filter-preset-btn ${datePreset === 'yesterday' ? 'active' : ''}`} onClick={() => applyDatePreset('yesterday')}>Yesterday</button>
+              <button type="button" className={`filter-preset-btn ${datePreset === '7days' ? 'active' : ''}`} onClick={() => applyDatePreset('7days')}>Last 7d</button>
+              <button type="button" className={`filter-preset-btn ${datePreset === 'month' ? 'active' : ''}`} onClick={() => applyDatePreset('month')}>This Month</button>
+            </div>
+          </>
+        )}
+
+        {/* Section: Payments */}
+        {section === 'payments' && (
+          <>
+            <div className="filter-item">
+              <label>Status</label>
+              <select value={filters.paymentStatus} onChange={e => handleFilterChange('paymentStatus', e.target.value)}>
+                <option value="all">All Statuses</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Method</label>
+              <select value={filters.paymentMethod} onChange={e => handleFilterChange('paymentMethod', e.target.value)}>
+                <option value="all">All Methods</option>
+                <option value="cash">Cash Counter</option>
+                <option value="online_gateway">Online (Razorpay)</option>
+                <option value="upi">UPI</option>
+                <option value="card">Card</option>
+              </select>
+            </div>
+            <div className="filter-presets-group">
+              <button type="button" className={`filter-preset-btn ${datePreset === 'today' ? 'active' : ''}`} onClick={() => applyDatePreset('today')}>Today</button>
+              <button type="button" className={`filter-preset-btn ${datePreset === 'month' ? 'active' : ''}`} onClick={() => applyDatePreset('month')}>This Month</button>
+            </div>
+          </>
+        )}
+
+        {/* Section: Slots & Allocations */}
+        {['slots', 'slotAllocations', 'allocations'].includes(section) && (
+          <div className="filter-item">
+            <label>Status</label>
+            <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)}>
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        )}
+
+        {/* Section: Users */}
+        {section === 'users' && (
+          <>
+            <div className="filter-item">
+              <label>Role</label>
+              <select value={filters.role} onChange={e => handleFilterChange('role', e.target.value)}>
+                <option value="all">All Roles</option>
+                <option value="admin">Administrator</option>
+                <option value="reception">Reception Staff</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Status</label>
+              <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)}>
+                <option value="all">All Statuses</option>
+                <option value="active">Active Account</option>
+                <option value="inactive">Inactive Account</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {/* Right side: Clear filter + Count badge */}
+        <div className="filter-bar-actions">
+          {activeFilterCount > 0 && (
+            <button type="button" className="filter-clear-btn" onClick={resetAllFilters}>
+              <RotateCcw size={12} /> Clear ({activeFilterCount})
+            </button>
+          )}
+          <span className="filter-results-badge">
+            Showing <b>{visible.length}</b> {pagination?.total ? `of ${pagination.total}` : 'records'}
+          </span>
+        </div>
+      </div>
+    )}
     <div className="toolbar operation-tools">
       {section === 'reports' && <label className="report-type-filter"><span>Report</span><select value={report} onChange={e => setReport(e.target.value)}>{reportTypes.map(type => <option key={type} value={type}>{reportLabels[type]}</option>)}</select></label>}
       {['reports', 'attendance', 'payments'].includes(section) && <>
@@ -707,10 +1042,13 @@ export default function Operations({ section, user, query = '' }) {
         </button>
       </div>
     )}
-    {loading ? <p role="status"><Loader2 className="animate-spin"/> Loading…</p> : <section className={`table-card ${section === 'reports' ? 'report-table-card' : ''} ${section === 'payments' ? 'payments-table-card' : ''} ${section === 'attendance' ? 'attendance-table-card' : ''}`}><div className="table-scroll"><table>
+    {loading ? (
+      <TableSkeleton rows={8} cols={columns.length + (showActions ? 1 : 0)} showHeader={false} />
+    ) : (
+      <section className={`table-card ${section === 'reports' ? 'report-table-card' : ''} ${section === 'payments' ? 'payments-table-card' : ''} ${section === 'attendance' ? 'attendance-table-card' : ''}`}><div className="table-scroll"><table>
       <thead><tr>{columns.map(key => <th key={key}>{label(key)}</th>)}{showActions && <th>Actions</th>}</tr></thead>
       <tbody>{visible.length ? visible.map((row, i) => <tr key={row._id || row.slotId || i}>{columns.map(key => <td key={key}>{renderCell(row, key)}</td>)}{showActions && <td><div className="row-actions">{rowActions(row)}</div></td>}</tr>) : <tr><td className="empty-table" colSpan={columns.length + (showActions ? 1 : 0)}>No records found for the selected filters.</td></tr>}</tbody>
-    </table></div></section>}
+    </table></div></section>)}
     {pagination && <div className="form-actions"><button className="outline-btn" disabled={page <= 1} onClick={() => setPage(v => v - 1)}>Previous</button><span>Page {page} of {pagination.pages || 1} ? {pagination.total} records</span><button className="outline-btn" disabled={page >= pagination.pages} onClick={() => setPage(v => v + 1)}>Next</button></div>}
   </div>;
 }

@@ -14,7 +14,18 @@ const { addMonthsClamped } = require('../utils/date');
 // @access  Private (Admin, Reception)
 exports.getMemberships = async (req, res, next) => {
   try {
-    const memberships = await MemberMembership.find()
+    const query = {};
+    if (req.query.status && req.query.status !== 'all') {
+      query.status = req.query.status;
+    }
+    if (req.query.paymentStatus && req.query.paymentStatus !== 'all') {
+      query.paymentStatus = req.query.paymentStatus;
+    }
+    if (req.query.planId && req.query.planId !== 'all') {
+      query.membershipPlan = req.query.planId;
+    }
+
+    const memberships = await MemberMembership.find(query)
       .populate('member', 'memberId fullName mobileNumber')
       .populate('membershipPlan', 'name duration price')
       .sort({ createdAt: -1 });

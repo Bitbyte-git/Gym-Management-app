@@ -114,13 +114,7 @@ export default function Landing() {
               Explore Programs <ArrowRight />
             </button>
           </div>
-          <div className="trust-row">
-            <span>Available On :</span>
-            <Globe2 />
-            <b>Web App</b>
-            <span className="platform">◆</span>
-            <b>Android</b>
-          </div>
+
         </div>
 
         <div className="hero-visual">

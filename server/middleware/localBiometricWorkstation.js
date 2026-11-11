@@ -2,6 +2,7 @@ const config = require('../config/env');
 const loopback = ip => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip);
 
 module.exports = (req, res, next) => {
+  if (config.nodeEnv !== 'development' || config.biometric.identificationMode !== 'morfin-local-development') return next();
   // If running in kiosk-assisted mode or production, remote clients are fully authorized
   if (config.nodeEnv === 'production' || config.biometric.identificationMode !== 'morfin-local-development') {
     return next();

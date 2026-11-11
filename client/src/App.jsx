@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import ScrollToTop from './components/ScrollToTop';
+import { AppSkeleton } from './components/Skeleton';
 
 const Landing = lazy(() => import('./pages/Landing'));
 const Programs = lazy(() => import('./pages/Programs'));
@@ -18,7 +19,7 @@ const AttendanceVerification = lazy(() => import('./pages/AttendanceVerification
 
 export default function App(){
   return <ErrorBoundary>
-    <Suspense fallback={<div className="page-loading" role="status">Loading Vino Fitness Studio…</div>}>
+    <Suspense fallback={<AppSkeleton />}>
     <ScrollToTop />
     <Routes>
       {/* Member-Centric Public Routes */}

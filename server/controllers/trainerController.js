@@ -11,7 +11,9 @@ exports.getTrainers = async (req, res, next) => {
     const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
     const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 50, 1), 100);
     const query = {};
-    if (req.query.status) query.status = req.query.status;
+    if (req.query.status && req.query.status !== 'all') query.status = req.query.status;
+    if (req.query.gender && req.query.gender !== 'all') query.gender = req.query.gender;
+    if (req.query.specialization && req.query.specialization !== 'all') query.specialization = { $regex: req.query.specialization, $options: 'i' };
     if (req.query.search) {
       const search = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [

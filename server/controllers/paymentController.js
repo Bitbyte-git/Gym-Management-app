@@ -36,7 +36,17 @@ const matchesIdempotentPaymentRequest = (payment, { memberId, membershipId, amou
 // @access  Private (Admin, Reception)
 exports.getPayments = async (req, res, next) => {
   try {
-    const payments = await Payment.find((req.query.startDate || req.query.endDate) ? { paymentDate: dateRange(req.query.startDate, req.query.endDate) } : {})
+    const query = {};
+    if (req.query.startDate || req.query.endDate) {
+      query.paymentDate = dateRange(req.query.startDate, req.query.endDate);
+    }
+    if (req.query.paymentStatus && req.query.paymentStatus !== 'all') {
+      query.paymentStatus = req.query.paymentStatus;
+    }
+    if (req.query.paymentMethod && req.query.paymentMethod !== 'all') {
+      query.paymentMethod = req.query.paymentMethod;
+    }
+    const payments = await Payment.find(query)
       .populate('member', 'memberId fullName mobileNumber')
       .populate('membership', 'startDate endDate')
       .sort({ paymentDate: -1 });

@@ -37,8 +37,11 @@ exports.getMembers = async (req, res, next) => {
         { mobileNumber: { $regex: search, $options: 'i' } },
       ];
     }
-    if (req.query.status) {
+    if (req.query.status && req.query.status !== 'all') {
       query.registrationStatus = req.query.status;
+    }
+    if (req.query.membershipStatus && req.query.membershipStatus !== 'all') {
+      query.membershipStatus = req.query.membershipStatus;
     }
 
     if (req.query.search) {

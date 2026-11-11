@@ -1,13 +1,12 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { AppSkeleton } from './Skeleton';
 
 export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: 'var(--ink)' }}>
-      <div className="text-white">Loading...</div>
-    </div>;
+    return <AppSkeleton />;
   }
 
   if (!isAuthenticated || !user) {

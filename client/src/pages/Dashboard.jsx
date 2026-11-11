@@ -1,9 +1,10 @@
 import Operations from './Operations';
 import Biometrics from './Biometrics';
 import { Brand } from '../components/Brand';
+import { DashboardContentSkeleton } from '../components/Skeleton';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Dumbbell, CreditCard, CalendarCheck, ReceiptIndianRupee, ChartNoAxesCombined, Search, Plus, ArrowUpRight, LogOut, Menu, X, ChevronRight, WalletCards, UserCheck, Clock3, Flame, Utensils, Target, Loader2, Fingerprint } from 'lucide-react';
+import { LayoutDashboard, Users, Dumbbell, CreditCard, CalendarCheck, ReceiptIndianRupee, ChartNoAxesCombined, Search, Plus, ArrowUpRight, LogOut, Menu, X, ChevronRight, WalletCards, UserCheck, Clock3, Flame, Utensils, Target, Loader2, Fingerprint, IndianRupee, Bell, Settings, Layers, ShieldCheck, CalendarRange, CalendarDays, UserPlus, DoorOpen, FileText, MapPin, Activity } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api, dashboardService, memberService } from '../services';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
@@ -25,18 +26,43 @@ const recentGymDates = count => {
 };
 
 const adminNav = [
-  [LayoutDashboard, 'Overview', 'dashboard'], [Users, 'Members', 'members'], [UserCheck, 'Fingerprints', 'biometrics'],
-  [Dumbbell, 'Trainers', 'trainers'], [CreditCard, 'Membership plans', 'plans'],
-  [CreditCard, 'Member memberships', 'memberships'], [CalendarCheck, 'Check-in & attendance', 'attendance'],
-  [WalletCards, 'Payments & receipts', 'payments'], [UserCheck, 'Member trainers', 'allocations'],
-  [Clock3, 'Daily time slots', 'slots'], [CalendarCheck, 'Member slot assignments', 'slotAllocations'], [Clock3, 'Opening hours', 'hours'],
-  [CalendarCheck, 'Trainer availability', 'availability'], [ChartNoAxesCombined, 'Reports', 'reports'],
-  [Users, 'Staff accounts', 'users'], [CalendarCheck, 'Notifications', 'notifications'],
-  [LayoutDashboard, 'Settings', 'settings'], [ReceiptIndianRupee, 'Audit trail', 'audit'],
+  [LayoutDashboard, 'Overview', 'dashboard'],
+  [Users, 'Members', 'members'],
+  [Fingerprint, 'Fingerprints', 'biometrics'],
+  [Dumbbell, 'Trainers', 'trainers'],
+  [Layers, 'Membership plans', 'plans'],
+  [CreditCard, 'Member memberships', 'memberships'],
+  [CalendarCheck, 'Check-in & attendance', 'attendance'],
+  [ReceiptIndianRupee, 'Payments & receipts', 'payments'],
+  [UserPlus, 'Member trainers', 'allocations'],
+  [Clock3, 'Daily time slots', 'slots'],
+  [CalendarRange, 'Member slot assignments', 'slotAllocations'],
+  [DoorOpen, 'Opening hours', 'hours'],
+  [CalendarDays, 'Trainer availability', 'availability'],
+  [ChartNoAxesCombined, 'Reports', 'reports'],
+  [ShieldCheck, 'Staff accounts', 'users'],
+  [Bell, 'Notifications', 'notifications'],
+  [Settings, 'Settings', 'settings'],
+  [FileText, 'Audit trail', 'audit'],
 ];
 const receptionSections = ['biometrics', 'dashboard', 'members', 'memberships', 'attendance', 'payments', 'slots', 'slotAllocations', 'notifications'];
-const trainerNav = [[LayoutDashboard, 'Overview', 'dashboard'], [Users, 'My members', 'members'], [Clock3, 'My availability', 'availability'], [CalendarCheck, 'Notifications', 'notifications']];
-const memberNav = [[UserCheck, 'Fingerprint', 'biometrics'], [LayoutDashboard, 'Overview', 'dashboard'], [Users, 'My profile', 'profile'], [CreditCard, 'Memberships', 'membership'], [CalendarCheck, 'Attendance', 'attendance'], [WalletCards, 'Payments', 'payments'], [Dumbbell, 'My trainer', 'coach'], [Clock3, 'My slot', 'schedule'], [CalendarCheck, 'Notifications', 'notifications']];
+const trainerNav = [
+  [LayoutDashboard, 'Overview', 'dashboard'],
+  [Users, 'My members', 'members'],
+  [Clock3, 'My availability', 'availability'],
+  [Bell, 'Notifications', 'notifications'],
+];
+const memberNav = [
+  [Fingerprint, 'Fingerprint', 'biometrics'],
+  [LayoutDashboard, 'Overview', 'dashboard'],
+  [Users, 'My profile', 'profile'],
+  [CreditCard, 'Memberships', 'membership'],
+  [CalendarCheck, 'Attendance', 'attendance'],
+  [ReceiptIndianRupee, 'Payments', 'payments'],
+  [Dumbbell, 'My trainer', 'coach'],
+  [Clock3, 'My slot', 'schedule'],
+  [Bell, 'Notifications', 'notifications'],
+];
 
 export default function Dashboard({ role = 'admin' }) {
   const nav = useNavigate();
@@ -65,12 +91,14 @@ export default function Dashboard({ role = 'admin' }) {
           </button>
         </div>
         <div className="location">
-          <img src="/Gym-Logo-128.png" alt="Vino Fitness Studio" className="location-logo" />
+          <div className="location-icon-badge">
+            <MapPin size={16} />
+          </div>
           <div>
             <b>Vino Fitness Studio</b>
             <small>Unisex Fitness Studio</small>
           </div>
-          <ChevronRight />
+          <ChevronRight size={16} />
         </div>
         <nav>
           {links.map(([Icon, label, path]) => (
@@ -253,11 +281,7 @@ function Overview({ role, onNavigate }) {
   };
 
   if (loading) {
-    return (
-      <div className="dash-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
-        <Loader2 className="animate-spin" size={48} style={{ color: 'var(--lime)' }} />
-      </div>
-    );
+    return <DashboardContentSkeleton role={role} />;
   }
   if (loadError) {
     return (
@@ -283,7 +307,7 @@ function Overview({ role, onNavigate }) {
       [Users, 'Total members', stats?.totalMembers ?? 0, 'Registered member profiles'],
       [UserCheck, 'Active members', stats?.activeMembers ?? 0, 'Current membership status'],
       [CalendarCheck, "Today's check-ins", stats?.todayCheckins ?? 0, 'Attendance records'],
-      [WalletCards, 'Monthly revenue', money(stats?.monthlyRevenue), 'Completed payments this month']
+      [IndianRupee, 'Monthly revenue', money(stats?.monthlyRevenue), 'Completed payments this month']
     ];
 
   return (
@@ -333,10 +357,26 @@ function AdminAnalytics({ stats, onNavigate }) {
   const tooltipStyle = { background: '#151912', border: '1px solid #252D1B', borderRadius: 8, color: '#F5F7F2' };
   return <>
     <section className="analytics-summary">
-      <article><span>Currently inside</span><strong>{stats.currentlyCheckedIn || 0}</strong><small>Members checked in now</small></article>
-      <article><span>Active trainers</span><strong>{stats.activeTrainers || 0}<em> / {stats.totalTrainers || 0}</em></strong><small>Available trainer profiles</small></article>
-      <article><span>Expiring soon</span><strong>{stats.expiringSoon || 0}</strong><small>Within the next 30 days</small></article>
-      <article><span>Pending dues</span><strong>{money(stats.pendingDues)}</strong><small>Outstanding member balance</small></article>
+      <article>
+        <div className="analytics-summary-head"><span>Currently inside</span><Flame size={15} color="var(--color-primary)" /></div>
+        <strong>{stats.currentlyCheckedIn || 0}</strong>
+        <small>Members checked in now</small>
+      </article>
+      <article>
+        <div className="analytics-summary-head"><span>Active trainers</span><Dumbbell size={15} color="var(--color-primary)" /></div>
+        <strong>{stats.activeTrainers || 0}<em> / {stats.totalTrainers || 0}</em></strong>
+        <small>Available trainer profiles</small>
+      </article>
+      <article>
+        <div className="analytics-summary-head"><span>Expiring soon</span><Clock3 size={15} color="#F6B94A" /></div>
+        <strong>{stats.expiringSoon || 0}</strong>
+        <small>Within the next 30 days</small>
+      </article>
+      <article>
+        <div className="analytics-summary-head"><span>Pending dues</span><IndianRupee size={15} color="#FF6B72" /></div>
+        <strong>{money(stats.pendingDues)}</strong>
+        <small>Outstanding member balance</small>
+      </article>
     </section>
     <section className="analytics-grid">
       <article className="analytics-card analytics-wide">
@@ -374,7 +414,7 @@ function AdminAnalytics({ stats, onNavigate }) {
         <div className="admin-action-grid">
           <button onClick={() => onNavigate('/admin/members')}><Users/><span><b>Members</b><small>Profiles and status</small></span><ChevronRight/></button>
           <button onClick={() => onNavigate('/admin/attendance')}><CalendarCheck/><span><b>Attendance</b><small>Check-ins and history</small></span><ChevronRight/></button>
-          <button onClick={() => onNavigate('/admin/payments')}><WalletCards/><span><b>Payments</b><small>Revenue and receipts</small></span><ChevronRight/></button>
+          <button onClick={() => onNavigate('/admin/payments')}><ReceiptIndianRupee/><span><b>Payments</b><small>Revenue and receipts</small></span><ChevronRight/></button>
           <button onClick={() => onNavigate('/admin/memberships')}><CreditCard/><span><b>Memberships</b><small>Plans and renewals</small></span><ChevronRight/></button>
         </div>
       </article>
