@@ -101,17 +101,21 @@ async function getCandidates(operator) {
   await actor(operator);
   const rows = await Enrollment.find({ isActive: true, enrollmentStatus: 'enrolled' })
     .select('_id member enrollmentReference schemaVersion templateFormat +encryptedTemplate')
+    .populate('member', 'memberId fullName')
     .sort({ _id: 1 })
     .limit(config.biometric.searchMaxCandidates)
     .lean();
 
   const candidates = [];
   for (const row of rows) {
-    if (row.schemaVersion === 2 && row.templateFormat === 'FMR_V2005' && row.encryptedTemplate && row.member) {
+    const memberObjId = row.member?._id || row.member;
+    if (row.schemaVersion === 2 && row.templateFormat === 'FMR_V2005' && row.encryptedTemplate && memberObjId) {
       try {
-        const decrypted = decrypt(row.encryptedTemplate, String(row.member) + ':' + row.enrollmentReference + ':template');
+        const decrypted = decrypt(row.encryptedTemplate, String(memberObjId) + ':' + row.enrollmentReference + ':template');
         candidates.push({
-          memberId: String(row.member),
+          memberId: String(memberObjId),
+          memberCode: row.member?.memberId || undefined,
+          fullName: row.member?.fullName || undefined,
           enrollmentReference: row.enrollmentReference,
           galleryTemplate: decrypted.toString('base64'),
           templateFormat: 'FMR_V2005',

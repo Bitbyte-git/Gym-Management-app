@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Fingerprint, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import { createMorFinAuth } from '../services/morfinAuth.mjs';
+import { assertNoDuplicateCapture } from '../utils/biometricDuplicateCheck';
 
 const fingers = [
   'right_thumb', 'right_index', 'right_middle', 'right_ring', 'right_little',
@@ -45,7 +46,7 @@ export default function Biometrics({ user }) {
     if (own) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      api.get('/members', { params: { search, limit: 100 }, signal: controller.signal })
+      api.get('/members', { params: { search, limit: 100, biometricStatus: 'unenrolled' }, signal: controller.signal })
         .then(r => setMembers(r.data.data.members))
         .catch(e => { if (!controller.signal.aborted) setError(errorText(e)); });
     }, 250);
@@ -98,9 +99,12 @@ export default function Biometrics({ user }) {
     setCapture(null);
     await api.post('/biometrics/enroll/initialize', { memberId }, { signal });
     const data = await localAdapter().capture({ signal });
+    if (signal.aborted || !alive.current) return;
+    setMessage('Checking for duplicate fingerprints across profiles...');
+    await assertNoDuplicateCapture({ adapter: localAdapter(), captureData: data, targetMemberId: memberId, signal });
     if (!signal.aborted && alive.current) {
       setCapture(data);
-      setMessage('Capture successful. Review scan quality and click "Save enrollment".');
+      setMessage('Capture verified (unique fingerprint). Review scan quality and click "Save enrollment".');
     }
   });
 
@@ -112,10 +116,19 @@ export default function Biometrics({ user }) {
       ...(replace && enrollment ? { replaceEnrollmentReference: enrollment.enrollmentReference } : {}),
     }, { signal });
     if (!signal.aborted && alive.current) {
-      setEnrollment(result.data.data);
-      setCapture(null);
-      setReplace(false);
-      setMessage('Fingerprint enrolled successfully.');
+      if (!own) {
+        setMembers(prev => prev.filter(m => m._id !== memberId));
+        setMemberId('');
+        setEnrollment(null);
+        setCapture(null);
+        setReplace(false);
+        setMessage('Fingerprint enrolled! Member removed from the pending list (edit later in Members section if needed).');
+      } else {
+        setEnrollment(result.data.data);
+        setCapture(null);
+        setReplace(false);
+        setMessage('Fingerprint enrolled successfully.');
+      }
     }
   });
 
@@ -135,14 +148,16 @@ export default function Biometrics({ user }) {
         <div style={{ marginBottom: '8px' }}>
           <h2><Fingerprint aria-hidden="true" /> Fingerprint Enrollment</h2>
           <p style={{ margin: '4px 0 0', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
-            Register or update a member's biometric fingerprint for studio entry.
+            {own
+              ? 'View or register your biometric fingerprint for studio entry.'
+              : 'Enroll biometric fingerprints for pending members. Once enrolled, members are removed from this list — edit existing fingerprints in the Members section.'}
           </p>
         </div>
 
         {!own && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', maxWidth: '640px' }}>
             <label>
-              <span>Search member</span>
+              <span>Search pending member</span>
               <input
                 value={search}
                 disabled={busy}
@@ -151,13 +166,13 @@ export default function Biometrics({ user }) {
               />
             </label>
             <label>
-              <span>Select member</span>
+              <span>Select un-enrolled member</span>
               <select
                 value={memberId}
                 disabled={busy}
                 onChange={e => setMemberId(e.target.value)}
               >
-                <option value="">Choose member ({members.length} found)</option>
+                <option value="">Choose pending member ({members.length} found)</option>
                 {members.map(m => (
                   <option key={m._id} value={m._id}>
                     {m.memberId} — {m.fullName}
@@ -200,15 +215,11 @@ export default function Biometrics({ user }) {
               {' • '}
               Enrolled: {new Date(enrollment.enrollmentDate).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
-            <label className="biometric-check" style={{ fontSize: '13px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                disabled={busy}
-                checked={replace}
-                onChange={e => { setReplace(e.target.checked); setCapture(null); }}
-              />
-              Replace this saved fingerprint
-            </label>
+            {!own && (
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                Already enrolled. To edit or replace this fingerprint, go to the <strong>Members</strong> section.
+              </p>
+            )}
           </div>
         )}
 
@@ -252,7 +263,7 @@ export default function Biometrics({ user }) {
           </div>
         )}
 
-        {enrollment && (own || user.role === 'admin') && (
+        {enrollment && own && (
           <div className="biometric-actions" style={{ marginTop: '6px' }}>
             {deleteConfirm ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>

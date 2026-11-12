@@ -13,6 +13,7 @@ const schema = new mongoose.Schema({
   enrollmentData: { type: mongoose.Schema.Types.Mixed, select: false },
   encryptedTemplate: { type: envelope, select: false },
   encryptedImage: { type: envelope, select: false },
+  templateHash: { type: String, select: false, index: true },
   fingerPosition: String,
   templateFormat: String,
   imageFormat: String,
@@ -36,6 +37,7 @@ function redact(doc, value) {
   delete value.enrollmentData;
   delete value.encryptedTemplate;
   delete value.encryptedImage;
+  delete value.templateHash;
   return value;
 }
 schema.set('toJSON', { transform: redact });

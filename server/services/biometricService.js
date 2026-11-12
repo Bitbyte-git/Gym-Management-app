@@ -1,9 +1,10 @@
-const { randomUUID } = require('node:crypto');
+const { randomUUID, createHash } = require('node:crypto');
 const BiometricEnrollment = require('../models/BiometricEnrollment');
 const MemberProfile = require('../models/MemberProfile');
 const config = require('../config/env');
 const engine = require('./identificationEngine');
-const { encrypt, keyFor } = require('./biometricCrypto');
+const localIdentifier = require('./localMorFinIdentifier');
+const { encrypt, decrypt, keyFor } = require('./biometricCrypto');
 const { validateCapture, fail } = require('./biometricValidation');
 
 const matcherMessage = 'Biometric attendance is unavailable: a documented backend matcher or authenticated trusted local agent is required. Browser match results are not accepted.';
@@ -33,16 +34,70 @@ const initializeCapture = async memberId => {
   const existing = await BiometricEnrollment.findOne({ member: memberId });
   return { ...capabilities(), existingEnrollment: dto(existing) };
 };
+async function assertNoDuplicateFingerprint(memberId, template, templateHash) {
+  const hashDuplicate = await BiometricEnrollment.findOne({
+    member: { $ne: memberId },
+    isActive: true,
+    enrollmentStatus: 'enrolled',
+    templateHash,
+  }).populate('member', 'fullName memberId');
+  if (hashDuplicate) {
+    const owner = hashDuplicate.member;
+    const ownerLabel = owner ? `${owner.fullName} (${owner.memberId})` : 'another member';
+    fail(`Duplicate fingerprint detected: this fingerprint is already enrolled for ${ownerLabel}.`, 409);
+  }
+
+  if (localIdentifier.available()) {
+    const others = await BiometricEnrollment.find({
+      member: { $ne: memberId },
+      isActive: true,
+      enrollmentStatus: 'enrolled',
+      schemaVersion: 2,
+      templateFormat: 'FMR_V2005',
+    })
+      .select('member enrollmentReference +encryptedTemplate')
+      .populate('member', 'fullName memberId')
+      .limit(config.biometric.searchMaxCandidates)
+      .lean();
+
+    const probeBase64 = template.toString('base64');
+    for (const row of others) {
+      if (!row.encryptedTemplate || !row.member?._id) continue;
+      let gallery;
+      try {
+        gallery = decrypt(row.encryptedTemplate, String(row.member._id) + ':' + row.enrollmentReference + ':template');
+        const result = await localIdentifier.postVendor(
+          config.biometric,
+          'verify',
+          { ProbTemplate: probeBase64, GalleryTemplate: gallery.toString('base64'), TmpFormat: 0 },
+          2000
+        );
+        if (result?.Status === true) {
+          fail(`Duplicate fingerprint detected: this fingerprint is already enrolled for ${row.member.fullName} (${row.member.memberId}).`, 409);
+        }
+      } catch (err) {
+        if (err.statusCode === 409) throw err;
+        // Ignore transient local matcher errors on individual rows so browser-level check still protects cloud/workstation flows
+      } finally {
+        gallery?.fill(0);
+      }
+    }
+  }
+}
+
 async function processEnrollment(memberId, captureData, { fingerPosition, operatorId, replaceEnrollmentReference } = {}) {
   const { template, image, deviceSerial } = validateCapture(captureData, fingerPosition);
   try {
     if (!await MemberProfile.exists({ _id: memberId })) fail('Member not found', 404);
     if (!capabilities().enrollmentStorage) fail('Backend biometric encryption keys are not configured', 503);
+    const templateHash = createHash('sha256').update(template).digest('hex');
+    await assertNoDuplicateFingerprint(memberId, template, templateHash);
     const reference = randomUUID();
     const context = String(memberId) + ':' + reference;
     const values = {
       member: memberId, enrollmentReference: reference, deviceId: deviceSerial,
       encryptedTemplate: encrypt(template, context + ':template'),
+      templateHash,
       fingerPosition, templateFormat: captureData.templateFormat,
       quality: captureData.quality, nfiq: captureData.nfiq,
       deviceModel: captureData.deviceModel, deviceSerial,

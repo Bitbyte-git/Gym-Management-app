@@ -5,6 +5,7 @@ import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersH
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
+import MemberFingerprintModal from '../components/MemberFingerprintModal';
 import { TableSkeleton } from '../components/Skeleton';
 // AttendanceKiosk biometric scanner delegated to standalone Kiosk (/kiosk)
 import AttendancePopup from '../components/AttendancePopup';
@@ -43,7 +44,7 @@ const modules = {
   availability: { url: '/trainer-availabilities', columns: ['trainer', 'dayOfWeek', 'startTime', 'endTime', 'breakStartTime', 'breakEndTime', 'maxClients', 'isActive'],
     create: [trainer, day, ...times, field('maxClients', 'Maximum clients', 'number'), { ...field('breakStartTime', 'Break start', 'time'), optional: true }, { ...field('breakEndTime', 'Break end', 'time'), optional: true }],
     edit: [day, ...times, field('maxClients', 'Maximum clients', 'number'), { ...field('breakStartTime', 'Break start', 'time'), optional: true }, { ...field('breakEndTime', 'Break end', 'time'), optional: true }, field('isActive', 'Available', 'checkbox')] },
-  notifications: { url: '/notifications', columns: ['title', 'message', 'isRead', 'createdAt'] },
+  notifications: { url: '/notifications', columns: ['title', 'member', 'message', 'isRead', 'createdAt'] },
   settings: { url: '/settings', key: 'settings', columns: ['key', 'value', 'category', 'description'] },
   users: { url: '/users', key: 'users', columns: ['email', 'role', 'isActive', 'lastLogin'], create: [field('email', 'Email', 'email'), field('password', 'Initial password (12?72 characters)', 'password'), field('role', 'Role', 'select', ['admin', 'reception'])] },
   audit: { url: '/audit-logs', key: 'logs', columns: ['user', 'action', 'entityType', 'timestamp'] },
@@ -168,6 +169,7 @@ export default function Operations({ section, user, query = '' }) {
   const [slotLoading, setSlotLoading] = useState(false);
   const [attendanceTab, setAttendanceTab] = useState('all');
   const [attendancePopup, setAttendancePopup] = useState(null);
+  const [fingerprintMember, setFingerprintMember] = useState(null);
   const initialFilters = {
     status: 'all',
     membershipStatus: 'all',
@@ -467,6 +469,19 @@ export default function Operations({ section, user, query = '' }) {
       (section === 'profile' && user.role === 'member');
     if (definition?.edit && canEdit) add('Edit', 'put', section === 'profile' ? definition.url : `${definition.url}/${row._id}`, definition.edit);
     if (section === 'members') buttons.push(<button className="outline-btn" disabled={busy} key="details" onClick={() => openMemberProfile(row)}>View profile</button>);
+    if (section === 'members' && staff) {
+      buttons.push(
+        <button
+          className="outline-btn"
+          disabled={busy}
+          key="fingerprint"
+          onClick={() => setFingerprintMember(row)}
+          title={row.biometricEnrolled ? 'Edit or replace member fingerprint' : 'Add member fingerprint'}
+        >
+          <Fingerprint size={14} /> {row.biometricEnrolled ? 'Edit Fingerprint' : 'Add Fingerprint'}
+        </button>
+      );
+    }
     if (section === 'members' && isAdmin) {
       if (row.registrationStatus === 'suspended') {
         add('Reactivate', 'put', `/members/${row._id}`, [field('registrationStatus', 'Status', 'select', ['completed', 'pending'])], { registrationStatus: 'completed' });
@@ -640,6 +655,31 @@ export default function Operations({ section, user, query = '' }) {
           </span>
         );
       }
+    }
+    if (section === 'notifications' && key === 'member') {
+      const relatedData = row.relatedData || {};
+      const memberId = relatedData.memberId;
+      const memberName = relatedData.memberName;
+      const memberDbId = relatedData.memberDbId;
+      
+      if (memberId && memberName && memberDbId) {
+        return (
+          <button 
+            className="member-id-link" 
+            onClick={() => openMemberProfile({ member: { _id: memberDbId } })}
+          >
+            {memberName} ({memberId})
+          </button>
+        );
+      }
+      return '—';
+    }
+    if (section === 'notifications' && key === 'message') {
+      const relatedData = row.relatedData || {};
+      if (relatedData.memberId && relatedData.memberName) {
+        return <div className="notification-text">{value}</div>;
+      }
+      return value;
     }
     if (section === 'members' && key === 'fullName') {
       const name = value || 'Unnamed member';
@@ -952,8 +992,30 @@ export default function Operations({ section, user, query = '' }) {
         </button>
       </>}
       {section === 'notifications' && isAdmin && <>
-        <button className="outline-btn" onClick={() => begin('Send in-app expiry reminders', 'post', '/notifications/membership-expiry-reminder')}>Send expiry reminders</button>
-        <button className="outline-btn" onClick={() => begin('Send in-app payment reminders', 'post', '/notifications/payment-due-reminder')}>Send due reminders</button>
+        <button className="outline-btn" disabled={busy} onClick={async () => {
+          setBusy(true); setError('');
+          try {
+            await api.post('/notifications/membership-expiry-reminder');
+            setNotice('Expiry reminders sent successfully!');
+            setRevision(v => v + 1);
+          } catch (err) {
+            setError(err.response?.data?.error || 'Failed to send expiry reminders');
+          } finally {
+            setBusy(false);
+          }
+        }}>Send expiry reminders</button>
+        <button className="outline-btn" disabled={busy} onClick={async () => {
+          setBusy(true); setError('');
+          try {
+            await api.post('/notifications/payment-due-reminder');
+            setNotice('Payment due reminders sent successfully!');
+            setRevision(v => v + 1);
+          } catch (err) {
+            setError(err.response?.data?.error || 'Failed to send payment due reminders');
+          } finally {
+            setBusy(false);
+          }
+        }}>Send due reminders</button>
       </>}
       {section === 'settings' && isAdmin && <button className="lime-btn" onClick={() => begin('Initialize missing default settings', 'post', '/settings/initialize')}>Initialize defaults</button>}
     </div>
@@ -1005,8 +1067,16 @@ export default function Operations({ section, user, query = '' }) {
         onClose={() => setDetails(null)}
         onUpdate={(updated) => {
           setDetails(updated);
-          loadOperations?.();
+          setRevision(v => v + 1);
         }}
+      />
+    )}
+    {fingerprintMember && (
+      <MemberFingerprintModal
+        member={fingerprintMember}
+        user={user}
+        onClose={() => setFingerprintMember(null)}
+        onUpdated={() => setRevision(v => v + 1)}
       />
     )}
     {receipt && (

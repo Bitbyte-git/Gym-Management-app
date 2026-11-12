@@ -12,15 +12,50 @@ const {
 // @access  Private
 exports.getNotifications = async (req, res, next) => {
   try {
-    const { unread } = req.query;
+    const { unread, page = 1, limit = 25 } = req.query;
     const unreadOnly = unread === 'true';
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
 
-    const notifications = await getUserNotifications(req.user.id, unreadOnly);
+    let notifications, total;
+    if (req.user.role === 'admin') {
+      // Admin can see all notifications
+      const Notification = require('../models/Notification');
+      const query = {};
+      if (unreadOnly) {
+        query.isRead = false;
+      }
+      total = await Notification.countDocuments(query);
+      notifications = await Notification.find(query)
+        .sort({ createdAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum);
+    } else {
+      // Regular users only see their own notifications
+      const Notification = require('../models/Notification');
+      const query = { recipient: req.user.id };
+      if (unreadOnly) {
+        query.isRead = false;
+      }
+      total = await Notification.countDocuments(query);
+      notifications = await Notification.find(query)
+        .sort({ createdAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum);
+    }
+
+    const pages = Math.ceil(total / limitNum);
 
     res.status(200).json({
       success: true,
       count: notifications.length,
       data: notifications,
+      pagination: {
+        page: pageNum,
+        pages,
+        total,
+        limit: limitNum,
+      },
     });
   } catch (error) {
     next(error);
@@ -32,7 +67,16 @@ exports.getNotifications = async (req, res, next) => {
 // @access  Private
 exports.getUnreadCount = async (req, res, next) => {
   try {
-    const count = await getUnreadCount(req.user.id);
+    const Notification = require('../models/Notification');
+    let count;
+    
+    if (req.user.role === 'admin') {
+      // Admin sees total unread count across all notifications
+      count = await Notification.countDocuments({ isRead: false });
+    } else {
+      // Regular users see only their own unread count
+      count = await getUnreadCount(req.user.id);
+    }
 
     res.status(200).json({
       success: true,
@@ -48,7 +92,22 @@ exports.getUnreadCount = async (req, res, next) => {
 // @access  Private
 exports.markAsRead = async (req, res, next) => {
   try {
-    const notification = await markAsRead(req.params.id, req.user.id);
+    let notification;
+    if (req.user.role === 'admin') {
+      // Admin can mark any notification as read
+      const Notification = require('../models/Notification');
+      notification = await Notification.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          isRead: true,
+          readAt: new Date(),
+        },
+        { returnDocument: 'after' }
+      );
+    } else {
+      // Regular users can only mark their own notifications as read
+      notification = await markAsRead(req.params.id, req.user.id);
+    }
 
     if (!notification) {
       return res.status(404).json({ success: false, error: 'Notification not found' });
@@ -70,8 +129,12 @@ exports.markAllAsRead = async (req, res, next) => {
   try {
     const Notification = require('../models/Notification');
     
+    const query = req.user.role === 'admin' 
+      ? { isRead: false }
+      : { recipient: req.user.id, isRead: false };
+    
     await Notification.updateMany(
-      { recipient: req.user.id, isRead: false },
+      query,
       { isRead: true, readAt: new Date() }
     );
 
@@ -161,10 +224,11 @@ exports.deleteNotification = async (req, res, next) => {
   try {
     const Notification = require('../models/Notification');
     
-    const notification = await Notification.findOneAndDelete({
-      _id: req.params.id,
-      recipient: req.user.id,
-    });
+    const query = req.user.role === 'admin' 
+      ? { _id: req.params.id }
+      : { _id: req.params.id, recipient: req.user.id };
+    
+    const notification = await Notification.findOneAndDelete(query);
 
     if (!notification) {
       return res.status(404).json({
@@ -207,7 +271,7 @@ exports.cleanupOldNotifications = async (req, res, next) => {
 // @access  Private (Admin)
 exports.sendMembershipExpiryReminder = async (req, res, next) => {
   try {
-    const { daysBeforeExpiry } = req.body;
+    const daysBeforeExpiry = req.body?.daysBeforeExpiry;
     const days = parseInt(daysBeforeExpiry) || 7;
 
     const MemberMembership = require('../models/MemberMembership');
@@ -234,7 +298,13 @@ exports.sendMembershipExpiryReminder = async (req, res, next) => {
           'membership_expiry',
           'Membership Expiring Soon',
           `Your membership will expire on ${new Date(membership.endDate).toLocaleDateString()}. Please renew to continue enjoying our services.`,
-          { membershipId: membership._id, expiryDate: membership.endDate },
+          { 
+            membershipId: membership._id, 
+            expiryDate: membership.endDate,
+            memberId: member.memberId,
+            memberName: member.fullName,
+            memberDbId: member._id
+          },
           `expiry-${membership._id}-${membership.endDate.toISOString().slice(0, 10)}-${new Date().toISOString().slice(0, 10)}`
         );
         notifications.push(notification);
@@ -277,7 +347,13 @@ exports.sendPaymentDueReminder = async (req, res, next) => {
           'payment_due',
           'Payment Due',
           `You have a pending payment of ₹${membership.pendingAmount}. Please complete your payment to avoid service interruption.`,
-          { membershipId: membership._id, pendingAmount: membership.pendingAmount },
+          { 
+            membershipId: membership._id, 
+            pendingAmount: membership.pendingAmount,
+            memberId: member.memberId,
+            memberName: member.fullName,
+            memberDbId: member._id
+          },
           `dues-${membership._id}-${new Date().toISOString().slice(0, 10)}`
         );
         notifications.push(notification);

@@ -1,5 +1,6 @@
 const MemberProfile = require('../models/MemberProfile');
 const User = require('../models/User');
+const BiometricEnrollment = require('../models/BiometricEnrollment');
 const cloudinaryService = require('../services/cloudinaryService');
 
 const memberEditableFields = [
@@ -49,6 +50,16 @@ exports.getMembers = async (req, res, next) => {
       const accounts = await User.find({ email: { $regex: email, $options: 'i' } }).select('_id');
       query.$or.push({ user: { $in: accounts.map(account => account._id) } });
     }
+    const enrolledIds = await BiometricEnrollment.distinct('member', {
+      isActive: true,
+      enrollmentStatus: 'enrolled',
+    });
+    if (req.query.biometricStatus === 'unenrolled') {
+      query._id = { $nin: enrolledIds };
+    } else if (req.query.biometricStatus === 'enrolled') {
+      query._id = { $in: enrolledIds };
+    }
+
     let membersQuery = MemberProfile.find(query);
     if (req.user.role === 'reception') {
       membersQuery = membersQuery.select(
@@ -63,10 +74,16 @@ exports.getMembers = async (req, res, next) => {
       MemberProfile.countDocuments(query),
     ]);
 
+    const enrolledSet = new Set(enrolledIds.map(id => String(id)));
+    const enrichedMembers = members.map(m => ({
+      ...m.toObject(),
+      biometricEnrolled: enrolledSet.has(String(m._id)),
+    }));
+
     res.status(200).json({
       success: true,
       data: {
-        members,
+        members: enrichedMembers,
         pagination: {
           page,
           limit,

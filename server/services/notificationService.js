@@ -95,10 +95,14 @@ const markAsRead = async (notificationId, userId) => {
  * Get user's notifications
  * @param {string} userId - User ID
  * @param {boolean} unreadOnly - Get only unread notifications
+ * @param {object} options - Pagination options
+ * @param {number} options.page - Page number
+ * @param {number} options.limit - Items per page
  * @returns {Promise<Array>} Notifications
  */
-const getUserNotifications = async (userId, unreadOnly = false) => {
+const getUserNotifications = async (userId, unreadOnly = false, options = {}) => {
   try {
+    const { page = 1, limit = 50 } = options;
     const query = { recipient: userId };
     if (unreadOnly) {
       query.isRead = false;
@@ -106,7 +110,8 @@ const getUserNotifications = async (userId, unreadOnly = false) => {
 
     const notifications = await Notification.find(query)
       .sort({ createdAt: -1 })
-      .limit(50);
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     return notifications;
   } catch (error) {
