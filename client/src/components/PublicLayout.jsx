@@ -145,9 +145,9 @@ export function PublicFooter() {
         {/* Footer Bottom Bar */}
         <div className="studio-footer-bottom">
           <small>© 2026 VINO FITNESS STUDIO. All rights reserved.</small>
-          <span className="studio-footer-motto">
-            BUILT FOR POWER &bull; DESIGNED FOR GROWTH
-          </span>
+          <a href="https://bitbytetech.org"> <span className="studio-footer-motto">
+            <small>  Designed, Developed, Hosted and Maintained by</small> Bit Byte Technologies
+          </span></a>
           <div className="studio-footer-legal">
             <Link to="/contact">Privacy Policy</Link>
             <span>&bull;</span>
