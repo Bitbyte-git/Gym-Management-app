@@ -281,21 +281,17 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
           const elapsedMs = now.getTime() - new Date(openSession.checkInTime).getTime();
 
           if (elapsedMs < CHECKIN_GRACE_PERIOD_MS) {
-            // Member punched again within 5 minutes of check-in (confused if first punch registered)
-            // Reconfirm check-in: DO NOT checkout, keep sessionOpen: true, checkOutTime: null
-            punchRecord.punchType = 'punch';
-            const updated = await Attendance.findOneAndUpdate(
-              { _id: openSession._id },
-              {
-                $set: { updatedAt: now },
-                $push: { punches: punchRecord },
-              },
-              { session, returnDocument: 'after' }
-            );
-            if (!updated) throw error('SESSION_CHANGED', 'Attendance changed. No biometric action was recorded.');
-            attendance = updated;
-            result.action = 'checkin';
-            result.reconfirmed = true;
+            // Member punched again within 5 minutes of check-in -> show "Attendance already registered" without recording or checking out
+            const remainingMinutes = Math.max(1, Math.ceil((CHECKIN_GRACE_PERIOD_MS - elapsedMs) / 60000));
+            result = {
+              ...result,
+              recorded: false,
+              action: 'duplicate',
+              code: 'ALREADY_CHECKED_IN',
+              sessionName: openSession.sessionName || currentSession,
+              retryAfterSeconds: Math.max(1, Math.ceil((CHECKIN_GRACE_PERIOD_MS - elapsedMs) / 1000)),
+              message: `Attendance already registered at ${new Date(openSession.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Check-out available in ${remainingMinutes} min.`,
+            };
           } else {
             // Member is checking out after working out (>= 5 minutes)
             const duration = Math.max(1, Math.round(elapsedMs / 60000));
@@ -380,39 +376,39 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
           }
         }
 
-        // Calculate total daily gym spending across all sessions today
-        const todayRecords = await Attendance.find({
-          member: member._id,
-          attendanceDate: dayBounds.start,
-        }).session(session);
-        const dailySpending = calculateDailySpending(todayRecords);
+        if (attendance) {
+          // Calculate total daily gym spending across all sessions today
+          const todayRecords = await Attendance.find({
+            member: member._id,
+            attendanceDate: dayBounds.start,
+          }).session(session);
+          const dailySpending = calculateDailySpending(todayRecords);
 
-        result.recorded = true;
-        result.attendanceId = String(attendance._id);
-        result.sessionName = attendance.sessionName || currentSession;
-        result.durationMinutes = attendance.duration || 0;
-        result.durationFormatted = formatDuration(attendance.duration || 0);
-        result.punchesCount = attendance.punches?.length || 1;
-        result.dailySpending = dailySpending;
+          result.recorded = true;
+          result.attendanceId = String(attendance._id);
+          result.sessionName = attendance.sessionName || currentSession;
+          result.durationMinutes = attendance.duration || 0;
+          result.durationFormatted = formatDuration(attendance.duration || 0);
+          result.punchesCount = attendance.punches?.length || 1;
+          result.dailySpending = dailySpending;
 
-        const sessionLabel = (attendance.sessionName || currentSession).charAt(0).toUpperCase() +
-          (attendance.sessionName || currentSession).slice(1);
-        if (result.action === 'checkin') {
-          if (result.reconfirmed) {
-            result.message = `Check-in already confirmed at ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (${sessionLabel} session)`;
-          } else {
+          const sessionLabel = (attendance.sessionName || currentSession).charAt(0).toUpperCase() +
+            (attendance.sessionName || currentSession).slice(1);
+          if (result.action === 'checkin') {
             result.message = `Checked in (${sessionLabel} session)`;
+          } else {
+            result.message = `${result.updatedCheckout ? 'Check-out updated' : 'Check-out recorded'}: ${formatDuration(attendance.duration)} in ${sessionLabel} session (Today's Total: ${dailySpending.totalHoursFormatted})`;
           }
-        } else {
-          result.message = `${result.updatedCheckout ? 'Check-out updated' : 'Check-out recorded'}: ${formatDuration(attendance.duration)} in ${sessionLabel} session (Today's Total: ${dailySpending.totalHoursFormatted})`;
-        }
 
-        if (stale) result.staleSession = true;
-        await Member.updateOne({ _id: member._id }, { $set: { lastBiometricPunchAt: now } }, { session });
-        await Station.updateOne({ _id: station._id }, { $set: { lastRecordedMember: member._id, sameMemberArmed: false } }, { session });
-        const counted = await Enrollment.updateOne({ _id: enrollment._id, enrollmentReference: verification.enrollmentReference },
-          { $inc: { verificationCount: 1 }, $set: { lastVerificationDate: now } }, { session });
-        if (!counted.modifiedCount) throw error('ENROLLMENT_CHANGED', 'Enrollment changed during recording');
+          if (stale) result.staleSession = true;
+          await Member.updateOne({ _id: member._id }, { $set: { lastBiometricPunchAt: now } }, { session });
+          await Station.updateOne({ _id: station._id }, { $set: { lastRecordedMember: member._id, sameMemberArmed: false } }, { session });
+          const counted = await Enrollment.updateOne({ _id: enrollment._id, enrollmentReference: verification.enrollmentReference },
+            { $inc: { verificationCount: 1 }, $set: { lastVerificationDate: now } }, { session });
+          if (!counted.modifiedCount) throw error('ENROLLMENT_CHANGED', 'Enrollment changed during recording');
+        } else {
+          await Station.updateOne({ _id: station._id }, { $set: { lastRecordedMember: member._id, sameMemberArmed: false } }, { session });
+        }
       }
     }
     await Verification.updateOne({ _id: verification._id, state: 'verified' }, { $set: { state: 'consumed', result } }, { session });

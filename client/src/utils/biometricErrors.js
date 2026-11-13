@@ -42,14 +42,16 @@ export function parseBiometricFeedback(next = {}) {
 
   // 3. Already checked in (reconfirmation or active session)
   if (
+    code === 'ALREADY_CHECKED_IN' ||
+    msgLower.includes('already registered') ||
     msgLower.includes('already checked in') ||
     msgLower.includes('check-in confirmed') ||
     msgLower.includes('another open attendance session')
   ) {
     return {
-      type: 'info',
-      title: 'Already Checked In',
-      subtitle: rawMsg || 'Check-in already confirmed for this session. Your workout session is currently active.',
+      type: 'warning',
+      title: 'Attendance Already Registered',
+      subtitle: rawMsg || 'Attendance already registered for this session. Your check-in is already active.',
       member,
       action: 'checkin',
       sessionName: next.result?.sessionName,
