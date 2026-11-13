@@ -304,57 +304,79 @@ export default function Landing() {
       <section className="section price-section" id="pricing">
         <div className="wrap">
           <div className="section-head left price-intro">
-            <p className="eyebrow">TRANSPARENT FEES</p>
+            <p className="eyebrow">OFFICIAL RATE CARD</p>
             <h2>
-              Memberships<br />
-              Built for Athletes.
+              Vino Fitness Studio<br />
+              Membership Plans.
             </h2>
             <span className="scribble">↝</span>
           </div>
 
           <div>
+            {/* Timing strip */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', justifyContent: 'space-between', background: '#0e150a', border: '1px solid #23331b', borderRadius: '12px', padding: '12px 18px', marginBottom: '22px' }}>
+              <span style={{ fontSize: '13px', color: '#c9d1c2' }}>
+                <strong style={{ color: 'var(--lime)' }}>Classes:</strong> Morning 5:00 AM – 10:00 AM • Evening 5:00 PM – 9:00 PM
+              </span>
+              <span style={{ fontSize: '12px', color: '#f87171', fontWeight: 600 }}>
+                One-Time Admission Fee: ₹500 (Non-Refundable)
+              </span>
+            </div>
+
             <div className="plans">
               <article>
-                <p>Basic</p>
-                <small>1 Month Membership</small>
-                <h3>₹999<span>/month</span></h3>
+                <p>Weight Training</p>
+                <small>Monthly to Yearly Strength Plans</small>
+                <h3>₹800<span>/month</span></h3>
+                <div style={{ fontSize: '11px', color: 'var(--lime)', marginBottom: '14px', fontWeight: 700 }}>
+                  Yearly plan only ₹6,000 (₹500/mo)
+                </div>
                 <ul>
-                  <li><Check size={14} color="var(--lime)" /> Full gym floor access</li>
-                  <li><Check size={14} color="var(--lime)" /> Free weights & cables</li>
-                  <li><Check size={14} color="var(--lime)" /> Locker & shower access</li>
+                  <li><Check size={14} color="var(--lime)" /> Full weight training floor access</li>
+                  <li><Check size={14} color="var(--lime)" /> Free weights, dumbbells & cable bays</li>
+                  <li><Check size={14} color="var(--lime)" /> Locker room & private shower access</li>
+                  <li><Check size={14} color="var(--lime)" /> Biometric fingerprint check-in pass</li>
                 </ul>
-                <button className="outline-btn" onClick={() => navigate('/register')}>
-                  Join Basic <ArrowRight size={14} />
+                <button className="outline-btn" onClick={() => navigate('/memberships')}>
+                  View Weight Plans <ArrowRight size={14} />
                 </button>
               </article>
 
               <article className="popular">
-                <span className="tag">MOST POPULAR</span>
-                <p>Standard</p>
-                <small>3 Months Membership</small>
-                <h3>₹2,499<span>/3 months</span></h3>
+                <span className="tag">MOST POPULAR COMBO</span>
+                <p>Cardio & Weight</p>
+                <small>Full Conditioning & Hypertrophy</small>
+                <h3>₹1,500<span>/month</span></h3>
+                <div style={{ fontSize: '11px', color: 'var(--lime)', marginBottom: '14px', fontWeight: 700 }}>
+                  Yearly plan only ₹7,500 (₹625/mo)
+                </div>
                 <ul>
-                  <li><Check size={14} color="var(--lime)" /> All strength & cardio bays</li>
-                  <li><Check size={14} color="var(--lime)" /> Group HIIT & Yoga access</li>
-                  <li><Check size={14} color="var(--lime)" /> Initial fitness assessment</li>
+                  <li><Check size={14} color="var(--lime)" /> Full Cardio equipment + Weight floor</li>
+                  <li><Check size={14} color="var(--lime)" /> Treadmills, cross-trainers & spin bikes</li>
+                  <li><Check size={14} color="var(--lime)" /> Fat-loss & stamina conditioning</li>
+                  <li><Check size={14} color="var(--lime)" /> Locker room & shower access included</li>
                 </ul>
-                <button className="lime-btn" onClick={() => navigate('/register')}>
-                  Join Standard <ArrowRight size={14} />
+                <button className="lime-btn" onClick={() => navigate('/memberships')}>
+                  View Cardio & Weight <ArrowRight size={14} />
                 </button>
               </article>
 
               <article>
-                <span className="tag" style={{ background: '#303f19', color: 'var(--lime)' }}>BEST VALUE</span>
-                <p>Annual Elite</p>
-                <small>12 Months Full Access</small>
-                <h3>₹7,999<span>/year</span></h3>
+                <span className="tag" style={{ background: '#303f19', color: 'var(--lime)' }}>1-ON-1 COACHING</span>
+                <p>Personal Training</p>
+                <small>16 Classes (30 Days Maximum)</small>
+                <h3>₹4,000<span>/16 sessions</span></h3>
+                <div style={{ fontSize: '11px', color: 'var(--lime)', marginBottom: '14px', fontWeight: 700 }}>
+                  Dedicated certified mentor
+                </div>
                 <ul>
-                  <li><Check size={14} color="var(--lime)" /> Full 365-day access</li>
-                  <li><Check size={14} color="var(--lime)" /> Nutrition consultation</li>
-                  <li><Check size={14} color="var(--lime)" /> 2 Months freeze option</li>
+                  <li><Check size={14} color="var(--lime)" /> 16 Individual coaching sessions</li>
+                  <li><Check size={14} color="var(--lime)" /> Custom workout split & form correction</li>
+                  <li><Check size={14} color="var(--lime)" /> Body fat & progress audits</li>
+                  <li><Check size={14} color="var(--lime)" /> Strict accountability & diet advice</li>
                 </ul>
-                <button className="outline-btn" onClick={() => navigate('/register')}>
-                  Join Annual <ArrowRight size={14} />
+                <button className="outline-btn" onClick={() => navigate('/memberships')}>
+                  Explore Coaching <ArrowRight size={14} />
                 </button>
               </article>
             </div>

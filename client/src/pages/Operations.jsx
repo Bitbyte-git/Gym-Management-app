@@ -857,6 +857,13 @@ export default function Operations({ section, user, query = '' }) {
               <label>Plan</label>
               <select value={filters.plan} onChange={e => handleFilterChange('plan', e.target.value)}>
                 <option value="all">All Plans</option>
+                <option value="weight">Weight Training</option>
+                <option value="cardio">Cardio & Weight</option>
+                <option value="personal">Personal Training</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="half-yearly">Half-Yearly</option>
+                <option value="yearly">Yearly</option>
                 <option value="basic">Basic Plan</option>
                 <option value="standard">Standard Plan</option>
                 <option value="premium">Premium Plan</option>
