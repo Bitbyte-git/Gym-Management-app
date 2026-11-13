@@ -325,8 +325,8 @@ export default function Landing() {
               <span style={{ fontSize: '13px', color: '#c9d1c2' }}>
                 <strong style={{ color: 'var(--lime)' }}>Classes:</strong> Morning 5:00 AM – 10:00 AM • Evening 5:00 PM – 9:00 PM
               </span>
-              <span style={{ fontSize: '12px', color: '#f87171', fontWeight: 600 }}>
-                One-Time Admission Fee: ₹500 (Non-Refundable)
+              <span style={{ fontSize: '12px', color: '#9ba58f', fontWeight: 500 }}>
+                One-Time Admission Fee: <strong style={{ color: 'var(--lime)' }}>₹500</strong> (Non-Refundable)
               </span>
             </div>
 

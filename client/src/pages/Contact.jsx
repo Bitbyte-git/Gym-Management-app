@@ -1,18 +1,10 @@
 import { useState } from 'react';
-import {
-  MapPin, Phone, Mail, Clock, MessageSquare, Send, CheckCircle2,
-  Sparkles, Dumbbell
-} from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import PublicLayout from '../components/PublicLayout';
+import '../luxury-pages.css';
 
 export default function Contact() {
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    type: '1-Day Free Trial Workout Pass',
-    message: ''
-  });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
@@ -24,160 +16,130 @@ export default function Contact() {
   return (
     <PublicLayout>
       <div className="page-shell wrap">
-        <div className="page-hero">
-          <p className="eyebrow"><Dumbbell size={14} /> VISIT VINO FITNESS STUDIO</p>
-          <h1>VISIT OUR STUDIO OR <em>CLAIM A FREE PASS</em></h1>
-          <p className="lead-text">
-            Experience elite training, tour our facilities, or speak directly with our head coach. Claim your complimentary 1-day workout trial pass below.
-          </p>
-        </div>
+        <div className="luxury-page-wrap">
+          <div className="luxury-ambient-glow" />
 
-        <div className="contact-layout-grid" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          {/* Studio Contact Information */}
-          <div className="contact-info-panel">
-            <div className="contact-info-card">
-              <div className="card-icon"><MapPin size={22} /></div>
-              <div>
-                <h4>Studio & Facilities</h4>
-                <p>Vino Fitness Studio, Race Course Road, Coimbatore, Tamil Nadu – 641018</p>
-                <small>Equipped with Olympic lifting bays, biometric kiosks & recovery lounge</small>
-              </div>
-            </div>
-
-            <div className="contact-info-card">
-              <div className="card-icon"><Phone size={22} /></div>
-              <div>
-                <h4>Reception Hotlines</h4>
-                <p>+91 98765 43210 &nbsp;•&nbsp; +91 94421 88990</p>
-                <small>Available Monday through Saturday: 05:00 AM to 10:00 PM</small>
-              </div>
-            </div>
-
-            <div className="contact-info-card">
-              <div className="card-icon"><Mail size={22} /></div>
-              <div>
-                <h4>Official Email</h4>
-                <p>contact@vinofitness.com &nbsp;•&nbsp; info@vinofitness.com</p>
-                <small>Fast response within 2 business hours</small>
-              </div>
-            </div>
-
-            <div className="contact-info-card">
-              <div className="card-icon"><Clock size={22} /></div>
-              <div>
-                <h4>Gym Operating Hours</h4>
-                <p>Monday – Saturday: 05:00 AM – 10:00 PM</p>
-                <p>Sunday: 06:00 AM – 01:00 PM & 04:00 PM – 08:00 PM</p>
-              </div>
-            </div>
-
-            <div className="contact-fast-grid">
-              <a className="contact-fast-btn" href="tel:+919876543210">
-                <Phone size={15} /> Call Reception
-              </a>
-              <a
-                className="contact-fast-btn"
-                href="https://wa.me/919876543210?text=Hi%20Vino%20Fitness%20Studio,%20I%20would%20like%20to%20claim%20my%201-day%20free%20trial%20pass."
-                target="_blank"
-                rel="noreferrer"
-              >
-                <MessageSquare size={15} /> WhatsApp Concierge
-              </a>
-            </div>
+          {/* Minimal Hero */}
+          <div className="luxury-hero">
+            <span className="luxury-badge">Concierge</span>
+            <h1 className="luxury-title">
+              Get In <span>Touch</span>.
+            </h1>
+            <p className="luxury-lead">
+              Visit the studio floor or request your complimentary 1-day workout trial pass.
+            </p>
           </div>
 
-          {/* Trial Pass / Inquiry Form */}
-          <div className="contact-form-panel">
-            <h3>Claim 1-Day Free Trial Pass</h3>
-            <p className="form-subtitle">
-              Fill out your details below and our studio team will reserve your complimentary workout session pass.
-            </p>
-
-            {submitted ? (
-              <div className="contact-success-state">
-                <div className="success-icon"><CheckCircle2 size={34} /></div>
-                <h4>Workout Pass Reserved!</h4>
-                <p>
-                  Thank you, <strong>{form.name}</strong>! Your 1-Day Trial Pass has been reserved. Our studio concierge will contact you via WhatsApp/Call to confirm your preferred session time.
-                </p>
-                <button
-                  className="contact-reset-btn"
-                  onClick={() => {
-                    setSubmitted(false);
-                    setForm({ name: '', phone: '', email: '', type: '1-Day Free Trial Workout Pass', message: '' });
-                  }}
-                >
-                  Send Another Inquiry
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit}>
-                <div className="landing-form-grid">
-                  <div className="landing-form-field">
-                    <label htmlFor="contact-name">Full Name *</label>
-                    <input
-                      id="contact-name"
-                      type="text"
-                      required
-                      placeholder="e.g. Ramesh Krishnan"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    />
+          <div className="luxury-grid-2">
+            {/* Left: Studio Info */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="luxury-glass-card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', flexShrink: 0 }}>
+                    <MapPin size={18} />
                   </div>
-
-                  <div className="landing-form-field">
-                    <label htmlFor="contact-phone">Mobile Number *</label>
-                    <input
-                      id="contact-phone"
-                      type="tel"
-                      required
-                      placeholder="+91 98765 43210"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="landing-form-field full-span">
-                    <label htmlFor="contact-email">Email Address</label>
-                    <input
-                      id="contact-email"
-                      type="email"
-                      placeholder="ramesh@example.com"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="landing-form-field full-span">
-                    <label htmlFor="contact-type">Inquiry Type</label>
-                    <select
-                      id="contact-type"
-                      value={form.type}
-                      onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    >
-                      <option value="1-Day Free Trial Workout Pass">1-Day Free Trial Workout Pass</option>
-                      <option value="Studio Membership Inquiry">Studio Membership Inquiry</option>
-                      <option value="1-on-1 Personal Training Consultation">1-on-1 Personal Training Consultation</option>
-                      <option value="Studio Walkthrough & Facility Tour">Studio Walkthrough & Facility Tour</option>
-                    </select>
-                  </div>
-
-                  <div className="landing-form-field full-span">
-                    <label htmlFor="contact-msg">Fitness Goals or Questions (Optional)</label>
-                    <textarea
-                      id="contact-msg"
-                      placeholder="Tell us about your fitness background, goals (e.g. fat loss, strength), or preferred slot..."
-                      value={form.message}
-                      onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    />
+                  <div>
+                    <h4 style={{ fontSize: '15px', color: '#f5f5f7', margin: '0 0 4px', fontWeight: 600 }}>Studio Location</h4>
+                    <p style={{ fontSize: '13px', color: '#86868b', margin: '0 0 2px', lineHeight: 1.4 }}>
+                      Vino Fitness Studio, Race Course Road, Coimbatore, Tamil Nadu – 641018
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <button type="submit" className="contact-submit-btn">
-                  Claim Free Workout Pass <Send size={15} />
-                </button>
-              </form>
-            )}
+              <div className="luxury-glass-card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', flexShrink: 0 }}>
+                    <Phone size={18} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '15px', color: '#f5f5f7', margin: '0 0 4px', fontWeight: 600 }}>Reception Hotline</h4>
+                    <p style={{ fontSize: '13px', color: '#f5f5f7', margin: '0 0 2px', fontWeight: 600 }}>
+                      +91 98765 43210 &nbsp;•&nbsp; +91 94421 88990
+                    </p>
+                    <small style={{ fontSize: '11px', color: '#86868b' }}>Mon – Sat: 5:00 AM – 9:00 PM</small>
+                  </div>
+                </div>
+              </div>
+
+              <div className="luxury-glass-card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', flexShrink: 0 }}>
+                    <Clock size={18} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '15px', color: '#f5f5f7', margin: '0 0 4px', fontWeight: 600 }}>Studio Hours</h4>
+                    <p style={{ fontSize: '13px', color: '#86868b', margin: 0 }}>
+                      Morning: <strong style={{ color: '#f5f5f7' }}>5:00 AM – 10:00 AM</strong><br />
+                      Evening: <strong style={{ color: '#f5f5f7' }}>5:00 PM – 9:00 PM</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Clean Minimal Request Card */}
+            <div className="luxury-glass-card" style={{ padding: '32px' }}>
+              {!submitted ? (
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '20px', color: '#f5f5f7', margin: '0 0 6px', fontWeight: 600 }}>
+                      Request Complimentary Trial
+                    </h3>
+                    <p style={{ fontSize: '13px', color: '#86868b', margin: 0 }}>
+                      Leave your details. We will confirm your 1-day pass via SMS / WhatsApp.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Rahul Sharma"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px 14px', color: '#ffffff', fontSize: '13px', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Mobile Number</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. 98765 43210"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px 14px', color: '#ffffff', fontSize: '13px', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Email (Optional)</label>
+                    <input
+                      type="email"
+                      placeholder="e.g. rahul@example.com"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px 14px', color: '#ffffff', fontSize: '13px', outline: 'none' }}
+                    />
+                  </div>
+
+                  <button type="submit" className="luxury-btn-primary" style={{ marginTop: '8px' }}>
+                    Submit Pass Request <ArrowRight size={14} />
+                  </button>
+                </form>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                  <CheckCircle2 size={44} color="var(--lime)" style={{ margin: '0 auto 16px' }} />
+                  <h3 style={{ fontSize: '20px', color: '#f5f5f7', margin: '0 0 8px', fontWeight: 600 }}>Pass Requested</h3>
+                  <p style={{ fontSize: '13px', color: '#86868b', margin: 0, lineHeight: 1.5 }}>
+                    Thank you, {form.name}. Our concierge team will send your studio pass via SMS to {form.phone}.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

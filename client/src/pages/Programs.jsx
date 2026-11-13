@@ -1,200 +1,184 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Dumbbell, Flame, Zap, Users, HeartPulse, ArrowRight, Check,
-  Sparkles, CheckCircle2
-} from 'lucide-react';
+import { Dumbbell, Flame, Zap, Users, HeartPulse, ArrowRight, Check } from 'lucide-react';
 import PublicLayout from '../components/PublicLayout';
+import '../luxury-pages.css';
 
-const programsData = [
+const programs = [
   {
     id: 'strength',
     title: 'Strength & Hypertrophy',
+    short: 'Strength',
     icon: Dumbbell,
-    tag: 'Muscle & Power',
+    tag: 'Muscle & Raw Power',
     intensity: 'High Intensity',
-    summary: 'Master the core compound lifts: Squat, Bench, Deadlift, and Overhead Press. Structured progressive overload protocols designed to build dense muscle and raw strength.',
-    benefits: [
-      'Olympic lifting platforms and calibrated competition bumper plates.',
-      'Hypertrophy accessory bays with dual cable stations and dumbbells up to 50kg.',
-      'Personal record (PR) tracking and form correction by certified trainers.'
+    desc: 'Structured compound overload: Squat, Bench, Deadlift, and Press. Engineered for dense muscle growth and functional power.',
+    points: [
+      'Olympic lifting platforms & calibrated bumper plates',
+      'Hypertrophy accessory bays & dumbbells up to 50kg',
+      'Real-time form correction by certified strength coaches'
     ],
-    sampleWorkout: ['Barbell Back Squat (4x6 @ 80%)', 'Romanian Deadlift (3x8)', 'Standing Military Press (3x8)', 'Barbell Bent-Over Row (3x10)']
+    protocol: ['Back Squat 4×6', 'Romanian Deadlift 3×8', 'Overhead Press 3×8', 'Bent-Over Row 3×10']
   },
   {
     id: 'hiit',
-    title: 'HIIT Blast & Conditioning',
+    title: 'Cardio HIIT & Conditioning',
+    short: 'Cardio HIIT',
     icon: Flame,
     tag: 'Fat Loss & Stamina',
-    intensity: 'Peak Intensity',
-    summary: 'Explosive functional circuits alternating high-output anaerobic intervals with active recovery. Burns up to 800+ calories per session while elevating metabolic rate.',
-    benefits: [
-      'Heart-rate guided interval coaching on Concept2 rowers and air bikes.',
-      'Dynamic kettlebell, battle rope, and plyometric box training.',
-      'Morning (06:00 AM) and evening (06:00 PM) daily batches.'
+    intensity: 'Peak Output',
+    desc: 'High-output interval circuits alternating explosive intervals with active recovery. Elevates metabolic burn for hours.',
+    points: [
+      'Heart-rate guided pacing on Concept2 rowers and air bikes',
+      'Dynamic kettlebells, battle ropes & plyometric boxes',
+      'Scheduled in morning (5–10 AM) & evening (5–9 PM) batches'
     ],
-    sampleWorkout: ['Air Bike Sprint (40s sprint / 20s rest)', 'Battle Rope Slams (45s)', 'Kettlebell Swings (20 reps)', 'Box Jump Burpees (15 reps)']
+    protocol: ['Assault Bike 40s/20s', 'Battle Ropes 45s', 'Kettlebell Swings 20 reps', 'Box Jumps 15 reps']
   },
   {
     id: 'functional',
     title: 'Functional Cross-Training',
+    short: 'Functional',
     icon: Zap,
     tag: 'Athletic Agility',
-    intensity: 'High Intensity',
-    summary: 'Build real-world functional power, core stability, and agility with dynamic multi-planar barbell, gymnastics, and endurance movements.',
-    benefits: [
-      'Full-turf sprint track with pushing sleds and farmers-walk bars.',
-      'Multi-grip pull-up rigs, gymnastics rings, and wall-ball stations.',
-      'Prepares athletes for competitive fitness and obstacle challenges.'
+    intensity: 'Dynamic Power',
+    desc: 'Build real-world athletic power, grip endurance, and core agility through multi-planar barbell and gymnastics movements.',
+    points: [
+      'Sprint turf with pushing sleds and farmer-carry bars',
+      'Multi-grip pull-up rigs & gymnastics rings',
+      'Prepares athletes for competitive functional events'
     ],
-    sampleWorkout: ['Sled Push (4x25m heavy load)', 'Ring Dips (3x10)', 'Medicine Ball Slams (4x15)', 'Farmer Carries (3x40m)']
+    protocol: ['Sled Push 4×25m', 'Ring Dips 3×10', 'Wall Balls 4×15', 'Farmer Carry 3×40m']
   },
   {
     id: 'pt',
     title: '1-on-1 Personal Coaching',
+    short: '1-on-1 Coaching',
     icon: Users,
-    tag: 'Maximum Accountability',
+    tag: 'Dedicated Mentorship',
     intensity: 'Custom Tailored',
-    summary: 'Accelerate your transformation with a dedicated certified coach. Every workout, nutritional intake, and technique check is tailored to your body type and fitness goals.',
-    benefits: [
-      'Customized workout and macro/diet plans updated weekly.',
-      'Bi-weekly body fat percentage, circumference, and strength audits.',
-      'Private 1-on-1 session slots scheduled at your preferred timing.'
+    desc: 'Accelerated personal transformation with a dedicated coach. Customized weekly splits, form assessment, and strict accountability.',
+    points: [
+      'Customized workout and nutrition protocols updated weekly',
+      'Bi-weekly body composition and strength audits',
+      'Private 1-on-1 coaching slots at your preferred timing'
     ],
-    sampleWorkout: ['Personalized warm-up & activation', 'Target compound progression', 'Targeted metabolic conditioning', 'Assisted mobility & post-workout stretch']
+    protocol: ['Movement Assessment', 'Target Compound Work', 'Metabolic Pacing', 'Guided Recovery']
   },
   {
     id: 'mobility',
-    title: 'Mobility & Yoga Flow',
+    title: 'Mobility & Recovery Flow',
+    short: 'Mobility',
     icon: HeartPulse,
-    tag: 'Recovery & Flexibility',
-    intensity: 'Moderate Flow',
-    summary: 'Restore tight joints, strengthen your core, and accelerate muscular recovery with mobility flows designed to counteract desk posture and heavy lifting stiffness.',
-    benefits: [
-      'Deep hip openers, thoracic spine rotations, and hamstring lengthening.',
-      'Breathing techniques that reduce cortisol and speed up muscular repair.',
-      'Guided Saturday and Sunday morning recovery sessions.'
+    tag: 'Joint Longevity',
+    intensity: 'Restorative',
+    desc: 'Restore tight joints, decompress your spine, and accelerate recovery with flows designed to counteract heavy lifting stiffness.',
+    points: [
+      'Deep hip openers, thoracic rotations & hamstring length',
+      'Breathing techniques that reduce stress and speed repair',
+      'Guided Saturday and Sunday morning recovery sessions'
     ],
-    sampleWorkout: ['Dynamic Vinyasa Flow (15 min)', 'Pigeon & 90/90 Hip Openers (10 min)', 'Thoracic Foam Rolling (10 min)', 'Core Stability Planks (10 min)']
+    protocol: ['Thoracic Foam Roll 10m', '90/90 Hip Openers 10m', 'Dynamic Vinyasa 15m', 'Core Stability 10m']
   }
 ];
 
 export default function Programs() {
-  const [activeTab, setActiveTab] = useState(0);
   const navigate = useNavigate();
-  const current = programsData[activeTab];
+  const [activeId, setActiveId] = useState('strength');
+  const current = programs.find((p) => p.id === activeId) || programs[0];
 
   return (
     <PublicLayout>
       <div className="page-shell wrap">
-        <div className="page-hero">
-          <p className="eyebrow"><Dumbbell size={14} /> TRAINING DISCIPLINES</p>
-          <h1>PROGRAMS BUILT FOR <em>REAL TRANSFORMATION</em></h1>
-          <p className="lead-text">
-            No generic routines. Every program at Vino Fitness Studio is structured around progressive overload, proper biomechanics, and sustainable nutrition.
-          </p>
-        </div>
+        <div className="luxury-page-wrap">
+          <div className="luxury-ambient-glow" />
 
-        {/* Interactive Discipline Selector */}
-        <div className="interactive-tab-bar">
-          {programsData.map((prog, idx) => {
-            const Icon = prog.icon;
-            return (
+          {/* Minimal Hero */}
+          <div className="luxury-hero">
+            <span className="luxury-badge">Disciplines</span>
+            <h1 className="luxury-title">
+              The <span>Programs</span>.
+            </h1>
+            <p className="luxury-lead">
+              Progressive overload. Proper biomechanics. Coached athletic transformation.
+            </p>
+          </div>
+
+          {/* Minimalist Segmented Track */}
+          <div className="luxury-segmented-track">
+            {programs.map((p) => (
               <button
-                key={prog.id}
-                className={'tab-pill-btn ' + (activeTab === idx ? 'active' : '')}
-                onClick={() => setActiveTab(idx)}
+                key={p.id}
+                className={`luxury-segment-btn ${activeId === p.id ? 'active' : ''}`}
+                onClick={() => setActiveId(p.id)}
               >
-                <Icon />
-                {prog.title.split('&')[0]}
+                {p.short}
               </button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
 
-        {/* Interactive Program Detail Card */}
-        <div className="interactive-card" style={{ maxWidth: '920px', margin: '0 auto 40px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px', alignItems: 'start' }}>
-            <div>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                <span className="minimal-card-badge">{current.tag}</span>
-                <span className="minimal-card-badge" style={{ background: '#1c2414', borderColor: '#3a4b22' }}>
-                  {current.intensity}
-                </span>
-              </div>
-              <h3 style={{ fontSize: '24px', color: '#ffffff', margin: '0 0 10px' }}>{current.title}</h3>
-              <p style={{ fontSize: '13px', color: '#a5ada0', lineHeight: '1.6', margin: '0 0 20px' }}>
-                {current.summary}
+          {/* Spotlight Luxury Glass Card */}
+          <div className="luxury-spotlight-card">
+            <div style={{ maxWidth: '520px' }}>
+              <span className="luxury-card-tag">{current.tag} • {current.intensity}</span>
+              <h2 className="luxury-card-title" style={{ fontSize: '32px', marginBottom: '12px' }}>
+                {current.title}
+              </h2>
+              <p className="luxury-card-desc" style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '28px' }}>
+                {current.desc}
               </p>
 
-              <h4 style={{ fontSize: '13px', color: 'var(--lime)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
-                Program Highlights
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'grid', gap: '10px' }}>
-                {current.benefits.map((b, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#e2e7dc' }}>
-                    <Check size={16} color="var(--lime)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button className="lime-btn" onClick={() => navigate('/register')}>
-                Join This Program <ArrowRight size={15} />
+              <button className="luxury-btn-primary" onClick={() => navigate('/register')}>
+                Join This Discipline <ArrowRight size={14} />
               </button>
             </div>
 
-            {/* Sample Routine Preview Card */}
-            <div style={{
-              background: '#070906',
-              border: '1px solid #1f2716',
-              borderRadius: '12px',
-              padding: '22px'
-            }}>
-              <span style={{ fontSize: '10px', color: 'var(--lime)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                SAMPLE SESSION PROTOCOL
-              </span>
-              <h4 style={{ fontSize: '16px', color: '#ffffff', margin: '8px 0 14px' }}>Daily Workout Structure</h4>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {current.sampleWorkout.map((ex, i) => (
-                  <div key={i} style={{
-                    background: '#0b0f0a',
-                    border: '1px solid #1c2414',
-                    borderRadius: '6px',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    color: '#d5dad0',
-                    fontFamily: 'monospace'
-                  }}>
-                    {i + 1}. {ex}
-                  </div>
-                ))}
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '28px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', minWidth: '320px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--lime)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>
+                  Core Protocol
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {current.points.map((pt, idx) => (
+                    <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#d1d1d6' }}>
+                      <Check size={14} color="var(--lime)" style={{ flexShrink: 0 }} />
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <div style={{ marginTop: '18px', paddingTop: '14px', borderTop: '1px solid #171f11', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#858d7e' }}>
-                <CheckCircle2 size={15} color="var(--lime)" /> Certified coach supervision on gym floor
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#86868b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>
+                  Sample Session Split
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {current.protocol.map((step, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        fontSize: '11px',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        color: '#f5f5f7',
+                        padding: '4px 10px',
+                        borderRadius: '6px'
+                      }}
+                    >
+                      {step}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Action strip */}
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
-          <p style={{ fontSize: '13px', color: '#9ba58f', marginBottom: '14px' }}>
-            Want a personalized fitness roadmap? Speak to our head trainer at the studio.
-          </p>
-          <div style={{ display: 'inline-flex', gap: '12px' }}>
-            <button className="ghost-btn" onClick={() => navigate('/contact')}>
-              Book 1-Day Trial Pass
-            </button>
-            <button className="lime-btn" onClick={() => navigate('/register')}>
-              Register as Member <ArrowRight size={15} />
-            </button>
+          {/* Minimalist Note Bar */}
+          <div className="luxury-note-bar">
+            Coached floor supervision included in every session • <strong>Morning 5–10 AM</strong> & <strong>Evening 5–9 PM</strong>
           </div>
         </div>
       </div>
     </PublicLayout>
   );
 }
-

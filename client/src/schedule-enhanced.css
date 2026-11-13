@@ -1,0 +1,405 @@
+/* ==========================================================================
+   VINO FITNESS STUDIO — APPLE LUXURY MINIMALIST SCHEDULE
+   ========================================================================== */
+
+.luxury-schedule-wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 20px 20px 100px;
+  position: relative;
+}
+
+/* Ambient Apple glow behind cards */
+.luxury-ambient-glow {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(198, 255, 0, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Minimal Hero */
+.luxury-hero {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.luxury-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #86868b;
+  margin-bottom: 12px;
+}
+
+.luxury-title {
+  font-size: clamp(34px, 5.5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #f5f5f7;
+  line-height: 1.08;
+  margin: 0 0 16px;
+}
+
+.luxury-title span {
+  color: var(--lime);
+}
+
+.luxury-lead {
+  font-size: 16px;
+  font-weight: 400;
+  color: #86868b;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+/* Day Selector: Apple Minimalist Segmented Control */
+.luxury-day-track {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 52px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 40px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.luxury-day-pill {
+  background: transparent;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #86868b;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.luxury-day-pill:hover {
+  color: #f5f5f7;
+}
+
+.luxury-day-pill.active {
+  background: #f5f5f7;
+  color: #000000;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+}
+
+.luxury-day-pill.is-sun {
+  position: relative;
+}
+
+.luxury-day-pill.is-sun:after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #facc15;
+  margin-left: -2px;
+}
+
+.luxury-day-pill.active.is-sun:after {
+  background: #000000;
+}
+
+/* Master Shift Cards: Luxury Apple Glass Grid */
+.luxury-shifts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 32px;
+}
+
+.luxury-shift-card {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 28px;
+  padding: 38px 34px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-shift-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.035);
+  transform: translateY(-2px);
+}
+
+.luxury-shift-card.active-shift {
+  border-color: rgba(198, 255, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(198, 255, 0, 0.06);
+}
+
+/* Card Header */
+.luxury-card-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.luxury-shift-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #86868b;
+}
+
+.luxury-time-pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a1a1a6;
+}
+
+.luxury-card-time {
+  font-size: clamp(32px, 3.8vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #f5f5f7;
+  margin: 0 0 6px;
+  line-height: 1;
+}
+
+.luxury-card-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f5f5f7;
+  margin: 0 0 8px;
+}
+
+.luxury-card-sub {
+  font-size: 13px;
+  color: #86868b;
+  margin: 0 0 32px;
+  line-height: 1.4;
+}
+
+/* Batch Slots Inside Card */
+.luxury-slots-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.luxury-slot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.luxury-slot-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.luxury-slot-row.selected {
+  background: rgba(198, 255, 0, 0.08);
+  border-color: var(--lime);
+}
+
+.luxury-slot-row-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.luxury-slot-row-time {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f5f5f7;
+  letter-spacing: -0.01em;
+}
+
+.luxury-slot-row.selected .luxury-slot-row-time {
+  color: var(--lime);
+}
+
+.luxury-slot-row-desc {
+  font-size: 12px;
+  color: #86868b;
+}
+
+.luxury-slot-row-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.luxury-slot-status {
+  font-size: 11px;
+  font-weight: 500;
+  color: #86868b;
+}
+
+.luxury-slot-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.luxury-slot-row.selected .luxury-slot-radio {
+  border-color: var(--lime);
+  background: var(--lime);
+}
+
+.luxury-slot-radio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #000000;
+  display: none;
+}
+
+.luxury-slot-row.selected .luxury-slot-radio-dot {
+  display: block;
+}
+
+/* Sunday Inactive State */
+.luxury-shift-card.sunday-closed {
+  opacity: 0.45;
+  border-style: dashed;
+  pointer-events: none;
+}
+
+/* Studio Break Bar */
+.luxury-break-bar {
+  text-align: center;
+  font-size: 12px;
+  color: #636366;
+  margin-bottom: 40px;
+  letter-spacing: 0.02em;
+}
+
+.luxury-break-bar strong {
+  color: #86868b;
+}
+
+/* Sticky Bottom Action Pill */
+.luxury-action-pill {
+  position: sticky;
+  bottom: 28px;
+  max-width: 640px;
+  margin: 0 auto;
+  background: rgba(18, 18, 20, 0.85);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 40px;
+  padding: 12px 16px 12px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  z-index: 50;
+  animation: appleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes appleFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.luxury-action-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.luxury-action-day {
+  font-size: 11px;
+  color: #86868b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+.luxury-action-slot {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f5f5f7;
+}
+
+.luxury-action-btn {
+  background: var(--lime);
+  color: #000000;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-action-btn:hover {
+  transform: scale(1.03);
+  filter: brightness(1.06);
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .luxury-shifts-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .luxury-shift-card {
+    padding: 28px 22px;
+  }
+  .luxury-day-pill {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  .luxury-action-pill {
+    margin: 0 16px;
+    padding: 10px 14px 10px 18px;
+  }
+}

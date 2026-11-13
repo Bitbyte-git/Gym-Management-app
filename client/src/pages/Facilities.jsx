@@ -1,46 +1,44 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  Dumbbell, QrCode, HeartPulse, ShieldCheck, Flame, Coffee,
-  ArrowRight, CheckCircle2, Sparkles
-} from 'lucide-react';
+import { Dumbbell, QrCode, HeartPulse, ShieldCheck, Flame, Coffee, ArrowRight } from 'lucide-react';
 import PublicLayout from '../components/PublicLayout';
+import '../luxury-pages.css';
 
-const facilitiesList = [
+const facilities = [
   {
     icon: Dumbbell,
-    title: 'Olympic Lifting & Power Racks',
+    title: 'Olympic Platforms & Racks',
     tag: 'Heavy Strength',
-    desc: 'Heavy-duty competition cages, Olympic barbells, deadlift platforms, and bumper plates calibrated for serious powerlifting and hypertrophy.'
+    desc: 'Heavy-duty competition cages, Eleiko Olympic bars, deadlift platforms, and competition bumper plates.'
   },
   {
     icon: QrCode,
-    title: 'Smart Biometric & QR Check-in',
-    tag: 'Instant Access',
-    desc: '0.3s sub-second check-in using your fingerprint or personal mobile QR pass. Walk in and start lifting with zero front-desk queueing.'
+    title: 'Touchless Biometric Access',
+    tag: 'Sub-Second Entry',
+    desc: '0.3-second fingerprint kiosk and personal QR verification. Enter and train with zero desk delays.'
   },
   {
     icon: HeartPulse,
-    title: 'High-Output Cardio Deck',
-    tag: 'Conditioning',
-    desc: 'Concept2 rowers, SkiErgs, assault air bikes, and curved treadmills designed for high-intensity interval conditioning and stamina.'
+    title: 'Cardio Endurance Deck',
+    tag: 'Conditioning Suite',
+    desc: 'Concept2 rowers, SkiErgs, assault air bikes, and commercial treadmills calibrated for interval conditioning.'
   },
   {
     icon: Flame,
-    title: 'Dumbbell & Cable Bays',
+    title: 'Dumbbell & ISO Bays',
     tag: 'Hypertrophy',
-    desc: 'Solid steel dumbbells ranging from 2.5kg up to 50kg, multi-station dual cable crossovers, and plate-loaded ISO machines.'
+    desc: 'Machined steel dumbbells ranging from 2.5kg to 50kg, dual cable crossovers, and plate-loaded machines.'
   },
   {
     icon: ShieldCheck,
-    title: 'Private Showers & Lockers',
+    title: 'Private Rain Showers & Lockers',
     tag: 'Luxury Amenities',
-    desc: 'Spacious daily lockers, private high-pressure hot & cold rain showers, vanity mirrors, and secure keyless access.'
+    desc: 'Spacious personal day lockers, high-pressure hot and cold rain showers, and sanitized change suites.'
   },
   {
     icon: Coffee,
-    title: 'Protein & Fuel Bar',
-    tag: 'Nutrition & Recovery',
-    desc: 'Grab post-workout whey shakes, BCAA hydration, electrolytes, pre-workout espressos, and healthy protein snacks on your way out.'
+    title: 'Recovery & Nutrition Lounge',
+    tag: 'Fuel & Rehydration',
+    desc: 'Post-workout whey shakes, hydration electrolytes, pre-workout espresso, and high-protein nutrition snacks.'
   }
 ];
 
@@ -50,47 +48,53 @@ export default function Facilities() {
   return (
     <PublicLayout>
       <div className="page-shell wrap">
-        <div className="page-hero">
-          <p className="eyebrow"><Dumbbell size={14} /> WORLD-CLASS AMENITIES</p>
-          <h1>DESIGNED FOR PERFORMANCE. <em>BUILT TO INSPIRE.</em></h1>
-          <p className="lead-text">
-            Every square foot of Vino Fitness Studio is engineered to deliver the best training session of your day.
-          </p>
-        </div>
+        <div className="luxury-page-wrap">
+          <div className="luxury-ambient-glow" />
 
-        {/* 6 Minimal Facility Cards */}
-        <div className="minimal-grid-3" style={{ maxWidth: '980px', margin: '0 auto 40px' }}>
-          {facilitiesList.map((f, i) => {
-            const Icon = f.icon;
-            return (
-              <div key={i} className="minimal-card">
-                <div className="minimal-card-top">
-                  <div className="minimal-card-icon"><Icon size={20} /></div>
-                  <span className="minimal-card-badge">{f.tag}</span>
+          {/* Minimal Hero */}
+          <div className="luxury-hero">
+            <span className="luxury-badge">Amenities</span>
+            <h1 className="luxury-title">
+              The <span>Studio</span>.
+            </h1>
+            <p className="luxury-lead">
+              Precision engineered for performance. Calibrated equipment, pristine hygiene, and zero compromise.
+            </p>
+          </div>
+
+          {/* 6 Luxury Glass Cards Grid */}
+          <div className="luxury-grid-3">
+            {facilities.map((f, idx) => {
+              const Icon = f.icon;
+              return (
+                <div key={idx} className="luxury-glass-card">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <Icon size={20} />
+                    </div>
+                    <span className="luxury-card-tag" style={{ margin: 0 }}>{f.tag}</span>
+                  </div>
+
+                  <h3 className="luxury-card-title" style={{ fontSize: '18px', marginBottom: '8px' }}>
+                    {f.title}
+                  </h3>
+
+                  <p className="luxury-card-desc" style={{ marginBottom: 0, fontSize: '13px', lineHeight: '1.5' }}>
+                    {f.desc}
+                  </p>
                 </div>
-                <h4>{f.title}</h4>
-                <p>{f.desc}</p>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* Studio Tour Invite Card */}
-        <div className="interactive-card" style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center' }}>
-          <span style={{ fontSize: '10px', color: 'var(--lime)', fontWeight: 700, letterSpacing: '0.1em' }}>
-            STUDIO EXPERIENCE
-          </span>
-          <h3 style={{ fontSize: '22px', color: '#ffffff', margin: '6px 0 10px' }}>Experience the Studio in Person</h3>
-          <p style={{ fontSize: '13px', color: '#a5ada0', maxWidth: '580px', margin: '0 auto 20px', lineHeight: '1.6' }}>
-            Visit Vino Fitness Studio at Race Course Road, Coimbatore. Meet our coaching team, check out the lifting platforms, and claim your free trial pass.
-          </p>
-
-          <div style={{ display: 'inline-flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button className="ghost-btn" onClick={() => navigate('/contact')}>
-              Book Studio Walkthrough
-            </button>
-            <button className="lime-btn" onClick={() => navigate('/register')}>
-              Join as Member <ArrowRight size={15} />
+          {/* Bottom Luxury Action Card */}
+          <div className="luxury-floating-bar" style={{ marginTop: '48px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '11px', color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Experience Vino Studio</span>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#f5f5f7' }}>Claim a Complimentary 1-Day Trial Pass</span>
+            </div>
+            <button className="luxury-btn-primary" onClick={() => navigate('/contact')}>
+              Request Pass <ArrowRight size={14} />
             </button>
           </div>
         </div>
@@ -98,4 +102,3 @@ export default function Facilities() {
     </PublicLayout>
   );
 }
-

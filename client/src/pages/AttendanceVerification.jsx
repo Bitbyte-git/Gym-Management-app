@@ -79,9 +79,9 @@ export default function AttendanceVerification({ standalone = true }) {
 
   const getSessionTiming = () => {
     const hour = currentTime.getHours();
-    if (hour < 12) return '5:00 AM – 11:59 AM';
-    if (hour < 16) return '12:00 PM – 3:59 PM';
-    return '4:00 PM – 10:00 PM';
+    if (hour < 12) return '5:00 AM – 10:00 AM';
+    if (hour < 17) return '10:00 AM – 5:00 PM (Break)';
+    return '5:00 PM – 9:00 PM';
   };
 
   useEffect(() => {

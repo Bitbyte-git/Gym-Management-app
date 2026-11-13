@@ -268,7 +268,7 @@ export default function AttendanceKiosk({ user, onRecorded }) {
               {new Date().getHours() < 12 ? 'Morning Session' : new Date().getHours() < 16 ? 'Afternoon Session' : 'Evening Session'}
             </strong>
           </div>
-          <small>{new Date().getHours() < 12 ? '5:00 AM – 11:59 AM' : new Date().getHours() < 16 ? '12:00 PM – 3:59 PM' : '4:00 PM – 10:00 PM'} (Flexible entry)</small>
+          <small>{new Date().getHours() < 12 ? '5:00 AM – 10:00 AM' : new Date().getHours() < 17 ? '10:00 AM – 5:00 PM (Break)' : '5:00 PM – 9:00 PM'}</small>
         </div>
       </article>
 

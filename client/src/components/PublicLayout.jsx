@@ -120,11 +120,11 @@ export function PublicFooter() {
               <div className="footer-timings">
                 <div className="timing-row">
                   <Clock size={13} color="var(--lime)" />
-                  <span>Mon – Sat: <b>05:00 AM – 10:00 PM</b></span>
+                  <span>Morning Class: <b>05:00 AM – 10:00 AM</b></span>
                 </div>
                 <div className="timing-row">
                   <Clock size={13} color="var(--lime)" />
-                  <span>Sunday: <b>06:00 AM – 08:00 PM</b></span>
+                  <span>Evening Class: <b>05:00 PM – 09:00 PM</b></span>
                 </div>
               </div>
               <div className="footer-buttons-group">
