@@ -167,22 +167,29 @@ export default function Landing() {
             <div className={'class-row ' + (activeClass === 0 ? 'active' : '')}>
               <Dumbbell />
               <span>
-                <b>Strength & Power</b>
-                <small>06:00 AM – 07:00 AM</small>
+                <b>Morning Early</b>
+                <small>05:00 AM – 07:00 AM</small>
               </span>
             </div>
             <div className={'class-row ' + (activeClass === 1 ? 'active' : '')}>
               <Users />
               <span>
-                <b>Mobility & Yoga</b>
-                <small>10:00 AM – 11:00 AM</small>
+                <b>Morning Prime</b>
+                <small>07:00 AM – 10:00 AM</small>
               </span>
             </div>
             <div className={'class-row ' + (activeClass === 2 ? 'active' : '')}>
               <Flame />
               <span>
-                <b>HIIT Blast</b>
-                <small>06:00 PM – 07:00 PM</small>
+                <b>Evening Prime</b>
+                <small>05:00 PM – 07:00 PM</small>
+              </span>
+            </div>
+            <div className={'class-row ' + (activeClass === 3 ? 'active' : '')}>
+              <Flame />
+              <span>
+                <b>Evening Power</b>
+                <small>07:00 PM – 09:00 PM</small>
               </span>
             </div>
             <Link to="/schedule" className="schedule-link">
