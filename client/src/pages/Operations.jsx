@@ -105,22 +105,41 @@ const customLabels = {
   deviceId: 'Terminal / Scanner',
   duration: 'Gym Time',
 };
-const label = value => customLabels[value] || value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ').replace(/^./, s => s.toUpperCase());
+const label = (value, currentSection) => {
+  if (currentSection === 'plans' && value === 'duration') return 'Duration';
+  return customLabels[value] || value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ').replace(/^./, s => s.toUpperCase());
+};
 const friendlyError = message => message === 'Check-in is outside the active allocated time slot'
   ? 'Check-in blocked. This member can enter only during their assigned gym time. Open Member slot assignments to review or change it.'
   : message;
-const displayClock = value => value ? new Date(`2000-01-01T${value}:00`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+const displayClock = value => {
+  if (!value) return '';
+  const match = String(value).match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return String(value);
+  const hour = parseInt(match[1], 10);
+  const m = match[2];
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${String(hour12).padStart(2, '0')}:${m} ${ampm}`;
+};
 const choiceText = (option, type) => {
   if (type === 'slots') return `${option.name} · ${displayClock(option.startTime)} – ${displayClock(option.endTime)}`;
+  if (type === 'plans') return `${option.name} · ₹${Number(option.price || 0).toLocaleString('en-IN')}${option.duration ? ` (${option.duration}m)` : ''}`;
   return `${option.fullName || option.name || option.member?.fullName || option._id}${option.membershipPlan?.name ? ` · ${option.membershipPlan.name}` : ''}${option.pendingAmount != null ? ` · INR ${option.pendingAmount} due` : ''}`;
 };
-const valueText = (value, key = '') => {
+const valueText = (value, key = '', currentSection = '') => {
   if (value == null || value === '') return '—';
-  if (Array.isArray(value)) return value.map(v => valueText(v)).join(', ');
+  if (Array.isArray(value)) return value.map(v => valueText(v, key, currentSection)).join(', ');
   if (typeof value === 'object') return value.fullName || value.name || value.email || value.memberId || '—';
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  if (/amount|revenue|totalValue/i.test(key) && Number.isFinite(Number(value))) return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value));
+  if ((key === 'price' || /amount|revenue|totalValue/i.test(key)) && Number.isFinite(Number(value))) return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value));
   if (key === 'duration' && Number.isFinite(Number(value))) {
+    if (currentSection === 'plans') {
+      const months = Math.round(Number(value));
+      if (months === 1) return '1 Month';
+      if (months === 12) return '12 Months (1 Year)';
+      return `${months} Months`;
+    }
     const mins = Math.max(0, Math.round(Number(value)));
     if (mins === 0) return '0m';
     const hrs = Math.floor(mins / 60);
@@ -129,6 +148,7 @@ const valueText = (value, key = '') => {
     if (rem === 0) return `${hrs}h`;
     return `${hrs}h ${rem}m`;
   }
+  if (['startTime', 'endTime'].includes(key) && /^\d{1,2}:\d{2}/.test(String(value))) return displayClock(value);
   if (/Percentage$/i.test(key) && Number.isFinite(Number(value))) return `${value}%`;
   if (['dateOfBirth', 'startDate', 'endDate', 'attendanceDate', 'createdAt', 'paymentDate'].includes(key) && /^\d{4}-\d{2}-\d{2}T/.test(String(value))) return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   if (/Date$|Time$|At$|timestamp/.test(key) && /^\d{4}-\d{2}-\d{2}T/.test(String(value))) return new Date(value).toLocaleString();
@@ -410,7 +430,7 @@ export default function Operations({ section, user, query = '' }) {
   };
   const exportRows = () => {
     const keys = columns;
-    const csv = [keys.map(key => csvCell(label(key))).join(','), ...visible.map(row => keys.map(key => csvCell(valueText(row[key], key))).join(','))].join('\r\n');
+    const csv = [keys.map(key => csvCell(label(key, section))).join(','), ...visible.map(row => keys.map(key => csvCell(valueText(row[key], key, section))).join(','))].join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const a = document.createElement('a'); a.href = url; a.download = `vinofitness-${section}.csv`; a.click(); URL.revokeObjectURL(url);
   };
@@ -725,8 +745,27 @@ export default function Operations({ section, user, query = '' }) {
       const session = String(value || 'morning').toLowerCase();
       return <span className={`session-badge ${session}`}>{session}</span>;
     }
+    if (section === 'plans') {
+      if (key === 'duration') {
+        const num = Number(value);
+        const text = num === 1 ? '1 Month' : num === 12 ? '12 Months (1 Year)' : `${num} Months`;
+        return <span className="status active" style={{ background: 'rgba(212, 255, 0, 0.08)', color: '#d4ff00', border: '1px solid rgba(212, 255, 0, 0.25)', fontWeight: 600 }}>{text}</span>;
+      }
+      if (key === 'price') {
+        return <strong style={{ color: '#ffffff', fontSize: '14px', fontWeight: 700 }}>{valueText(value, 'price', section)}</strong>;
+      }
+    }
+    if (section === 'slots') {
+      if (key === 'startTime' || key === 'endTime') {
+        return <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#e0e0e0', letterSpacing: '0.04em' }}>{displayClock(value)}</span>;
+      }
+      if (key === 'currentCapacity') {
+        const max = row.maxCapacity || 0;
+        return <span style={{ display: 'inline-flex', padding: '3px 10px', borderRadius: '6px', background: 'rgba(255, 255, 255, 0.06)', color: '#ffffff', fontSize: '12px', fontWeight: 600 }}>{value} / {max}</span>;
+      }
+    }
     if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus', 'membershipStatus'].includes(key)) return <span className={`status ${String(value || '').toLowerCase()}`}>{label(String(value || 'unknown'))}</span>;
-    return valueText(value, key);
+    return valueText(value, key, section);
   };
   const help = sectionHelp[section];
   const trainerForm = action?.url?.startsWith('/trainers');
@@ -1123,7 +1162,7 @@ export default function Operations({ section, user, query = '' }) {
       <TableSkeleton rows={8} cols={columns.length + (showActions ? 1 : 0)} showHeader={false} />
     ) : (
       <section className={`table-card ${section === 'reports' ? 'report-table-card' : ''} ${section === 'payments' ? 'payments-table-card' : ''} ${section === 'attendance' ? 'attendance-table-card' : ''}`}><div className="table-scroll"><table>
-      <thead><tr>{columns.map(key => <th key={key}>{label(key)}</th>)}{showActions && <th>Actions</th>}</tr></thead>
+      <thead><tr>{columns.map(key => <th key={key}>{label(key, section)}</th>)}{showActions && <th>Actions</th>}</tr></thead>
       <tbody>{visible.length ? visible.map((row, i) => <tr key={row._id || row.slotId || i}>{columns.map(key => <td key={key}>{renderCell(row, key)}</td>)}{showActions && <td><div className="row-actions">{rowActions(row)}</div></td>}</tr>) : <tr><td className="empty-table" colSpan={columns.length + (showActions ? 1 : 0)}>No records found for the selected filters.</td></tr>}</tbody>
     </table></div></section>)}
     {pagination && <div className="form-actions"><button className="outline-btn" disabled={page <= 1} onClick={() => setPage(v => v - 1)}>Previous</button><span>Page {page} of {pagination.pages || 1} ? {pagination.total} records</span><button className="outline-btn" disabled={page >= pagination.pages} onClick={() => setPage(v => v + 1)}>Next</button></div>}
