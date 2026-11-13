@@ -1,0 +1,903 @@
+/* ==========================================================================
+   VINO FITNESS STUDIO — APPLE LUXURY DESIGN SYSTEM FOR DASHBOARD & WORKSPACES
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. GLOBAL CANVAS & AMBIENT OBSIDIAN GLOW
+   -------------------------------------------------------------------------- */
+.app-shell {
+  background-color: #080b09 !important;
+  background-image: 
+    radial-gradient(circle at 45% -10%, rgba(212, 255, 0, 0.045) 0%, transparent 55%),
+    radial-gradient(circle at 95% 85%, rgba(52, 211, 153, 0.035) 0%, transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(212, 255, 0, 0.025) 0%, transparent 40%) !important;
+  background-attachment: fixed !important;
+  color: #f5f5f7 !important;
+  min-height: 100vh !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. LUXURY SIDEBAR
+   -------------------------------------------------------------------------- */
+.side {
+  width: 260px !important;
+  background: rgba(10, 14, 11, 0.88) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 24px 14px !important;
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.45) !important;
+  z-index: 40 !important;
+}
+
+.side-top {
+  padding: 0 6px 14px !important;
+}
+
+/* Studio location badge */
+.location {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  margin: 4px 0 16px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.location:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(212, 255, 0, 0.2) !important;
+}
+
+.location-icon-badge {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 10px !important;
+  background: rgba(212, 255, 0, 0.1) !important;
+  border: 1px solid rgba(212, 255, 0, 0.22) !important;
+  color: #d4ff00 !important;
+  display: grid !important;
+  place-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.location b {
+  display: block !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.location small {
+  display: block !important;
+  font-size: 11px !important;
+  color: #8c968f !important;
+  margin-top: 2px !important;
+}
+
+.location svg:last-child {
+  margin-left: auto !important;
+  color: #556056 !important;
+}
+
+/* Nav Menu */
+.side nav {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  padding: 4px 0 !important;
+}
+
+.side nav button {
+  height: 42px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #8c968f !important;
+  padding: 0 14px !important;
+  gap: 12px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  letter-spacing: -0.01em !important;
+}
+
+.side nav button:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #ffffff !important;
+  transform: translateX(2px) !important;
+}
+
+.side nav button svg {
+  width: 17px !important;
+  height: 17px !important;
+  color: #727d74 !important;
+  transition: all 0.18s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.side nav button:hover svg {
+  color: #ffffff !important;
+}
+
+.side nav button.active {
+  background: linear-gradient(90deg, rgba(212, 255, 0, 0.14) 0%, rgba(212, 255, 0, 0.03) 100%) !important;
+  color: #d4ff00 !important;
+  border: 1px solid rgba(212, 255, 0, 0.24) !important;
+  font-weight: 600 !important;
+  box-shadow: inset 0 0 12px rgba(212, 255, 0, 0.05), 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+.side nav button.active svg {
+  color: #d4ff00 !important;
+  filter: drop-shadow(0 0 6px rgba(212, 255, 0, 0.4)) !important;
+}
+
+/* Sidebar bottom */
+.side-bottom {
+  margin-top: auto !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding-top: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.side-bottom > button {
+  height: 38px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #8c968f !important;
+  padding: 0 14px !important;
+  gap: 12px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.18s ease !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.side-bottom > button:hover {
+  color: #ff6b72 !important;
+  background: rgba(255, 107, 114, 0.08) !important;
+  border-color: rgba(255, 107, 114, 0.2) !important;
+}
+
+.side-bottom > button svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.user-chip {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+}
+
+.user-chip > span {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9px !important;
+  background: linear-gradient(135deg, rgba(212, 255, 0, 0.22) 0%, rgba(212, 255, 0, 0.06) 100%) !important;
+  border: 1px solid rgba(212, 255, 0, 0.3) !important;
+  color: #d4ff00 !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.user-chip b {
+  display: block !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #f5f5f7 !important;
+  line-height: 1.2 !important;
+}
+
+.user-chip small {
+  display: block !important;
+  font-size: 10.5px !important;
+  color: #8c968f !important;
+  text-transform: capitalize !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. WORKSPACE HEADER
+   -------------------------------------------------------------------------- */
+.workspace {
+  margin-left: 260px !important;
+  min-height: 100vh !important;
+}
+
+.workspace header {
+  padding: 24px 36px 18px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: rgba(8, 11, 9, 0.75) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+}
+
+.workspace header .eyebrow {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  color: #86868b !important;
+  text-transform: uppercase !important;
+  margin: 0 0 4px !important;
+}
+
+.workspace header h1 {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  line-height: 1.15 !important;
+}
+
+.top-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.top-actions label {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px !important;
+  padding: 0 14px !important;
+  height: 40px !important;
+  width: 250px !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.top-actions label:focus-within {
+  width: 300px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(212, 255, 0, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(212, 255, 0, 0.12), 0 4px 18px rgba(0, 0, 0, 0.3) !important;
+}
+
+.top-actions label svg {
+  width: 16px !important;
+  height: 16px !important;
+  color: #727d74 !important;
+  margin-right: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.top-actions label input {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  outline: none !important;
+}
+
+.top-actions label input::placeholder {
+  color: #727d74 !important;
+}
+
+/* Primary Lime Pill Button */
+.lime-btn,
+button.lime-btn {
+  height: 40px !important;
+  padding: 0 18px !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, #e4ff40 0%, #c6ff00 100%) !important;
+  color: #070a05 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 16px rgba(198, 255, 0, 0.22) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  white-space: nowrap !important;
+}
+
+.lime-btn:hover,
+button.lime-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 22px rgba(198, 255, 0, 0.36) !important;
+  filter: brightness(1.05) !important;
+}
+
+.lime-btn svg {
+  width: 15px !important;
+  height: 15px !important;
+  stroke-width: 2.5 !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. OPERATIONS CONTENT CONTAINER
+   -------------------------------------------------------------------------- */
+.dash-content.operations {
+  padding: 26px 36px 60px !important;
+}
+
+/* Purpose Guide Card */
+.section-guide {
+  background: linear-gradient(135deg, rgba(20, 26, 21, 0.55) 0%, rgba(12, 16, 13, 0.65) 100%) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  padding: 18px 24px !important;
+  margin-bottom: 20px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 20px !important;
+}
+
+.section-guide span {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #d4ff00 !important;
+  background: rgba(212, 255, 0, 0.08) !important;
+  padding: 3px 8px !important;
+  border-radius: 5px !important;
+  display: inline-block !important;
+  margin-bottom: 6px !important;
+}
+
+.section-guide h2 {
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  margin: 0 0 4px !important;
+}
+
+.section-guide p {
+  font-size: 12.5px !important;
+  color: #8c968f !important;
+  margin: 0 !important;
+}
+
+.section-guide ol {
+  display: flex !important;
+  gap: 10px !important;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.section-guide ol li {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 9px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  color: #a6b2a6 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+.section-guide ol li b {
+  color: #d4ff00 !important;
+  font-weight: 700 !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. FILTER BAR
+   -------------------------------------------------------------------------- */
+.section-filter-bar {
+  background: rgba(14, 18, 15, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 14px !important;
+  padding: 12px 18px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.filter-bar-header {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  color: #d4ff00 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-right: 6px !important;
+}
+
+.filter-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.filter-item label {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #8c968f !important;
+}
+
+.filter-item select,
+.operations select {
+  height: 35px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 9px !important;
+  color: #f0f3f0 !important;
+  padding: 0 28px 0 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  outline: none !important;
+}
+
+.filter-item select:hover,
+.operations select:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.filter-item select:focus,
+.operations select:focus {
+  border-color: rgba(212, 255, 0, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(212, 255, 0, 0.1) !important;
+}
+
+.filter-bar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: auto !important;
+}
+
+.filter-clear-btn {
+  height: 30px !important;
+  padding: 0 12px !important;
+  border-radius: 15px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #8c968f !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+
+.filter-clear-btn:hover {
+  color: #ff6b72 !important;
+  background: rgba(255, 107, 114, 0.08) !important;
+  border-color: rgba(255, 107, 114, 0.25) !important;
+}
+
+.filter-results-badge {
+  font-size: 11.5px !important;
+  color: #8c968f !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 5px 12px !important;
+  border-radius: 15px !important;
+}
+
+.filter-results-badge b {
+  color: #d4ff00 !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. TOOLBAR
+   -------------------------------------------------------------------------- */
+.toolbar.operation-tools {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 16px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Secondary Frosted Buttons */
+.outline-btn,
+button.outline-btn {
+  height: 38px !important;
+  padding: 0 16px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 10px !important;
+  color: #d6ded6 !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  white-space: nowrap !important;
+}
+
+.outline-btn:hover,
+button.outline-btn:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+
+.outline-btn svg {
+  color: #8c968f !important;
+  transition: color 0.18s ease !important;
+}
+
+.outline-btn:hover svg {
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. TABLE CARD & DATA TABLE
+   -------------------------------------------------------------------------- */
+.table-card {
+  background: rgba(13, 17, 14, 0.78) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+  padding: 0 !important;
+  margin-top: 0 !important;
+}
+
+.table-scroll {
+  overflow-x: auto !important;
+  border-radius: 18px !important;
+}
+
+.table-card table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  min-width: 900px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Headers */
+.table-card th {
+  height: 52px !important;
+  padding: 14px 20px !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: #727e74 !important;
+  background: rgba(18, 24, 20, 0.6) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  text-align: left !important;
+}
+
+.table-card th:last-child {
+  text-align: right !important;
+  padding-right: 28px !important;
+  min-width: 250px !important;
+}
+
+/* Data Rows */
+.table-card tbody tr {
+  height: 64px !important;
+  transition: background 0.16s ease !important;
+}
+
+.table-card tbody tr:hover {
+  background: rgba(212, 255, 0, 0.035) !important;
+}
+
+.table-card td {
+  padding: 16px 20px !important;
+  font-size: 13.5px !important;
+  color: #e4e7e4 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  vertical-align: middle !important;
+  background: transparent !important;
+}
+
+.table-card td:last-child {
+  text-align: right !important;
+  padding-right: 28px !important;
+}
+
+.table-card tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* Empty Table state */
+.table-card .empty-table {
+  text-align: center !important;
+  padding: 48px 20px !important;
+  color: #727e74 !important;
+  font-size: 13.5px !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. ROW ACTION BUTTONS — ELEGANT SINGLE-LINE PILLS
+   -------------------------------------------------------------------------- */
+.row-actions {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  min-width: 240px !important;
+}
+
+.row-actions button,
+.row-actions .outline-btn {
+  height: 32px !important;
+  padding: 0 13px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Edit Button */
+.row-actions .btn-edit,
+.row-actions .outline-btn.btn-edit {
+  background: rgba(212, 255, 0, 0.08) !important;
+  border: 1px solid rgba(212, 255, 0, 0.25) !important;
+  color: #d4ff00 !important;
+}
+
+.row-actions .btn-edit:hover,
+.row-actions .outline-btn.btn-edit:hover {
+  background: rgba(212, 255, 0, 0.18) !important;
+  border-color: rgba(212, 255, 0, 0.45) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 10px rgba(212, 255, 0, 0.2) !important;
+}
+
+/* Warning / Place on Leave / Freeze */
+.row-actions .btn-warning,
+.row-actions .outline-btn.btn-warning {
+  background: rgba(245, 197, 66, 0.08) !important;
+  border: 1px solid rgba(245, 197, 66, 0.24) !important;
+  color: #f5c542 !important;
+}
+
+.row-actions .btn-warning:hover,
+.row-actions .outline-btn.btn-warning:hover {
+  background: rgba(245, 197, 66, 0.18) !important;
+  border-color: rgba(245, 197, 66, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Destructive / Deactivate / Cancel */
+.row-actions .btn-destructive,
+.row-actions .outline-btn.btn-destructive {
+  background: rgba(255, 107, 114, 0.08) !important;
+  border: 1px solid rgba(255, 107, 114, 0.24) !important;
+  color: #ff6b72 !important;
+}
+
+.row-actions .btn-destructive:hover,
+.row-actions .outline-btn.btn-destructive:hover {
+  background: rgba(255, 107, 114, 0.18) !important;
+  border-color: rgba(255, 107, 114, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* --------------------------------------------------------------------------
+   9. CELL BADGES, CHIPS & TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+/* ID Chips (TRN0011, MEM0001) */
+.id-chip {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: #9bb09b !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  display: inline-block !important;
+}
+
+/* Experience Chip */
+.exp-chip {
+  display: inline-block !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #e4e7e4 !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  padding: 3px 9px !important;
+  border-radius: 6px !important;
+}
+
+/* Timings Chips */
+.timing-chips-wrap {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+}
+
+.timing-chip {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 3px 8px !important;
+  border-radius: 5px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #9bb09b !important;
+  letter-spacing: 0.01em !important;
+}
+
+.timing-chip.morning {
+  background: rgba(212, 255, 0, 0.06) !important;
+  border-color: rgba(212, 255, 0, 0.2) !important;
+  color: #d4ff00 !important;
+}
+
+.timing-chip.afternoon {
+  background: rgba(245, 197, 66, 0.06) !important;
+  border-color: rgba(245, 197, 66, 0.2) !important;
+  color: #f5c542 !important;
+}
+
+.timing-chip.evening {
+  background: rgba(124, 199, 232, 0.06) !important;
+  border-color: rgba(124, 199, 232, 0.2) !important;
+  color: #7cc7e8 !important;
+}
+
+/* Status Badges */
+.status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+}
+
+.status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: currentColor !important;
+  box-shadow: 0 0 6px currentColor !important;
+}
+
+.status.active,
+.status.completed,
+.status.present {
+  background: rgba(52, 211, 153, 0.1) !important;
+  border: 1px solid rgba(52, 211, 153, 0.28) !important;
+  color: #34d399 !important;
+}
+
+.status.inactive,
+.status.refunded,
+.status.failed {
+  background: rgba(255, 107, 114, 0.1) !important;
+  border: 1px solid rgba(255, 107, 114, 0.28) !important;
+  color: #ff6b72 !important;
+}
+
+.status.on_leave,
+.status.leave,
+.status.pending,
+.status.pending_payment {
+  background: rgba(245, 197, 66, 0.1) !important;
+  border: 1px solid rgba(245, 197, 66, 0.28) !important;
+  color: #f5c542 !important;
+}
+
+/* --------------------------------------------------------------------------
+   10. MODAL & DIALOG POLISH
+   -------------------------------------------------------------------------- */
+.operation-modal {
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.operation-form {
+  background: #0d120f !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65) !important;
+  padding: 32px !important;
+}
+
+.operation-form h2 {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: #ffffff !important;
+  margin-bottom: 20px !important;
+}
+
+.operation-form input,
+.operation-form select,
+.operation-form textarea {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  padding: 12px 14px !important;
+  font-size: 13.5px !important;
+  outline: none !important;
+  transition: all 0.18s ease !important;
+}
+
+.operation-form input:focus,
+.operation-form select:focus,
+.operation-form textarea:focus {
+  border-color: #d4ff00 !important;
+  box-shadow: 0 0 0 3px rgba(212, 255, 0, 0.12) !important;
+}
+
+/* Pagination */
+.form-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 18px 6px !important;
+  margin-top: 14px !important;
+  color: #8c968f !important;
+  font-size: 12.5px !important;
+}

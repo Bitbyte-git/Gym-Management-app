@@ -764,7 +764,60 @@ export default function Operations({ section, user, query = '' }) {
         return <span style={{ display: 'inline-flex', padding: '3px 10px', borderRadius: '6px', background: 'rgba(255, 255, 255, 0.06)', color: '#ffffff', fontSize: '12px', fontWeight: 600 }}>{value} / {max}</span>;
       }
     }
-    if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus', 'membershipStatus'].includes(key)) return <span className={`status ${String(value || '').toLowerCase()}`}>{label(String(value || 'unknown'))}</span>;
+    if (section === 'trainers') {
+      if (key === 'fullName') {
+        const name = value || 'Trainer';
+        const initials = name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase() || 'T';
+        return (
+          <div className="attendance-member-cell">
+            <span className="attendance-avatar" style={{ width: 34, height: 34, fontSize: 11, borderRadius: 10, background: 'rgba(212, 255, 0, 0.12)', color: '#d4ff00', border: '1px solid rgba(212, 255, 0, 0.28)', display: 'grid' }}>
+              {initials}
+            </span>
+            <div>
+              <b style={{ color: '#ffffff', fontWeight: 600 }}>{name}</b>
+              <small style={{ color: '#8c968f' }}>{row.email || row.mobileNumber || 'Trainer'}</small>
+            </div>
+          </div>
+        );
+      }
+      if (key === 'trainerId') {
+        return <span className="id-chip">{value}</span>;
+      }
+      if (key === 'gender') {
+        return <span style={{ textTransform: 'capitalize', color: '#c4ccc4' }}>{value}</span>;
+      }
+      if (key === 'specialization') {
+        return <span style={{ color: '#f0f3f0', fontWeight: 500 }}>{value}</span>;
+      }
+      if (key === 'experience') {
+        return <span className="exp-chip">{value} yrs</span>;
+      }
+      if (key === 'convenientTimings') {
+        const timings = Array.isArray(value) ? value : String(value || '').split(',').map(s => s.trim()).filter(Boolean);
+        return (
+          <div className="timing-chips-wrap">
+            {timings.map(t => (
+              <span key={t} className={`timing-chip ${t.toLowerCase()}`}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </span>
+            ))}
+          </div>
+        );
+      }
+    }
+    if (key === 'memberId') {
+      return <span className="id-chip">{value}</span>;
+    }
+    if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus', 'membershipStatus'].includes(key)) {
+      const statusStr = String(value || 'unknown').toLowerCase();
+      const hasGlowDot = ['active', 'completed', 'present'].includes(statusStr);
+      return (
+        <span className={`status ${statusStr}`}>
+          {hasGlowDot && <span className="status-dot" />}
+          {label(String(value || 'unknown'))}
+        </span>
+      );
+    }
     return valueText(value, key, section);
   };
   const help = sectionHelp[section];

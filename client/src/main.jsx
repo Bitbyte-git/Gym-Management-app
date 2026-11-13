@@ -7,6 +7,7 @@ import './styles.css';
 import './navbar.css';
 import './landing-enhanced.css';
 import './attendance-kiosk.css';
+import './dashboard-luxury.css';
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
