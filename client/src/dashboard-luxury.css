@@ -92,12 +92,14 @@
 .side nav {
   display: flex !important;
   flex-direction: column !important;
-  gap: 3px !important;
+  gap: 2px !important;
   padding: 4px 0 !important;
   overflow-y: auto !important;
+  overflow-x: hidden !important;
   min-height: 0 !important;
+  flex: 1 !important;
   scrollbar-width: thin !important;
-  scrollbar-color: rgba(255, 255, 255, 0.14) transparent !important;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent !important;
 }
 
 .side nav::-webkit-scrollbar {
@@ -109,7 +111,7 @@
 }
 
 .side nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
   border-radius: 999px !important;
 }
 
@@ -119,12 +121,13 @@
 
 .side nav button {
   height: 40px !important;
+  min-height: 40px !important;
   border-radius: 10px !important;
-  font-size: 13px !important;
+  font-size: 13.5px !important;
   font-weight: 500 !important;
   color: #8c968f !important;
-  padding: 0 13px !important;
-  gap: 12px !important;
+  padding: 0 14px !important;
+  gap: 13px !important;
   background: transparent !important;
   border: 1px solid transparent !important;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -132,6 +135,9 @@
   display: flex !important;
   align-items: center !important;
   letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .side nav button:hover {
@@ -163,227 +169,6 @@
 .side nav button.active svg {
   color: #d4ff00 !important;
   filter: drop-shadow(0 0 6px rgba(212, 255, 0, 0.4)) !important;
-}
-
-/* --------------------------------------------------------------------------
-   SPACIOUS SETTINGS HUB & ELEMENTS UI
-   -------------------------------------------------------------------------- */
-.settings-hub {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 32px !important;
-  animation: settingsHubFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-@keyframes settingsHubFade {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.settings-hub-hero {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
-  border-radius: 18px !important;
-  padding: 28px 32px !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.settings-hub-hero::before {
-  content: '' !important;
-  position: absolute !important;
-  top: -60px !important;
-  right: -40px !important;
-  width: 280px !important;
-  height: 280px !important;
-  background: radial-gradient(circle, rgba(212, 255, 0, 0.07) 0%, transparent 70%) !important;
-  border-radius: 50% !important;
-  pointer-events: none !important;
-}
-
-.settings-hub-eyebrow {
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.12em !important;
-  color: #d4ff00 !important;
-  text-transform: uppercase !important;
-  margin-bottom: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-
-.settings-hub-title {
-  font-size: 24px !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-  letter-spacing: -0.02em !important;
-  margin: 0 0 8px !important;
-}
-
-.settings-hub-subtitle {
-  font-size: 14px !important;
-  color: #8c968f !important;
-  margin: 0 !important;
-  max-width: 680px !important;
-  line-height: 1.55 !important;
-}
-
-.settings-section-heading {
-  display: flex !important;
-  align-items: baseline !important;
-  gap: 12px !important;
-  margin-bottom: 16px !important;
-}
-
-.settings-section-heading h3 {
-  font-size: 17px !important;
-  font-weight: 600 !important;
-  color: #ffffff !important;
-  letter-spacing: -0.01em !important;
-  margin: 0 !important;
-}
-
-.settings-section-heading span {
-  font-size: 12.5px !important;
-  color: #6d7770 !important;
-}
-
-.settings-elements-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)) !important;
-  gap: 18px !important;
-}
-
-.settings-element-card {
-  background: rgba(14, 18, 15, 0.75) !important;
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
-  border-radius: 16px !important;
-  padding: 22px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 14px !important;
-  cursor: pointer !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  position: relative !important;
-  text-align: left !important;
-  color: inherit !important;
-}
-
-.settings-element-card:hover {
-  background: rgba(22, 28, 23, 0.95) !important;
-  border-color: rgba(212, 255, 0, 0.3) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 20px rgba(212, 255, 0, 0.06) !important;
-}
-
-.settings-element-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
-
-.settings-element-icon-box {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 12px !important;
-  display: grid !important;
-  place-items: center !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  transition: all 0.2s ease !important;
-}
-
-.settings-element-card:hover .settings-element-icon-box {
-  transform: scale(1.06) !important;
-}
-
-.settings-element-badge {
-  font-size: 10.5px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
-  padding: 4px 10px !important;
-  border-radius: 20px !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-.settings-element-body {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-  flex: 1 !important;
-}
-
-.settings-element-name {
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  color: #ffffff !important;
-  letter-spacing: -0.01em !important;
-  margin: 0 !important;
-}
-
-.settings-element-desc {
-  font-size: 12.5px !important;
-  color: #8c968f !important;
-  line-height: 1.5 !important;
-  margin: 0 !important;
-}
-
-.settings-element-footer {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  padding-top: 10px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-  margin-top: auto !important;
-}
-
-.settings-element-action {
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: #d4ff00 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  transition: gap 0.2s ease !important;
-}
-
-.settings-element-card:hover .settings-element-action {
-  gap: 9px !important;
-}
-
-.settings-system-table-section {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 16px !important;
-  padding-top: 12px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
-}
-
-/* Sub-page back navigation */
-.settings-subpage-back {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  padding: 8px 14px !important;
-  border-radius: 9px !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #8c968f !important;
-  font-size: 12.5px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.18s ease !important;
-  margin-bottom: 16px !important;
-  width: fit-content !important;
-}
-
-.settings-subpage-back:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(212, 255, 0, 0.25) !important;
-  color: #ffffff !important;
-  transform: translateX(-2px) !important;
 }
 
 /* Sidebar bottom */
