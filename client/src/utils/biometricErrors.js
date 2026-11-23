@@ -108,27 +108,46 @@ export function parseBiometricFeedback(next = {}) {
   // 7. Inactive or expired membership
   if (
     code === 'MEMBERSHIP_INELIGIBLE' ||
+    code === 'ACCOUNT_INACTIVE' ||
     msgLower.includes('no current, paid membership') ||
     msgLower.includes('account is not active') ||
+    msgLower.includes('account is inactive') ||
     msgLower.includes('membership is inactive') ||
     msgLower.includes('membership expired') ||
     msgLower.includes('expired') ||
     isExpiredFlag
   ) {
-    const isExpired = isExpiredFlag ||
-      msgLower.includes('expired') ||
+    const hasValidFutureDate = Boolean(membership?.endDate && new Date(membership.endDate) >= new Date());
+    const isActuallyExpired = !hasValidFutureDate && (
+      Boolean(isExpiredFlag) ||
       membership?.status === 'expired' ||
-      member?.membershipStatus === 'expired';
+      member?.membershipStatus === 'expired' ||
+      msgLower.includes('membership expired') ||
+      (msgLower.includes('expired on') && !hasValidFutureDate)
+    );
+
+    let title = isActuallyExpired ? 'Membership Expired' : 'Membership Notice';
+    if (!isActuallyExpired) {
+      if (msgLower.includes('starts on') || msgLower.includes('not started')) {
+        title = 'Membership Not Started';
+      } else if (msgLower.includes('payment') || msgLower.includes('pending')) {
+        title = 'Payment Pending';
+      } else if (msgLower.includes('frozen')) {
+        title = 'Membership Frozen';
+      } else if (msgLower.includes('inactive') || msgLower.includes('suspended')) {
+        title = 'Account Inactive';
+      }
+    }
 
     return {
       type: 'error',
-      title: isExpired ? 'Membership Expired' : 'Membership Inactive or Expired',
-      subtitle: rawMsg || (isExpired
+      title,
+      subtitle: rawMsg || (isActuallyExpired
         ? 'Your gym membership has expired. Please renew your plan at the reception desk.'
-        : 'Your gym membership is not currently active. Please contact reception to renew your plan.'),
+        : 'Your gym membership is not currently active. Please contact reception.'),
       member,
       membership,
-      action: isExpired ? 'expired' : 'ineligible',
+      action: isActuallyExpired ? 'expired' : 'ineligible',
     };
   }
 

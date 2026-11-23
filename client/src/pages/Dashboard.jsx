@@ -90,16 +90,7 @@ export default function Dashboard({ role = 'admin' }) {
             <X />
           </button>
         </div>
-        <div className="location">
-          <div className="location-icon-badge">
-            <MapPin size={16} />
-          </div>
-          <div>
-            <b>Vino Fitness Studio</b>
-            <small>Unisex Fitness Studio</small>
-          </div>
-          <ChevronRight size={16} />
-        </div>
+
         <nav>
           {links.map(([Icon, label, path]) => (
             <button
@@ -116,10 +107,7 @@ export default function Dashboard({ role = 'admin' }) {
           ))}
         </nav>
         <div className="side-bottom">
-          <button onClick={handleLogout}>
-            <LogOut />
-            Sign out
-          </button>
+
           <div className="user-chip">
             <span>{user?.name?.split(' ').map(n => n[0]).join('') || 'U'}</span>
             <div>
@@ -127,6 +115,10 @@ export default function Dashboard({ role = 'admin' }) {
               <small>{user?.role ? user.role[0].toUpperCase() + user.role.slice(1) : role}</small>
             </div>
           </div>
+          <button onClick={handleLogout}>
+            <LogOut />
+            Sign out
+          </button>
         </div>
       </aside>
       <main className="workspace">

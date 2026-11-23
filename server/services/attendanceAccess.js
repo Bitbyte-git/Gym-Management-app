@@ -1,4 +1,5 @@
 const MemberMembership = require('../models/MemberMembership');
+const MemberProfile = require('../models/MemberProfile');
 const MemberSlotAllocation = require('../models/MemberSlotAllocation');
 const GymOperatingHours = require('../models/GymOperatingHours');
 const SystemSetting = require('../models/SystemSetting');
@@ -38,38 +39,106 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
     status: latestMembership.status,
   } : null;
 
-  const isExpired = member.membershipStatus === 'expired' ||
-    (latestMembership && (latestMembership.status === 'expired' || new Date(latestMembership.endDate) < now));
-
-  if (isExpired) {
-    const endDateStr = latestMembership?.endDate ? new Date(latestMembership.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
-    const errorMsg = endDateStr ? `Membership expired on ${endDateStr}. Please renew your plan.` : 'Your gym membership has expired. Please renew your plan.';
-    const error = new Error(errorMsg);
+  // 1. Explicit account suspension check
+  if (['suspended', 'inactive'].includes(member.registrationStatus) || member.isActive === false) {
+    const error = new Error('Member account is inactive or suspended. Please contact reception.');
     error.statusCode = 403;
-    error.code = 'MEMBERSHIP_INELIGIBLE';
-    error.isExpired = true;
+    error.code = 'ACCOUNT_INACTIVE';
+    error.isExpired = false;
     error.member = memberInfo;
     error.membership = membershipInfo;
     throw error;
   }
 
-  if (member.registrationStatus !== 'active' || member.membershipStatus !== 'active') {
-    const error = new Error('Member account is not active');
-    error.statusCode = 403;
-    error.code = 'MEMBERSHIP_INELIGIBLE';
-    error.member = memberInfo;
-    error.membership = membershipInfo;
-    throw error;
-  }
-  const membership = await getCurrentMembership(member._id, now, session);
+  // 2. Check for current valid membership (the source of truth for gym access)
+  let membership = await getCurrentMembership(member._id, now, session);
   if (!membership) {
+    // Check if there is a paid membership whose dates are valid today but status wasn't flipped to 'active' yet
+    membership = await MemberMembership.findOne({
+      member: member._id,
+      paymentStatus: 'paid',
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+      status: { $nin: ['cancelled', 'frozen'] },
+    }).sort({ endDate: -1 }).session(session);
+
+    if (membership && membership.status !== 'active') {
+      membership.status = 'active';
+      await membership.save({ session });
+    }
+  }
+
+  // If a valid membership is active today, auto-heal any stale profile statuses
+  if (membership) {
+    if (member.membershipStatus !== 'active' || member.registrationStatus !== 'active') {
+      try {
+        await MemberProfile.updateOne(
+          { _id: member._id },
+          { $set: { membershipStatus: 'active', registrationStatus: 'active' } },
+          session ? { session } : {}
+        );
+        member.membershipStatus = 'active';
+        member.registrationStatus = 'active';
+      } catch (err) {
+        // Non-blocking auto-heal fallback
+      }
+    }
+  } else {
+    // 3. No current active membership: evaluate latest membership to provide accurate, specific reason
+    if (latestMembership) {
+      if (latestMembership.status === 'frozen') {
+        const error = new Error('Membership is currently frozen. Please contact reception.');
+        error.statusCode = 403;
+        error.code = 'MEMBERSHIP_INELIGIBLE';
+        error.isExpired = false;
+        error.member = memberInfo;
+        error.membership = membershipInfo;
+        throw error;
+      }
+
+      if (new Date(latestMembership.startDate) > now) {
+        const startDateStr = new Date(latestMembership.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const error = new Error(`Membership starts on ${startDateStr}. Check-in not allowed before start date.`);
+        error.statusCode = 403;
+        error.code = 'MEMBERSHIP_INELIGIBLE';
+        error.isExpired = false;
+        error.member = memberInfo;
+        error.membership = membershipInfo;
+        throw error;
+      }
+
+      if (latestMembership.paymentStatus !== 'paid') {
+        const error = new Error('Membership payment is pending. Please complete payment at reception.');
+        error.statusCode = 403;
+        error.code = 'MEMBERSHIP_INELIGIBLE';
+        error.isExpired = false;
+        error.member = memberInfo;
+        error.membership = membershipInfo;
+        throw error;
+      }
+
+      if (latestMembership.status === 'expired' || new Date(latestMembership.endDate) < now) {
+        const endDateStr = latestMembership?.endDate ? new Date(latestMembership.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+        const errorMsg = endDateStr ? `Membership expired on ${endDateStr}. Please renew your plan.` : 'Your gym membership has expired. Please renew your plan.';
+        const error = new Error(errorMsg);
+        error.statusCode = 403;
+        error.code = 'MEMBERSHIP_INELIGIBLE';
+        error.isExpired = true;
+        error.member = memberInfo;
+        error.membership = membershipInfo;
+        throw error;
+      }
+    }
+
     const error = new Error('No current, paid membership found. Please renew your plan.');
     error.statusCode = 403;
     error.code = 'MEMBERSHIP_INELIGIBLE';
+    error.isExpired = false;
     error.member = memberInfo;
     error.membership = membershipInfo;
     throw error;
   }
+
   const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const { day: currentDay, time: currentTime } = clockAt(now);
   const operatingHours = await GymOperatingHours.findOne({ dayOfWeek: currentDay }).session(session);

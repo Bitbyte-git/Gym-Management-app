@@ -53,7 +53,13 @@ export default function AttendancePopup({ popup, onClose }) {
   const member = popup.member || popup.errorData?.member;
   const membership = popup.membership || popup.errorData?.membership || member?.membership;
   const hasPhoto = Boolean(member?.profilePicture);
-  const isExpired = popup.action === 'expired' || membership?.status === 'expired' || Boolean(membership);
+  const isEndDatePast = Boolean(membership?.endDate && new Date(membership.endDate) < new Date());
+  const isPlanExpired = Boolean(
+    popup.action === 'expired' ||
+    popup.isExpired === true ||
+    membership?.status === 'expired' ||
+    isEndDatePast
+  );
 
   return (
     <div className="attendance-popup-overlay" role="dialog" aria-modal="true" onClick={onClose}>
@@ -117,7 +123,7 @@ export default function AttendancePopup({ popup, onClose }) {
                   {member.memberId && <span className="attendance-member-code">{member.memberId}</span>}
                 </div>
                 <div className="attendance-popup-tags">
-                  {(isExpired || popup.action === 'expired') && (
+                  {isPlanExpired && (
                     <span
                       className="kiosk-punch-pill expired"
                       style={{
@@ -130,6 +136,21 @@ export default function AttendancePopup({ popup, onClose }) {
                       }}
                     >
                       <AlertTriangle size={11} /> PLAN EXPIRED
+                    </span>
+                  )}
+                  {!isPlanExpired && membership && (
+                    <span
+                      className="kiosk-punch-pill active"
+                      style={{
+                        background: 'rgba(212, 255, 0, 0.14)',
+                        color: 'var(--primary-color, #d4ff00)',
+                        border: '1px solid rgba(212, 255, 0, 0.3)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <CheckCircle2 size={11} /> {(membership.status || 'ACTIVE').toUpperCase()}
                     </span>
                   )}
                   {popup.action && !['duplicate', 'expired', 'ineligible'].includes(popup.action) && (
@@ -172,14 +193,16 @@ export default function AttendancePopup({ popup, onClose }) {
           )}
 
           {membership && (
-            <div className="attendance-popup-plan-card">
+            <div className={`attendance-popup-plan-card ${isPlanExpired ? 'expired' : 'active'}`}>
               <div className="attendance-popup-plan-header">
                 <div className="attendance-popup-plan-title">
                   <CreditCard size={15} className="plan-icon" />
                   <span>{membership.planName || 'Membership Plan'}</span>
                 </div>
-                <span className="attendance-popup-plan-status expired">
-                  EXPIRED
+                <span
+                  className={`attendance-popup-plan-status ${isPlanExpired ? 'expired' : 'active'}`}
+                >
+                  {isPlanExpired ? 'EXPIRED' : (membership.status || 'ACTIVE').toUpperCase()}
                 </span>
               </div>
               <div className="attendance-popup-plan-dates">
@@ -194,7 +217,7 @@ export default function AttendancePopup({ popup, onClose }) {
                 </div>
                 <div className="plan-date-col">
                   <span className="plan-date-label">Ended Date</span>
-                  <strong className="plan-date-val expired">
+                  <strong className={`plan-date-val ${isPlanExpired ? 'expired' : 'active'}`}>
                     {formatDate(membership.endDate)}
                   </strong>
                 </div>
