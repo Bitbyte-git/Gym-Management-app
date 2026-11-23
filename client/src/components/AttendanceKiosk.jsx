@@ -96,7 +96,17 @@ export default function AttendanceKiosk({ user, onRecorded }) {
         next.phase === 'error' ||
         next.phase === 'disconnected'
       ) {
+        // Never show popup for capture timeouts or silent idle scanning
+        if (
+          next.code === 'CAPTURE_TIMEOUT' ||
+          next.code === 'SERVICE_TIMEOUT' ||
+          next.message?.includes('-2019') ||
+          next.message?.toLowerCase().includes('timed out')
+        ) {
+          return;
+        }
         const feedback = parseBiometricFeedback(next);
+        if (feedback?.isSilent) return;
         triggerPopup(feedback);
       }
     } });

@@ -113,12 +113,37 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
               if (!current(generation, signal)) break;
               const errData = error.response?.data || {};
               const code = errData.code || error.code;
+              const msg = (error.message || '').toLowerCase();
 
-              // If the server responded (any HTTP status), this is a known state —
+              // 1. Silent capture timeout: No one placed a finger in this cycle.
+              // Keep monitoring punches continuously with NO time limit and NO popup!
+              if (
+                code === 'CAPTURE_TIMEOUT' ||
+                code === 'SERVICE_TIMEOUT' ||
+                msg.includes('-2019') ||
+                msg.includes('capture timed out') ||
+                msg.includes('no finger detected')
+              ) {
+                needsDeviceReset = false;
+                await wait(200, signal);
+                continue;
+              }
+
+              // 2. Station session expired during long idle: silently refresh station token
+              if (code === 'STATION_INACTIVE' || code === 'INVALID_SESSION') {
+                try {
+                  const refreshed = await transport.open(signal);
+                  if (refreshed?.stationToken) {
+                    station = refreshed.stationToken;
+                    continue;
+                  }
+                } catch {}
+              }
+
+              // 3. If the server responded (any HTTP status), this is a known state —
               // the record either failed cleanly or succeeded. Clear pending and show feedback.
               if (error.response) {
                 pending = null;
-                if (code === 'CAPTURE_TIMEOUT') { await wait(300, signal); continue; }
                 emit({
                   phase: 'result',
                   code,
@@ -132,13 +157,13 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
                 continue;
               }
 
-              // No response at all = genuine network failure (timeout, disconnect).
-              // For device/service errors, propagate to outer catch for disconnect UI.
+              // 4. Device physically disconnected or service down: propagate to outer catch
               if (['DEVICE_DISCONNECTED', 'SERVICE_UNAVAILABLE'].includes(code)) throw error;
-              // For other network errors (e.g. ECONNREFUSED, timeout), the record endpoint
-              // is idempotent via eventId so safe to clear pending and continue.
+
+              // 5. For other transient errors, reset and continue monitoring without dying
               pending = null;
-              throw error;
+              await wait(1000, signal);
+              continue;
             }
           }
         });

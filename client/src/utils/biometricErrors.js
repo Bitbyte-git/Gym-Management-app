@@ -317,17 +317,22 @@ export function parseBiometricFeedback(next = {}) {
     };
   }
 
-  // 14. Scan timeout
+  // 14. Scan timeout - silent background state, never show as error popup
   if (
     code === 'CAPTURE_TIMEOUT' ||
-    msgLower.includes('timeout') ||
+    code === 'SERVICE_TIMEOUT' ||
+    msgLower.includes('-2019') ||
+    msgLower.includes('no finger detected in time') ||
+    msgLower.includes('capture timed out') ||
+    msgLower.includes('scan timed out') ||
     msgLower.includes('timed out')
   ) {
     return {
-      type: 'warning',
-      title: 'Scan Timed Out',
-      subtitle: 'No finger detected in time. Place your finger firmly on the sensor when the light is active.',
+      type: 'info',
+      title: 'Ready for Fingerprint',
+      subtitle: 'Scanner active. Place your finger on the sensor.',
       member: null,
+      isSilent: true,
     };
   }
 

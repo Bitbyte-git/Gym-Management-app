@@ -45,7 +45,7 @@ export default function AttendancePopup({ popup, onClose }) {
     return () => clearTimeout(timer);
   }, [popup]);
 
-  if (!popup) return null;
+  if (!popup || popup.isSilent) return null;
 
   const isSuccess = popup.type === 'success';
   const isWarning = popup.type === 'warning';
