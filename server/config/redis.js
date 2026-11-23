@@ -3,11 +3,17 @@ const Redis = require('ioredis');
 let redisClient = null;
 let isReady = false;
 
-const redisHost = process.env.REDIS_HOST || 'localhost';
+const rawHost = process.env.REDIS_HOST || 'localhost';
+// Auto-clean host by removing accidental protocol schemes (e.g. https://) and trailing paths
+const redisHost = rawHost.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim();
 const redisPort = Number(process.env.REDIS_PORT) || 6379;
 const redisPassword = process.env.REDIS_PASSWORD || undefined;
 const redisUrl = process.env.REDIS_URL;
 const isRedisEnabled = process.env.REDIS_ENABLED !== 'false';
+const requiresTls =
+  process.env.REDIS_TLS === 'true' ||
+  redisHost.includes('upstash.io') ||
+  Boolean(redisUrl && redisUrl.startsWith('rediss://'));
 
 if (isRedisEnabled) {
   try {
@@ -23,6 +29,7 @@ if (isRedisEnabled) {
     };
 
     if (redisPassword) options.password = redisPassword;
+    if (requiresTls) options.tls = {};
 
     redisClient = redisUrl
       ? new Redis(redisUrl, options)
