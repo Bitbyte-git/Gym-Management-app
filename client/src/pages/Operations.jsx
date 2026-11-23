@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services';
-import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw, Search, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw, Search, X, CheckCircle2, AlertCircle, CreditCard } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
 import MemberFingerprintModal from '../components/MemberFingerprintModal';
+import MemberPlanModal from '../components/MemberPlanModal';
 import { TableSkeleton } from '../components/Skeleton';
 // AttendanceKiosk biometric scanner delegated to standalone Kiosk (/kiosk)
 import AttendancePopup from '../components/AttendancePopup';
@@ -191,6 +192,7 @@ export default function Operations({ section, user, query = '' }) {
   const [attendanceTab, setAttendanceTab] = useState('all');
   const [attendancePopup, setAttendancePopup] = useState(null);
   const [fingerprintMember, setFingerprintMember] = useState(null);
+  const [planMember, setPlanMember] = useState(null);
 
   // Dedicated member search & fingerprint identification state
   const [memberSearch, setMemberSearch] = useState(query || '');
@@ -354,6 +356,7 @@ export default function Operations({ section, user, query = '' }) {
     setAction(null);
     setReceipt(null);
     setDetails(null);
+    setPlanMember(null);
     setFilters(initialFilters);
     setStartDate('');
     setEndDate('');
@@ -587,7 +590,20 @@ export default function Operations({ section, user, query = '' }) {
       (user.role === 'reception' && section === 'slots') ||
       (section === 'profile' && user.role === 'member');
     if (definition?.edit && canEdit) add('Edit', 'put', section === 'profile' ? definition.url : `${definition.url}/${row._id}`, definition.edit);
-    if (section === 'members') buttons.push(<button className="outline-btn" disabled={busy} key="details" onClick={() => openMemberProfile(row)}>View profile</button>);
+    if (section === 'members') {
+      buttons.push(<button className="outline-btn" disabled={busy} key="details" onClick={() => openMemberProfile(row)}>View profile</button>);
+      buttons.push(
+        <button
+          className="outline-btn"
+          disabled={busy}
+          key="plan-details"
+          onClick={() => setPlanMember(row)}
+          title="View latest membership plan & validity dates"
+        >
+          <CreditCard size={14} /> Plan Details
+        </button>
+      );
+    }
     if (section === 'members' && staff) {
       buttons.push(
         <button
@@ -1287,6 +1303,16 @@ export default function Operations({ section, user, query = '' }) {
         onUpdate={(updated) => {
           setDetails(updated);
           setRevision(v => v + 1);
+        }}
+      />
+    )}
+    {planMember && (
+      <MemberPlanModal
+        member={planMember}
+        onClose={() => setPlanMember(null)}
+        onViewFullProfile={(m) => {
+          setPlanMember(null);
+          openMemberProfile(m);
         }}
       />
     )}

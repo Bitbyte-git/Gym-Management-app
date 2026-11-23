@@ -1,6 +1,7 @@
 const MemberProfile = require('../models/MemberProfile');
 const User = require('../models/User');
 const BiometricEnrollment = require('../models/BiometricEnrollment');
+const MemberMembership = require('../models/MemberMembership');
 const cloudinaryService = require('../services/cloudinaryService');
 
 const memberEditableFields = [
@@ -75,9 +76,25 @@ exports.getMembers = async (req, res, next) => {
     ]);
 
     const enrolledSet = new Set(enrolledIds.map(id => String(id)));
+
+    // Fetch latest memberships for the returned members
+    const memberIds = members.map(m => m._id);
+    const memberships = await MemberMembership.find({ member: { $in: memberIds } })
+      .populate('membershipPlan', 'name duration durationUnit price')
+      .sort({ createdAt: -1 });
+
+    const latestMembershipMap = new Map();
+    for (const ms of memberships) {
+      const mid = String(ms.member);
+      if (!latestMembershipMap.has(mid)) {
+        latestMembershipMap.set(mid, ms);
+      }
+    }
+
     const enrichedMembers = members.map(m => ({
       ...m.toObject(),
       biometricEnrolled: enrolledSet.has(String(m._id)),
+      latestMembership: latestMembershipMap.get(String(m._id)) || null,
     }));
 
     res.status(200).json({
@@ -120,6 +137,14 @@ exports.getMember = async (req, res, next) => {
       delete memberData.physicalLimitations;
     }
 
+    const latestMembership = await MemberMembership.findOne({ member: member._id })
+      .populate('membershipPlan')
+      .populate('requestedSlot')
+      .populate('requestedTrainer')
+      .sort({ createdAt: -1 });
+
+    memberData.latestMembership = latestMembership || null;
+
     res.status(200).json({
       success: true,
       data: memberData,
@@ -145,7 +170,12 @@ exports.getMemberProfile = async (req, res, next) => {
     if (!member) {
       return res.status(404).json({ success: false, error: 'Member profile not found' });
     }
-    res.status(200).json({ success: true, data: member });
+    const memberData = member.toObject();
+    const latestMembership = await MemberMembership.findOne({ member: member._id })
+      .populate('membershipPlan')
+      .sort({ createdAt: -1 });
+    memberData.latestMembership = latestMembership || null;
+    res.status(200).json({ success: true, data: memberData });
   } catch (error) {
     next(error);
   }

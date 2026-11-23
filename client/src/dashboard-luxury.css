@@ -1224,3 +1224,285 @@ button.outline-btn:hover {
   color: #ff6b72 !important;
   border: 1px solid rgba(255, 107, 114, 0.35) !important;
 }
+
+/* ============================================================
+   MEMBER PLAN QUICK MODAL & PROFILE PLAN DISPLAY
+   ============================================================ */
+.member-plan-quick-modal {
+  width: min(560px, 94vw);
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+  background: #0f1410 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(212, 255, 0, 0.08) !important;
+  color: #e4e7e4 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.member-plan-quick-header {
+  position: relative !important;
+  padding: 24px 28px 20px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.member-plan-quick-hero {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.member-plan-avatar {
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  border: 2px solid rgba(212, 255, 0, 0.25) !important;
+  background: #141a15 !important;
+}
+
+.member-plan-avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.member-plan-avatar-fallback {
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #1c261e !important;
+  color: #d4ff00 !important;
+  font-weight: 800 !important;
+  font-size: 20px !important;
+  letter-spacing: 0.05em !important;
+}
+
+.member-plan-identity {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.member-plan-tag {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #d4ff00 !important;
+}
+
+.member-plan-identity h2 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.member-plan-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12px !important;
+  color: #9ba69e !important;
+}
+
+.member-plan-meta .meta-dot {
+  width: 4px !important;
+  height: 4px !important;
+  border-radius: 50% !important;
+  background: #526054 !important;
+  display: inline-block !important;
+}
+
+.member-plan-quick-body {
+  padding: 24px 28px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.member-plan-loading-state,
+.member-plan-error-state {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 32px 16px !important;
+  color: #9ba69e !important;
+  font-size: 14px !important;
+}
+
+.member-plan-error-state {
+  color: #ff6b72 !important;
+}
+
+.member-plan-details-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.plan-display-name {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.plan-duration-pill {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #b8c4ba !important;
+  letter-spacing: 0.04em !important;
+}
+
+.plan-status-pills {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.plan-pay-pill {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  padding: 3px 8px !important;
+  border-radius: 12px !important;
+}
+
+.plan-pay-pill.paid {
+  background: rgba(52, 211, 153, 0.15) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.35) !important;
+}
+
+.plan-pay-pill.pending,
+.plan-pay-pill.partial,
+.plan-pay-pill.overdue {
+  background: rgba(255, 171, 0, 0.15) !important;
+  color: #ffab00 !important;
+  border: 1px solid rgba(255, 171, 0, 0.35) !important;
+}
+
+.plan-days-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 12px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #a4b3a6 !important;
+}
+
+.plan-days-info.active {
+  color: #d4ff00 !important;
+}
+
+.plan-days-info.expired {
+  color: #ff6b72 !important;
+}
+
+.member-plan-summary-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+}
+
+.plan-summary-cell {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.plan-summary-cell small {
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: #7b887d !important;
+  text-transform: uppercase !important;
+}
+
+.plan-summary-cell strong {
+  font-size: 14px !important;
+  color: #f0f3f0 !important;
+  font-weight: 700 !important;
+}
+
+.plan-summary-cell .text-lime {
+  color: #d4ff00 !important;
+}
+
+.plan-summary-cell .text-coral {
+  color: #ff6b72 !important;
+}
+
+.plan-summary-cell .text-muted {
+  color: #8c988e !important;
+}
+
+.member-plan-empty-card {
+  text-align: center !important;
+  padding: 32px 20px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.member-plan-empty-card h4 {
+  margin: 4px 0 0 !important;
+  font-size: 16px !important;
+  color: #ffffff !important;
+}
+
+.member-plan-empty-card p {
+  margin: 0 !important;
+  font-size: 12.5px !important;
+  color: #8c988e !important;
+  max-width: 380px !important;
+}
+
+.member-plan-empty-banner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 14px 16px !important;
+  background: rgba(255, 107, 114, 0.06) !important;
+  border: 1px solid rgba(255, 107, 114, 0.25) !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  color: #ff9ca1 !important;
+}
+
+.member-plan-quick-footer {
+  padding: 16px 28px 20px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+  border-radius: 0 0 20px 20px !important;
+}
+
+.member-plan-profile-section {
+  border-color: rgba(212, 255, 0, 0.16) !important;
+  background: linear-gradient(180deg, rgba(212, 255, 0, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+}

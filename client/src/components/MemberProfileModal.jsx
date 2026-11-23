@@ -1,5 +1,21 @@
-import { useState, useRef } from 'react';
-import { Activity, CalendarDays, HeartPulse, Mail, MapPin, Phone, ShieldCheck, UserRound, X, Camera, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import {
+  Activity,
+  CalendarDays,
+  HeartPulse,
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  UserRound,
+  X,
+  Camera,
+  Loader2,
+  CreditCard,
+  ArrowRight,
+  Clock,
+  AlertTriangle,
+} from 'lucide-react';
 import api from '../services/api';
 
 const text = value => value === undefined || value === null || value === '' ? 'Not provided' : String(value).replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase());
@@ -16,7 +32,64 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
   const [profilePic, setProfilePic] = useState(member.profilePicture);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [membership, setMembership] = useState(member.latestMembership || null);
+  const [loadingMembership, setLoadingMembership] = useState(!member.latestMembership);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (member.latestMembership) {
+      setMembership(member.latestMembership);
+      setLoadingMembership(false);
+      return;
+    }
+    const memberId = member._id || member.id;
+    if (!memberId) {
+      setLoadingMembership(false);
+      return;
+    }
+    let isMounted = true;
+    api
+      .get(`/memberships/history/${memberId}`)
+      .then((res) => {
+        if (!isMounted) return;
+        const list = res.data?.data || [];
+        setMembership(list[0] || null);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setLoadingMembership(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [member._id, member.id, member.latestMembership]);
+
+  const now = new Date();
+  const endDate = membership?.endDate ? new Date(membership.endDate) : null;
+  const isExpired = membership
+    ? membership.status === 'expired' || (endDate && endDate < now)
+    : false;
+
+  let daysInfo = '';
+  if (endDate && !isNaN(endDate.getTime())) {
+    const diffMs = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays > 0) {
+      daysInfo = `${diffDays} day${diffDays === 1 ? '' : 's'} remaining`;
+    } else if (diffDays === 0) {
+      daysInfo = 'Expires today';
+    } else {
+      daysInfo = `Expired ${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago`;
+    }
+  }
+
+  const planName =
+    membership?.membershipPlan?.name || membership?.planName || 'Membership Plan';
+  const planDuration = membership?.membershipPlan?.duration
+    ? `${membership.membershipPlan.duration} ${
+        membership.membershipPlan.durationUnit || 'Months'
+      }`
+    : '';
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -97,6 +170,76 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
       </section>
 
       <div className="member-profile-body">
+        {/* Latest Membership Plan Section */}
+        <section className="member-profile-section member-plan-profile-section">
+          <div className="member-section-title">
+            <CreditCard size={18} />
+            <div>
+              <h3>Latest Membership Plan</h3>
+              <p>Active plan subscription and validity dates</p>
+            </div>
+          </div>
+
+          {loadingMembership ? (
+            <div className="member-plan-loading-state" style={{ padding: '16px 0' }}>
+              <Loader2 size={18} className="spin" />
+              <span>Loading membership plan...</span>
+            </div>
+          ) : membership ? (
+            <div className={`attendance-popup-plan-card ${isExpired ? 'expired' : 'active'}`} style={{ margin: '0 0 6px' }}>
+              <div className="attendance-popup-plan-header">
+                <div className="attendance-popup-plan-title">
+                  <CreditCard size={16} className="plan-icon" />
+                  <span className="plan-display-name">{planName}</span>
+                  {planDuration && (
+                    <span className="plan-duration-pill">{planDuration}</span>
+                  )}
+                </div>
+                <div className="plan-status-pills">
+                  <span className={`attendance-popup-plan-status ${isExpired ? 'expired' : 'active'}`}>
+                    {isExpired ? 'EXPIRED' : (membership.status || 'ACTIVE').toUpperCase()}
+                  </span>
+                  {membership.paymentStatus && (
+                    <span className={`plan-pay-pill ${membership.paymentStatus}`}>
+                      {membership.paymentStatus.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="attendance-popup-plan-dates">
+                <div className="plan-date-col">
+                  <span className="plan-date-label">Plan From Date</span>
+                  <strong className="plan-date-val">
+                    {date(membership.startDate)}
+                  </strong>
+                </div>
+                <div className="plan-date-divider">
+                  <ArrowRight size={16} />
+                </div>
+                <div className="plan-date-col">
+                  <span className="plan-date-label">Ended Date</span>
+                  <strong className={`plan-date-val ${isExpired ? 'expired' : 'active'}`}>
+                    {date(membership.endDate)}
+                  </strong>
+                </div>
+              </div>
+
+              {daysInfo && (
+                <div className={`plan-days-info ${isExpired ? 'expired' : 'active'}`}>
+                  <Clock size={13} />
+                  <span>{daysInfo}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="member-plan-empty-banner">
+              <AlertTriangle size={16} className="text-coral" />
+              <span>No active membership plan currently registered for this member.</span>
+            </div>
+          )}
+        </section>
+
         <section className="member-profile-section">
           <div className="member-section-title"><UserRound/><div><h3>Personal information</h3><p>Identity and account details</p></div></div>
           <div className="member-info-grid">
