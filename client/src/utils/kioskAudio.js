@@ -64,41 +64,42 @@ export function playChime(type = 'checkin') {
 
     switch (type) {
       case 'checkin':
-        // Ascending luxury 3-tone chime: C5 (523Hz) -> E5 (659Hz) -> G5 (784Hz)
-        playTone(523.25, now, 0.25, 'sine', 0.24);
-        playTone(659.25, now + 0.1, 0.28, 'sine', 0.26);
-        playTone(783.99, now + 0.2, 0.45, 'triangle', 0.28);
+        // Ascending luxury 3-tone chime with relaxed, melodic pacing:
+        // C5 (523Hz) -> E5 (659Hz) -> G5 (784Hz)
+        playTone(523.25, now, 0.32, 'sine', 0.24);
+        playTone(659.25, now + 0.16, 0.36, 'sine', 0.26);
+        playTone(783.99, now + 0.32, 0.55, 'triangle', 0.28);
         break;
 
       case 'checkout':
         // Warm descending 2-tone chime: G5 (784Hz) -> C5 (523Hz)
-        playTone(783.99, now, 0.22, 'sine', 0.26);
-        playTone(523.25, now + 0.12, 0.45, 'triangle', 0.25);
+        playTone(783.99, now, 0.30, 'sine', 0.26);
+        playTone(523.25, now + 0.18, 0.55, 'triangle', 0.25);
         break;
 
       case 'reconfirmed':
-        // Gentle double ping: E5 -> E5
-        playTone(659.25, now, 0.18, 'sine', 0.22);
-        playTone(659.25, now + 0.14, 0.35, 'triangle', 0.24);
+        // Gentle double ping with relaxed interval: E5 -> E5
+        playTone(659.25, now, 0.24, 'sine', 0.22);
+        playTone(659.25, now + 0.22, 0.42, 'triangle', 0.24);
         break;
 
       case 'warning':
       case 'expired':
       case 'payment_pending':
         // Soft descending dual-tone alert: Eb4 (311Hz) -> C4 (261Hz)
-        playTone(311.13, now, 0.2, 'triangle', 0.22);
-        playTone(261.63, now + 0.12, 0.35, 'sine', 0.2);
+        playTone(311.13, now, 0.28, 'triangle', 0.22);
+        playTone(261.63, now + 0.18, 0.45, 'sine', 0.2);
         break;
 
       case 'error':
       case 'unknown':
         // Low double buzz: A3 (220Hz) -> G3 (196Hz)
-        playTone(220.0, now, 0.15, 'sawtooth', 0.15);
-        playTone(196.0, now + 0.12, 0.25, 'sawtooth', 0.15);
+        playTone(220.0, now, 0.20, 'sawtooth', 0.15);
+        playTone(196.0, now + 0.18, 0.35, 'sawtooth', 0.15);
         break;
 
       default:
-        playTone(440.0, now, 0.25, 'sine', 0.2);
+        playTone(440.0, now, 0.32, 'sine', 0.2);
     }
   } catch (err) {
     console.warn('[KioskAudio] Sound synth error:', err.message);
@@ -117,9 +118,9 @@ export function speakVoiceCue(phrase) {
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(phrase);
-    utterance.rate = 1.05; // Slightly brisk and modern
+    utterance.rate = 0.88; // Calm, clear, natural announcement tempo
     utterance.pitch = 1.0;
-    utterance.volume = 0.9;
+    utterance.volume = 0.95;
 
     // Pick a natural English voice if available
     const voices = window.speechSynthesis.getVoices();
@@ -160,7 +161,7 @@ export function playPunchFeedback(popup) {
       playChime('checkout');
       setTimeout(() => {
         speakVoiceCue(firstName ? `Goodbye ${firstName}! Have a great day.` : 'Check-out recorded. Have a great day!');
-      }, 250);
+      }, 550);
       return;
     }
 
@@ -168,7 +169,7 @@ export function playPunchFeedback(popup) {
       playChime('reconfirmed');
       setTimeout(() => {
         speakVoiceCue(firstName ? `You are already checked in, ${firstName}.` : 'Attendance already recorded.');
-      }, 250);
+      }, 500);
       return;
     }
 
@@ -176,7 +177,7 @@ export function playPunchFeedback(popup) {
     playChime('checkin');
     setTimeout(() => {
       speakVoiceCue(firstName ? `Welcome, ${firstName}!` : 'Welcome to Vino Fitness Studio!');
-    }, 250);
+    }, 550);
     return;
   }
 
@@ -185,7 +186,7 @@ export function playPunchFeedback(popup) {
     playChime('expired');
     setTimeout(() => {
       speakVoiceCue(firstName ? `${firstName}, your membership has expired. Please contact reception.` : 'Membership expired. Please visit reception.');
-    }, 250);
+    }, 550);
     return;
   }
 
@@ -193,7 +194,7 @@ export function playPunchFeedback(popup) {
     playChime('payment_pending');
     setTimeout(() => {
       speakVoiceCue('Membership payment pending. Please visit reception.');
-    }, 250);
+    }, 550);
     return;
   }
 
@@ -202,7 +203,7 @@ export function playPunchFeedback(popup) {
     playChime('unknown');
     setTimeout(() => {
       speakVoiceCue('Fingerprint not recognized. Please scan again.');
-    }, 250);
+    }, 550);
     return;
   }
 
