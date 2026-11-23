@@ -1,11 +1,14 @@
 const MembershipPlan = require('../models/MembershipPlan');
+const cacheService = require('../services/cacheService');
 
 // @desc    Get all membership plans
 // @route   GET /api/membership-plans
 // @access  Public
 exports.getMembershipPlans = async (req, res, next) => {
   try {
-    const plans = await MembershipPlan.find({ status: 'active' }).sort({ price: 1 });
+    const plans = await cacheService.wrap('gym:plans:active', 3600, () =>
+      MembershipPlan.find({ status: 'active' }).sort({ price: 1 })
+    );
 
     res.status(200).json({
       success: true,
@@ -46,6 +49,7 @@ exports.getMembershipPlan = async (req, res, next) => {
 exports.createMembershipPlan = async (req, res, next) => {
   try {
     const plan = await MembershipPlan.create(req.body);
+    await cacheService.delPattern('gym:plans:*');
 
     res.status(201).json({
       success: true,
@@ -77,6 +81,8 @@ exports.updateMembershipPlan = async (req, res, next) => {
       });
     }
 
+    await cacheService.delPattern('gym:plans:*');
+
     res.status(200).json({
       success: true,
       data: plan,
@@ -99,6 +105,8 @@ exports.deleteMembershipPlan = async (req, res, next) => {
         error: 'Membership plan not found',
       });
     }
+
+    await cacheService.delPattern('gym:plans:*');
 
     res.status(200).json({
       success: true,

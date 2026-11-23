@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pulsefit-config
+  namespace: gym-prod
+data:
+  NODE_ENV: "production"
+  PORT: "5000"
+  # Service Discovery using CoreDNS
+  REDIS_HOST: "redis-service.gym-prod.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_ENABLED: "true"
+  JWT_EXPIRE: "30d"

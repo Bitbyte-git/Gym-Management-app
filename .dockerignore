@@ -1,0 +1,15 @@
+node_modules
+client/node_modules
+.git
+.github
+dist
+client/dist
+test-results
+coverage
+*.log
+npm-debug.log*
+.env
+server/.env
+client/.env.local
+.DS_Store
+Thumbs.db

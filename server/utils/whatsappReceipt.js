@@ -2,6 +2,20 @@ const crypto = require('crypto');
 const config = require('../config/env');
 const Payment = require('../models/Payment');
 const { generateReceiptPdfBuffer } = require('./pdfReceiptGenerator');
+const { createCircuitBreaker } = require('./circuitBreaker');
+
+// Circuit breaker for upstream WhatsApp gateway
+const whatsappBreaker = createCircuitBreaker(
+  async ({ urlString }) => {
+    return await fetch(urlString, {
+      method: 'GET',
+      headers: { Accept: 'application/json, text/plain, */*' },
+      signal: AbortSignal.timeout(12000),
+    });
+  },
+  'Tendigit WhatsApp API',
+  { timeout: 14000, errorThresholdPercentage: 50, resetTimeout: 20000 }
+);
 
 /**
  * Normalizes phone numbers to standard E.164-style country-code digits without leading '+':
@@ -217,11 +231,7 @@ async function sendPaymentReceiptWhatsApp({ payment, contactOverride, memberDeta
     url.searchParams.set('Param', paramString);
     url.searchParams.set('Fileurl', pdfUrl);
 
-    const res = await fetch(url.toString(), {
-      method: 'GET',
-      headers: { Accept: 'application/json, text/plain, */*' },
-      signal: AbortSignal.timeout(20000),
-    });
+    const res = await whatsappBreaker.fire({ urlString: url.toString() });
 
     const text = await res.text();
     let json = null;

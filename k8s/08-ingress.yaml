@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pulsefit-ingress
+  namespace: gym-prod
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    # Edge rate limiting via Ingress Controller
+    nginx.ingress.kubernetes.io/limit-rps: "60"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
+spec:
+  tls:
+    - hosts:
+        - gym.vinofitness.com
+      secretName: pulsefit-tls-secret
+  rules:
+    - host: gym.vinofitness.com
+      http:
+        paths:
+          # 5. API Gateway /api/ -> Backend Cluster
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: pulsefit-backend-service
+                port:
+                  number: 5000
+          # 4. Reverse Proxy SPA -> Frontend Cluster
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pulsefit-frontend-service
+                port:
+                  number: 80

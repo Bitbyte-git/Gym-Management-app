@@ -2,8 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { rateLimit } = require('express-rate-limit');
+const { RedisStore } = require('rate-limit-redis');
+const { v4: uuidv4 } = require('uuid');
 const config = require('./config/env');
 const connectDB = require('./config/db');
+const { getRedisClient, isRedisReady } = require('./config/redis');
 const errorHandler = require('./middleware/errorHandler');
 
 // Import routes
@@ -42,20 +45,38 @@ app.use('/api/biometrics', express.json({ limit: '800kb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging middleware
+// Request tracing (API Gateway correlation) and logging middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  req.id = req.headers['x-request-id'] || uuidv4();
+  res.setHeader('X-Request-ID', req.id);
+  console.log(`[${req.id.slice(0, 8)}] ${req.method} ${req.path}`);
   next();
 });
 
-const createRateLimiter = (windowMs, limit, message, options = {}) => rateLimit({
-  windowMs,
-  limit,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-  handler: (req, res) => res.status(429).json({ success: false, error: message }),
-  ...options,
-});
+const createRateLimiter = (windowMs, limit, message, options = {}) => {
+  const limiterConfig = {
+    windowMs,
+    limit,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    handler: (req, res) => res.status(429).json({ success: false, error: message }),
+    ...options,
+  };
+
+  // Wire Redis distributed store if Redis is connected
+  if (isRedisReady()) {
+    try {
+      limiterConfig.store = new RedisStore({
+        sendCommand: (...args) => getRedisClient().call(...args),
+        prefix: 'rl:',
+      });
+    } catch (err) {
+      console.warn(`[RateLimit] Redis store init error, falling back to memory: ${err.message}`);
+    }
+  }
+
+  return rateLimit(limiterConfig);
+};
 app.use('/api/auth/login', createRateLimiter(
   15 * 60 * 1000,
   config.nodeEnv === 'production' ? 10 : 1000,
@@ -97,13 +118,22 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/registration', registrationRoutes);
 
-// Health check endpoint
+// Health check endpoint (for K8s Liveness & Readiness Probes and Load Balancers)
 app.get('/api/health', (req, res) => {
   const databaseReady = require('mongoose').connection.readyState === 1;
-  res.status(databaseReady ? 200 : 503).json({
-    success: databaseReady,
-    message: databaseReady ? 'Vino Fitness Studio API is ready' : 'Vino Fitness Studio API database is unavailable',
-    database: databaseReady ? 'connected' : 'unavailable',
+  const redisReady = isRedisReady();
+  const healthy = databaseReady;
+
+  res.status(healthy ? 200 : 503).json({
+    success: healthy,
+    status: healthy ? 'UP' : 'DOWN',
+    message: healthy ? 'Vino Fitness Studio API is ready' : 'Database connection unavailable',
+    services: {
+      database: databaseReady ? 'connected' : 'unavailable',
+      redis: redisReady ? 'connected' : 'in-memory-fallback',
+    },
+    uptime: Math.floor(process.uptime()),
+    memoryUsageMB: Math.round(process.memoryUsage().rss / (1024 * 1024)),
     timestamp: new Date().toISOString(),
   });
 });
