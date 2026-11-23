@@ -7,6 +7,7 @@ const Member = require('../models/MemberProfile');
 const User = require('../models/User');
 const Enrollment = require('../models/BiometricEnrollment');
 const Attendance = require('../models/MemberAttendance');
+const MemberMembership = require('../models/MemberMembership');
 const Audit = require('../models/AuditLog');
 const engine = require('./identificationEngine');
 const { decodeBase64 } = require('./biometricValidation');
