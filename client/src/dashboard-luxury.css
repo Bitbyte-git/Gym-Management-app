@@ -94,15 +94,36 @@
   flex-direction: column !important;
   gap: 3px !important;
   padding: 4px 0 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent !important;
+}
+
+.side nav::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+.side nav::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.side nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-radius: 999px !important;
+}
+
+.side nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 255, 0, 0.45) !important;
 }
 
 .side nav button {
-  height: 42px !important;
+  height: 40px !important;
   border-radius: 10px !important;
   font-size: 13px !important;
   font-weight: 500 !important;
   color: #8c968f !important;
-  padding: 0 14px !important;
+  padding: 0 13px !important;
   gap: 12px !important;
   background: transparent !important;
   border: 1px solid transparent !important;
@@ -142,6 +163,91 @@
 .side nav button.active svg {
   color: #d4ff00 !important;
   filter: drop-shadow(0 0 6px rgba(212, 255, 0, 0.4)) !important;
+}
+
+/* Collapsible Navigation Group for Admin Management */
+.nav-section-divider {
+  margin: 6px 0 2px !important;
+  padding-top: 6px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.nav-group-toggle {
+  height: 34px !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 12px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 9px !important;
+  cursor: pointer !important;
+  color: #8c968f !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.nav-group-toggle:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.nav-group-toggle.active-parent {
+  color: #d4ff00 !important;
+  border-color: rgba(212, 255, 0, 0.2) !important;
+  background: rgba(212, 255, 0, 0.05) !important;
+}
+
+.nav-group-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.nav-group-title svg {
+  width: 13px !important;
+  height: 13px !important;
+  color: inherit !important;
+}
+
+.group-chevron {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  color: #556056 !important;
+}
+
+.nav-group-toggle:hover .group-chevron,
+.nav-group-toggle.active-parent .group-chevron {
+  color: inherit !important;
+}
+
+.group-chevron.rotated {
+  transform: rotate(180deg) !important;
+}
+
+.nav-group-items {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  padding: 4px 0 2px 6px !important;
+  margin-top: 2px !important;
+  border-left: 1px dashed rgba(255, 255, 255, 0.08) !important;
+  margin-left: 8px !important;
+  animation: navGroupFade 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes navGroupFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Sidebar bottom */
