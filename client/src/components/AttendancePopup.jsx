@@ -8,7 +8,25 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Flame,
+  CreditCard,
+  ArrowRight,
+  Calendar,
 } from 'lucide-react';
+
+const formatDate = (dateVal) => {
+  if (!dateVal) return '—';
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return String(dateVal);
+    return d.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return String(dateVal);
+  }
+};
 
 export default function AttendancePopup({ popup, onClose }) {
   const onCloseRef = useRef(onClose);
@@ -18,9 +36,11 @@ export default function AttendancePopup({ popup, onClose }) {
 
   useEffect(() => {
     if (!popup) return;
+    const isSpecial = popup.action === 'expired' || Boolean(popup.membership || popup.errorData?.membership);
+    const duration = isSpecial ? 7000 : 4000; // 7s for expired membership gives ample time to read plan & dates
     const timer = setTimeout(() => {
       onCloseRef.current?.();
-    }, 4000); // 4s auto-dismiss allows comfortable view of member photo and error/success message
+    }, duration);
     return () => clearTimeout(timer);
   }, [popup]);
 
@@ -30,8 +50,10 @@ export default function AttendancePopup({ popup, onClose }) {
   const isWarning = popup.type === 'warning';
   const isInfo = popup.type === 'info';
   const modalTypeClass = isSuccess ? 'success' : isWarning ? 'warning' : isInfo ? 'info' : 'error';
-  const member = popup.member;
+  const member = popup.member || popup.errorData?.member;
+  const membership = popup.membership || popup.errorData?.membership || member?.membership;
   const hasPhoto = Boolean(member?.profilePicture);
+  const isExpired = popup.action === 'expired' || membership?.status === 'expired' || Boolean(membership);
 
   return (
     <div className="attendance-popup-overlay" role="dialog" aria-modal="true" onClick={onClose}>
@@ -95,7 +117,22 @@ export default function AttendancePopup({ popup, onClose }) {
                   {member.memberId && <span className="attendance-member-code">{member.memberId}</span>}
                 </div>
                 <div className="attendance-popup-tags">
-                  {popup.action && popup.action !== 'duplicate' && (
+                  {(isExpired || popup.action === 'expired') && (
+                    <span
+                      className="kiosk-punch-pill expired"
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        color: '#f87171',
+                        border: '1px solid rgba(239, 68, 68, 0.35)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <AlertTriangle size={11} /> PLAN EXPIRED
+                    </span>
+                  )}
+                  {popup.action && !['duplicate', 'expired', 'ineligible'].includes(popup.action) && (
                     <span
                       className={`kiosk-punch-pill ${
                         popup.action.toLowerCase().includes('in') ? 'checkin' : 'checkout'
@@ -129,6 +166,37 @@ export default function AttendancePopup({ popup, onClose }) {
                   {popup.duration && (
                     <span className="attendance-duration-pill done">{popup.duration}</span>
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {membership && (
+            <div className="attendance-popup-plan-card">
+              <div className="attendance-popup-plan-header">
+                <div className="attendance-popup-plan-title">
+                  <CreditCard size={15} className="plan-icon" />
+                  <span>{membership.planName || 'Membership Plan'}</span>
+                </div>
+                <span className="attendance-popup-plan-status expired">
+                  EXPIRED
+                </span>
+              </div>
+              <div className="attendance-popup-plan-dates">
+                <div className="plan-date-col">
+                  <span className="plan-date-label">Plan From Date</span>
+                  <strong className="plan-date-val">
+                    {formatDate(membership.startDate)}
+                  </strong>
+                </div>
+                <div className="plan-date-divider">
+                  <ArrowRight size={14} />
+                </div>
+                <div className="plan-date-col">
+                  <span className="plan-date-label">Ended Date</span>
+                  <strong className="plan-date-val expired">
+                    {formatDate(membership.endDate)}
+                  </strong>
                 </div>
               </div>
             </div>

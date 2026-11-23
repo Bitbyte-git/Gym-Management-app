@@ -6,7 +6,9 @@ export function parseBiometricFeedback(next = {}) {
   const code = next.code || next.result?.code || '';
   const rawMsg = next.message || next.result?.message || next.error || '';
   const msgLower = (rawMsg || '').toLowerCase();
-  const member = next.result?.member || next.member || null;
+  const member = next.result?.member || next.member || next.errorData?.member || null;
+  const membership = next.result?.membership || next.membership || next.errorData?.membership || null;
+  const isExpiredFlag = Boolean(next.isExpired || next.errorData?.isExpired);
 
   // 1. Duplicate scan / finger held on sensor
   if (
@@ -109,13 +111,24 @@ export function parseBiometricFeedback(next = {}) {
     msgLower.includes('no current, paid membership') ||
     msgLower.includes('account is not active') ||
     msgLower.includes('membership is inactive') ||
-    msgLower.includes('membership expired')
+    msgLower.includes('membership expired') ||
+    msgLower.includes('expired') ||
+    isExpiredFlag
   ) {
+    const isExpired = isExpiredFlag ||
+      msgLower.includes('expired') ||
+      membership?.status === 'expired' ||
+      member?.membershipStatus === 'expired';
+
     return {
       type: 'error',
-      title: 'Membership Inactive or Expired',
-      subtitle: rawMsg || 'Your gym membership is not currently active. Please contact reception to renew your plan.',
+      title: isExpired ? 'Membership Expired' : 'Membership Inactive or Expired',
+      subtitle: rawMsg || (isExpired
+        ? 'Your gym membership has expired. Please renew your plan at the reception desk.'
+        : 'Your gym membership is not currently active. Please contact reception to renew your plan.'),
       member,
+      membership,
+      action: isExpired ? 'expired' : 'ineligible',
     };
   }
 

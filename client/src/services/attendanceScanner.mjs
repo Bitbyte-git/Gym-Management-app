@@ -109,11 +109,20 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
             } catch (error) {
               capture = null;
               if (!current(generation, signal)) break;
-              const code = error.response?.data?.code || error.code;
+              const errData = error.response?.data || {};
+              const code = errData.code || error.code;
               if (pending && error.response?.status < 500) pending = null;
               if (code === 'CAPTURE_TIMEOUT') { await wait(300, signal); continue; }
               if (['POOR_CAPTURE', 'UNKNOWN_FINGERPRINT', 'AMBIGUOUS_FINGERPRINT', 'MEMBERSHIP_INELIGIBLE', 'ENROLLMENT_INACTIVE'].includes(code)) {
-                emit({ phase: 'result', code, message: error.response?.data?.error || error.message });
+                emit({
+                  phase: 'result',
+                  code,
+                  message: errData.error || error.message,
+                  member: errData.member || null,
+                  membership: errData.membership || null,
+                  isExpired: errData.isExpired || false,
+                  errorData: errData,
+                });
                 await wait(policy.rearmSeconds * 1000, signal);
                 continue;
               }

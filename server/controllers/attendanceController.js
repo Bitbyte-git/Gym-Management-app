@@ -50,6 +50,16 @@ exports.getAttendance = async (req, res, next) => {
       data: attendance,
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };
@@ -75,6 +85,16 @@ exports.getAttendanceRecord = async (req, res, next) => {
       data: attendance,
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };
@@ -125,6 +145,16 @@ exports.getMemberAttendance = async (req, res, next) => {
       dailySummaries,
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };
@@ -181,6 +211,16 @@ exports.getTodayAttendance = async (req, res, next) => {
       },
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };
@@ -281,6 +321,16 @@ exports.manualCheckIn = async (req, res, next) => {
       dailySpending,
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };
@@ -367,6 +417,16 @@ exports.manualCheckOut = async (req, res, next) => {
       dailySpending,
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };
@@ -432,6 +492,16 @@ exports.correctAttendance = async (req, res, next) => {
       data: attendance,
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };
@@ -485,6 +555,16 @@ exports.getAttendanceStats = async (req, res, next) => {
       },
     });
   } catch (error) {
+    if (error.code && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.code,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };

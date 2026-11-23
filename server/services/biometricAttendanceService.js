@@ -353,7 +353,32 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
             // First punch of this session today -> Check-in!
             let slotAllocation;
             try { ({ slotAllocation } = await validateAttendanceAccess(member, now, session)); }
-            catch (failure) { throw Object.assign(failure, { code: 'MEMBERSHIP_INELIGIBLE' }); }
+            catch (failure) {
+              if (!failure.member) {
+                failure.member = {
+                  id: member._id,
+                  memberId: member.memberId,
+                  fullName: member.fullName,
+                  profilePicture: member.profilePicture || null,
+                  avatarInitials: member.avatarInitials || member.fullName?.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase() || 'VF',
+                };
+              }
+              if (!failure.membership) {
+                const latestM = await MemberMembership.findOne({ member: member._id })
+                  .populate('membershipPlan', 'name price duration')
+                  .sort({ endDate: -1, createdAt: -1 })
+                  .session(session);
+                if (latestM) {
+                  failure.membership = {
+                    planName: latestM.membershipPlan?.name || 'Membership Plan',
+                    startDate: latestM.startDate,
+                    endDate: latestM.endDate,
+                    status: latestM.status,
+                  };
+                }
+              }
+              throw Object.assign(failure, { code: failure.code || 'MEMBERSHIP_INELIGIBLE' });
+            }
 
             punchRecord.punchType = 'checkin';
             [attendance] = await Attendance.create([{

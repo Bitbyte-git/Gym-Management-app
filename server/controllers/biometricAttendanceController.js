@@ -10,7 +10,16 @@ const run = (keys, action) => async (req, res, next) => {
     if (error.code === 20 || /Transaction numbers are only allowed/.test(error.message)) {
       return res.status(503).json({ success: false, code: 'TRANSACTIONS_REQUIRED', error: 'Biometric attendance requires a MongoDB replica set. No attendance was confirmed.' });
     }
-    if (typeof error.code === 'string' && error.statusCode) return res.status(error.statusCode).json({ success: false, code: error.code, error: error.message });
+    if (typeof error.code === 'string' && error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        code: error.code,
+        error: error.message,
+        member: error.member,
+        membership: error.membership,
+        isExpired: error.isExpired,
+      });
+    }
     next(error);
   }
 };

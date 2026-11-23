@@ -17,15 +17,57 @@ const getCurrentMembership = async (memberId, now = new Date(), session = null) 
 }).sort({ endDate: -1 }).session(session);
 
 const validateAttendanceAccess = async (member, now = new Date(), session = null) => {
+  // Query member's latest membership with plan details for rich biometric error reporting
+  const latestMembership = await MemberMembership.findOne({ member: member._id })
+    .populate('membershipPlan', 'name price duration')
+    .sort({ endDate: -1, createdAt: -1 })
+    .session(session);
+
+  const memberInfo = {
+    id: member._id,
+    memberId: member.memberId,
+    fullName: member.fullName,
+    profilePicture: member.profilePicture || null,
+    avatarInitials: member.avatarInitials || member.fullName?.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase() || 'VF',
+  };
+
+  const membershipInfo = latestMembership ? {
+    planName: latestMembership.membershipPlan?.name || 'Membership Plan',
+    startDate: latestMembership.startDate,
+    endDate: latestMembership.endDate,
+    status: latestMembership.status,
+  } : null;
+
+  const isExpired = member.membershipStatus === 'expired' ||
+    (latestMembership && (latestMembership.status === 'expired' || new Date(latestMembership.endDate) < now));
+
+  if (isExpired) {
+    const endDateStr = latestMembership?.endDate ? new Date(latestMembership.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+    const errorMsg = endDateStr ? `Membership expired on ${endDateStr}. Please renew your plan.` : 'Your gym membership has expired. Please renew your plan.';
+    const error = new Error(errorMsg);
+    error.statusCode = 403;
+    error.code = 'MEMBERSHIP_INELIGIBLE';
+    error.isExpired = true;
+    error.member = memberInfo;
+    error.membership = membershipInfo;
+    throw error;
+  }
+
   if (member.registrationStatus !== 'active' || member.membershipStatus !== 'active') {
     const error = new Error('Member account is not active');
     error.statusCode = 403;
+    error.code = 'MEMBERSHIP_INELIGIBLE';
+    error.member = memberInfo;
+    error.membership = membershipInfo;
     throw error;
   }
   const membership = await getCurrentMembership(member._id, now, session);
   if (!membership) {
-    const error = new Error('No current, paid membership found');
+    const error = new Error('No current, paid membership found. Please renew your plan.');
     error.statusCode = 403;
+    error.code = 'MEMBERSHIP_INELIGIBLE';
+    error.member = memberInfo;
+    error.membership = membershipInfo;
     throw error;
   }
   const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];

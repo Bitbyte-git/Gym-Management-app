@@ -902,3 +902,111 @@ button.outline-btn:hover {
   font-size: 12.5px !important;
 }
 
+
+/* --------------------------------------------------------------------------
+   11. ATTENDANCE POPUP — EXPIRED MEMBERSHIP & PLAN DETAILS LUXURY STYLING
+   -------------------------------------------------------------------------- */
+.attendance-popup-modal.error {
+  border: 1px solid rgba(255, 77, 79, 0.45) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9), 0 0 24px rgba(255, 77, 79, 0.15) !important;
+}
+
+.attendance-popup-modal.error .attendance-popup-avatar-img {
+  border: 3px solid #ff4d4f !important;
+  box-shadow: 0 4px 20px rgba(255, 77, 79, 0.4) !important;
+}
+
+.attendance-popup-modal.error .attendance-popup-member-card .attendance-avatar {
+  background: rgba(255, 77, 79, 0.12) !important;
+  color: #ff6b72 !important;
+  border: 2px solid rgba(255, 77, 79, 0.35) !important;
+}
+
+.attendance-popup-plan-card {
+  background: rgba(255, 77, 79, 0.06) !important;
+  border: 1px solid rgba(255, 77, 79, 0.25) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  margin: 14px 0 10px !important;
+  text-align: left !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.attendance-popup-plan-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.attendance-popup-plan-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.attendance-popup-plan-title .plan-icon {
+  color: #ff6b72 !important;
+}
+
+.attendance-popup-plan-status.expired {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 3px 9px !important;
+  border-radius: 20px !important;
+  background: rgba(255, 77, 79, 0.18) !important;
+  color: #ff6b72 !important;
+  border: 1px solid rgba(255, 77, 79, 0.45) !important;
+}
+
+.attendance-popup-plan-dates {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.plan-date-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.plan-date-label {
+  font-size: 10px !important;
+  color: #8c968f !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 700 !important;
+}
+
+.plan-date-val {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #e4e7e4 !important;
+}
+
+.plan-date-val.expired {
+  color: #ff6b72 !important;
+}
+
+.plan-date-divider {
+  color: #667367 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.kiosk-punch-pill.expired {
+  background: rgba(255, 107, 114, 0.15) !important;
+  color: #ff6b72 !important;
+  border: 1px solid rgba(255, 107, 114, 0.35) !important;
+}
