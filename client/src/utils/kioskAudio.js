@@ -106,8 +106,73 @@ export function playChime(type = 'checkin') {
   }
 }
 
+// Known female voice identifier patterns across Windows, Chrome, macOS, Android, and iOS
+const FEMALE_VOICE_NAMES = [
+  'zira',
+  'jenny',
+  'aria',
+  'neerja',
+  'heera',
+  'samantha',
+  'karen',
+  'victoria',
+  'sonia',
+  'libby',
+  'ava',
+  'emma',
+  'hazel',
+  'susan',
+  'female',
+];
+
+const MALE_VOICE_NAMES = [
+  'david',
+  'mark',
+  'george',
+  'guy',
+  'male',
+  'ravi',
+  'prabhat',
+  'richard',
+  'stefan',
+  'james',
+  'john',
+];
+
+let cachedVoices = [];
+
+if (typeof window !== 'undefined' && window.speechSynthesis) {
+  cachedVoices = window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => {
+    cachedVoices = window.speechSynthesis.getVoices();
+  };
+}
+
+function getBestFemaleVoice() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+  const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  const englishVoices = voices.filter((v) => v.lang && v.lang.startsWith('en'));
+  const pool = englishVoices.length > 0 ? englishVoices : voices;
+
+  // 1. Try to find explicit known female voice
+  for (const femaleName of FEMALE_VOICE_NAMES) {
+    const found = pool.find((v) => v.name.toLowerCase().includes(femaleName));
+    if (found) return found;
+  }
+
+  // 2. Filter out known male voices
+  const nonMale = pool.find((v) => {
+    const lower = v.name.toLowerCase();
+    return !MALE_VOICE_NAMES.some((m) => lower.includes(m));
+  });
+
+  return nonMale || pool[0] || null;
+}
+
 /**
- * Natural voice cue using browser SpeechSynthesis
+ * Natural female voice cue using browser SpeechSynthesis
  */
 export function speakVoiceCue(phrase) {
   if (!isAudioEnabled() || !phrase) return;
@@ -119,18 +184,13 @@ export function speakVoiceCue(phrase) {
 
     const utterance = new SpeechSynthesisUtterance(phrase);
     utterance.rate = 0.88; // Calm, clear, natural announcement tempo
-    utterance.pitch = 1.0;
+    utterance.pitch = 1.08; // Warm, friendly female tone
     utterance.volume = 0.95;
 
-    // Pick a natural English voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(
-      (v) =>
-        (v.lang.startsWith('en') && v.name.includes('Natural')) ||
-        (v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Samantha')))
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    // Pick best female voice
+    const femaleVoice = getBestFemaleVoice();
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
     }
 
     window.speechSynthesis.speak(utterance);
