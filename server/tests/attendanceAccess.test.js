@@ -99,15 +99,20 @@ test('validateAttendanceAccess throws expired error with isExpired=true when mem
   const originalMembershipFindOne = MemberMembership.findOne;
   try {
     MemberMembership.findOne = (query) => {
-      if (query.status === 'active' && query.endDate) {
-        // getCurrentMembership returns null for expired
+      if (query.endDate) {
+        // Range queries for active membership (endDate >= now) return null for expired
         return {
+          populate: () => ({
+            sort: () => ({
+              session: async () => null,
+            }),
+          }),
           sort: () => ({
             session: async () => null,
           }),
         };
       }
-      // latestMembership
+      // latestMembership query has no endDate filter
       return {
         populate: () => ({
           sort: () => ({
@@ -177,5 +182,90 @@ test('validateAttendanceAccess blocks suspended account with ACCOUNT_INACTIVE', 
     );
   } finally {
     MemberMembership.findOne = originalMembershipFindOne;
+  }
+});
+
+test('validateAttendanceAccess auto-unfreezes a frozen paid membership with valid future dates upon check-in', async () => {
+  const memberId = '507f1f77bcf86cd799439014';
+  const member = {
+    _id: memberId,
+    memberId: 'GYM1087',
+    fullName: 'Sanjay Shetty',
+    registrationStatus: 'active',
+    membershipStatus: 'frozen',
+  };
+  const now = new Date('2026-11-23T12:00:00Z');
+
+  const originalMembershipFindOne = MemberMembership.findOne;
+  const originalProfileUpdateOne = MemberProfile.updateOne;
+  const originalGymHoursFindOne = GymOperatingHours.findOne;
+  const originalSystemSettingFindOne = SystemSetting.findOne;
+
+  try {
+    let savedMembership = null;
+    const mockMembership = {
+      _id: 'mem_frozen',
+      member: memberId,
+      membershipPlan: { name: 'Premium' },
+      startDate: new Date('2026-11-09T00:00:00Z'),
+      endDate: new Date('2027-05-09T23:59:59Z'),
+      status: 'frozen',
+      paymentStatus: 'paid',
+      frozenAt: new Date('2026-11-20T00:00:00Z'),
+      save: async function() { savedMembership = this; },
+      populate: function() { return this; },
+    };
+
+    MemberMembership.findOne = (query) => {
+      if (query.status === 'active') {
+        // getCurrentMembership checks status: 'active', so returns null when frozen
+        return {
+          sort: () => ({
+            session: async () => null,
+          }),
+        };
+      }
+      // fallback findOne where status: { $ne: 'cancelled' }
+      return {
+        populate: () => ({
+          sort: () => ({
+            session: async () => mockMembership,
+          }),
+        }),
+        sort: () => ({
+          session: async () => mockMembership,
+        }),
+      };
+    };
+
+    let updatedProfileFields = null;
+    MemberProfile.updateOne = async (query, update) => {
+      updatedProfileFields = update.$set;
+      return { acknowledged: true };
+    };
+
+    GymOperatingHours.findOne = () => ({
+      session: async () => ({
+        isOpen: true,
+        openTime: '00:00',
+        closeTime: '23:59',
+        sessions: [],
+      }),
+    });
+
+    SystemSetting.findOne = () => ({
+      session: async () => ({ value: false }),
+    });
+
+    const result = await validateAttendanceAccess(member, now);
+    assert.ok(result.membership, 'Should return membership');
+    assert.equal(mockMembership.status, 'active', 'Membership status should be auto-unfrozen to active');
+    assert.equal(mockMembership.frozenAt, undefined, 'frozenAt should be cleared');
+    assert.equal(updatedProfileFields?.membershipStatus, 'active', 'Profile status auto-healed to active');
+  } finally {
+    MemberMembership.findOne = originalMembershipFindOne;
+    MemberProfile.updateOne = originalProfileUpdateOne;
+    GymOperatingHours.findOne = originalGymHoursFindOne;
+    SystemSetting.findOne = originalSystemSettingFindOne;
   }
 });

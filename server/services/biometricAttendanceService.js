@@ -352,8 +352,21 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
           } else {
             // First punch of this session today -> Check-in!
             let slotAllocation;
-            try { ({ slotAllocation } = await validateAttendanceAccess(member, now, session)); }
-            catch (failure) {
+            let validatedMembership;
+            try {
+              ({ slotAllocation, membership: validatedMembership } = await validateAttendanceAccess(member, now, session));
+              if (validatedMembership) {
+                if (!validatedMembership.membershipPlan?.name && validatedMembership.populate) {
+                  try { await validatedMembership.populate('membershipPlan', 'name price duration'); } catch (e) {}
+                }
+                result.membership = {
+                  planName: validatedMembership.membershipPlan?.name || 'Membership Plan',
+                  startDate: validatedMembership.startDate,
+                  endDate: validatedMembership.endDate,
+                  status: validatedMembership.status,
+                };
+              }
+            } catch (failure) {
               if (!failure.member) {
                 failure.member = {
                   id: member._id,

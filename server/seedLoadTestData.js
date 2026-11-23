@@ -319,15 +319,15 @@ async function seed() {
         const daysAgo = randomInt(1, 180);
         const regDate = new Date(now - daysAgo * dayMs);
 
-        // Realistic member status: 94% active, 4% expired, 2% frozen
+        // Realistic member status: 96% active, 4% expired
         const randStatus = Math.random();
         let memberStatus = 'active';
         let regStatus = 'active';
         if (randStatus > 0.96) {
           memberStatus = 'expired';
           regStatus = 'expired';
-        } else if (randStatus > 0.94) {
-          memberStatus = 'frozen';
+        } else {
+          memberStatus = 'active';
           regStatus = 'active';
         }
 

@@ -14,6 +14,11 @@ const reconcile = async () => {
     const now = new Date();
     await autoCloseExpiredAttendance(now);
     await MemberMembership.updateMany({ status: 'active', endDate: { $lt: now } }, { $set: { status: 'expired' } });
+    // Auto-heal any orphaned frozen memberships that have paid status and valid dates today
+    await MemberMembership.updateMany(
+      { status: 'frozen', frozenAt: null, paymentStatus: 'paid', startDate: { $lte: now }, endDate: { $gte: now } },
+      { $set: { status: 'active' } }
+    );
     const allocations = await MemberSlotAllocation.find({ status: 'active', endDate: { $lt: now } }).select('_id');
     for (const allocation of allocations) {
       const session = await mongoose.startSession();

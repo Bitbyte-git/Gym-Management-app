@@ -53,18 +53,27 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
   // 2. Check for current valid membership (the source of truth for gym access)
   let membership = await getCurrentMembership(member._id, now, session);
   if (!membership) {
-    // Check if there is a paid membership whose dates are valid today but status wasn't flipped to 'active' yet
+    // Check if there is a paid membership whose dates are valid today
     membership = await MemberMembership.findOne({
       member: member._id,
       paymentStatus: 'paid',
       startDate: { $lte: now },
       endDate: { $gte: now },
-      status: { $nin: ['cancelled', 'frozen'] },
-    }).sort({ endDate: -1 }).session(session);
+      status: { $ne: 'cancelled' },
+    }).populate('membershipPlan', 'name price duration').sort({ endDate: -1 }).session(session);
 
-    if (membership && membership.status !== 'active') {
-      membership.status = 'active';
-      await membership.save({ session });
+    if (membership) {
+      if (membership.status === 'frozen') {
+        // Auto-unfreeze on punch: member has returned to the gym!
+        const frozenDuration = membership.frozenAt ? Math.max(0, now.getTime() - membership.frozenAt.getTime()) : 0;
+        membership.endDate = new Date(membership.endDate.getTime() + frozenDuration);
+        membership.status = 'active';
+        membership.frozenAt = undefined;
+        await membership.save({ session });
+      } else if (membership.status !== 'active') {
+        membership.status = 'active';
+        await membership.save({ session });
+      }
     }
   }
 
@@ -86,16 +95,6 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
   } else {
     // 3. No current active membership: evaluate latest membership to provide accurate, specific reason
     if (latestMembership) {
-      if (latestMembership.status === 'frozen') {
-        const error = new Error('Membership is currently frozen. Please contact reception.');
-        error.statusCode = 403;
-        error.code = 'MEMBERSHIP_INELIGIBLE';
-        error.isExpired = false;
-        error.member = memberInfo;
-        error.membership = membershipInfo;
-        throw error;
-      }
-
       if (new Date(latestMembership.startDate) > now) {
         const startDateStr = new Date(latestMembership.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         const error = new Error(`Membership starts on ${startDateStr}. Check-in not allowed before start date.`);

@@ -411,8 +411,9 @@ const setFrozen = async (req, res, next, freeze) => {
         }
         membership.status = 'frozen'; membership.frozenAt = new Date();
       } else {
-        if (membership.status !== 'frozen' || !membership.frozenAt) throw Object.assign(new Error('A valid frozen membership is required'), { statusCode: 409 });
-        membership.endDate = new Date(membership.endDate.getTime() + Date.now() - membership.frozenAt.getTime());
+        if (membership.status !== 'frozen') throw Object.assign(new Error('A valid frozen membership is required'), { statusCode: 409 });
+        const frozenDuration = membership.frozenAt ? Math.max(0, Date.now() - membership.frozenAt.getTime()) : 0;
+        membership.endDate = new Date(membership.endDate.getTime() + frozenDuration);
         membership.status = 'active'; membership.frozenAt = undefined;
         await MemberSlotAllocation.updateMany({ membership: membership._id, status: 'active' }, { $set: { endDate: membership.endDate } }, { session });
       }
