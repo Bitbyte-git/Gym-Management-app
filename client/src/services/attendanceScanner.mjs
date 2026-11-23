@@ -8,7 +8,7 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
   let epoch = 0, abort, running, station, pending, desired = false;
   const emit = value => onState(value);
   const current = (generation, signal) => generation === epoch && !signal.aborted && desired;
-  const close = async token => { if (token) { try { await transport.close(token); } catch {} } };
+  const close = async token => { if (token) { try { await transport.close(token); } catch { } } };
   async function start({ recover = false } = {}) {
     if (running) return running;
     // pending is always cleared by the error/finally handlers now,
@@ -28,8 +28,10 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
           if (!current(generation, signal)) return;
           emit({ phase: 'initializing', device: handle.device, message: 'MFS500 connected and initialized.' });
           if (!policy.identificationAvailable) {
-            emit({ phase: 'paused', code: 'IDENTIFICATION_UNAVAILABLE', device: handle.device,
-              message: 'Automatic attendance unavailable. ' + policy.reason });
+            emit({
+              phase: 'paused', code: 'IDENTIFICATION_UNAVAILABLE', device: handle.device,
+              message: 'Automatic attendance unavailable. ' + policy.reason
+            });
             return;
           }
           const opened = await transport.open(signal);
@@ -137,7 +139,7 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
                     station = refreshed.stationToken;
                     continue;
                   }
-                } catch {}
+                } catch { }
               }
 
               // 3. If the server responded (any HTTP status), this is a known state —

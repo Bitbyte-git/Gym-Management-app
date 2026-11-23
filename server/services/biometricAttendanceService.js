@@ -317,6 +317,9 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
             if (!updated) throw error('SESSION_CHANGED', 'Attendance changed. No biometric action was recorded.');
             attendance = updated;
             result.action = 'checkout';
+            if (openSession.notes?.includes('Special opening')) {
+              result.isSpecialHours = true;
+            }
           }
         } else {
           // No currently open session. Check if member already attended this same session earlier today.
@@ -350,6 +353,9 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
             attendance = updated;
             result.action = 'checkout';
             result.updatedCheckout = true;
+            if (sessionRecord.notes?.includes('Special opening')) {
+              result.isSpecialHours = true;
+            }
           } else {
             // First punch of this session today -> Check-in!
             let slotAllocation;
@@ -439,7 +445,7 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
               ? `Checked in (${sessionLabel} session - Special Opening Time)`
               : `Checked in (${sessionLabel} session)`;
           } else {
-            result.message = `${result.updatedCheckout ? 'Check-out updated' : 'Check-out recorded'}: ${formatDuration(attendance.duration)} in ${sessionLabel} session (Today's Total: ${dailySpending.totalHoursFormatted})`;
+            result.message = `${result.updatedCheckout ? 'Check-out updated' : 'Check-out recorded'}: ${formatDuration(attendance.duration)} in ${sessionLabel} session${result.isSpecialHours ? ' (Special Opening Time)' : ''} (Today's Total: ${dailySpending.totalHoursFormatted})`;
           }
 
           if (stale) result.staleSession = true;

@@ -138,7 +138,13 @@ const getSessionEndTime = (dateOrRecord, sessionNameOverride, timeZone = config.
  */
 const isSessionExpired = (record, now = new Date(), timeZone = config.gym.timezone) => {
   if (!record) return false;
+  const checkInTime = new Date(record.checkInTime || now);
   const sessionEndTime = getSessionEndTime(record, record.sessionName, timeZone);
+  // If check-in happened after or at the session end (e.g. Special Timing),
+  // it is not expired by this past session window
+  if (checkInTime.getTime() >= sessionEndTime.getTime()) {
+    return false;
+  }
   return now.getTime() >= sessionEndTime.getTime();
 };
 
