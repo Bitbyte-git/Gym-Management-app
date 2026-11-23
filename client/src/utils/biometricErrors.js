@@ -208,13 +208,87 @@ export function parseBiometricFeedback(next = {}) {
   if (
     code === 'STALE_SESSION' ||
     msgLower.includes('stale') ||
-    msgLower.includes('review')
+    msgLower.includes('old open visit needs')
   ) {
     return {
       type: 'warning',
       title: 'Staff Review Required',
       subtitle: rawMsg || 'An earlier open session needs receptionist review before a new punch can be accepted.',
       member,
+    };
+  }
+
+  // 12b. Session changed / conflict during recording
+  if (
+    code === 'SESSION_CHANGED' ||
+    code === 'ENROLLMENT_CHANGED' ||
+    msgLower.includes('attendance changed')
+  ) {
+    return {
+      type: 'warning',
+      title: 'Session Conflict',
+      subtitle: rawMsg || 'The attendance record was modified. Please scan again.',
+      member,
+    };
+  }
+
+  // 12c. Verification expired or untrusted (server-side session timeout)
+  if (
+    code === 'VERIFICATION_EXPIRED' ||
+    code === 'UNTRUSTED_VERIFICATION' ||
+    code === 'INVALID_VERIFICATION' ||
+    code === 'EVENT_MISMATCH' ||
+    code === 'STATION_INACTIVE' ||
+    code === 'INVALID_SESSION' ||
+    code === 'INVALID_EVENT' ||
+    msgLower.includes('verification') ||
+    msgLower.includes('expired or no longer usable')
+  ) {
+    return {
+      type: 'warning',
+      title: 'Session Expired',
+      subtitle: rawMsg || 'Scanner session timed out. The scanner will restart automatically.',
+      member,
+    };
+  }
+
+  // 12d. Member not found
+  if (
+    code === 'MEMBER_NOT_FOUND' ||
+    msgLower.includes('member no longer exists')
+  ) {
+    return {
+      type: 'error',
+      title: 'Member Not Found',
+      subtitle: rawMsg || 'This member record was not found. Please contact reception.',
+      member,
+    };
+  }
+
+  // 12e. Transaction / server infrastructure errors
+  if (
+    code === 'TRANSACTIONS_REQUIRED' ||
+    code === 'INVALID_ENGINE_RESULT' ||
+    msgLower.includes('replica set')
+  ) {
+    return {
+      type: 'error',
+      title: 'Server Configuration Error',
+      subtitle: rawMsg || 'The attendance server encountered an infrastructure error. Please contact admin.',
+      member: null,
+    };
+  }
+
+  // 12f. Authorization errors
+  if (
+    code === 'NOT_AUTHORIZED' ||
+    msgLower.includes('administrator access')
+  ) {
+    return {
+      type: 'error',
+      title: 'Authorization Required',
+      subtitle: rawMsg || 'This kiosk account is not authorized for biometric attendance.',
+      member: null,
     };
   }
 

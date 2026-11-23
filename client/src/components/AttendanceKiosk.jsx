@@ -94,15 +94,6 @@ export default function AttendanceKiosk({ user, onRecorded }) {
         next.phase === 'disconnected'
       ) {
         const feedback = parseBiometricFeedback(next);
-        if (next.pendingConfirmation) {
-          feedback.isPendingConfirmation = true;
-          feedback.onRetry = () => control(() => controller.current?.retryConfirmation());
-          feedback.onDiscard = () => control(async () => {
-            await controller.current?.discardPending();
-            setPopup(null);
-            resume(true);
-          });
-        }
         triggerPopup(feedback);
       }
     } });
@@ -164,12 +155,6 @@ export default function AttendanceKiosk({ user, onRecorded }) {
   };
 
   const handleClosePopup = () => {
-    if (popup?.isPendingConfirmation) {
-      control(async () => {
-        await controller.current?.discardPending();
-        resume(true);
-      });
-    }
     setPopup(null);
   };
 
@@ -205,10 +190,9 @@ export default function AttendanceKiosk({ user, onRecorded }) {
     <details><summary>Workstation SDK configuration</summary><label>Client key, only if supplied by Mantra<input type="password" autoComplete="off" disabled={active || draining} onChange={event => { clientKey.current = event.target.value; }} /></label></details>
     <div className="biometric-actions">
       <button className="outline-btn" disabled={draining} onClick={pause}><Pause size={16} /> Pause</button>
-      <button className="lime-btn" disabled={active || draining || state.pendingConfirmation} onClick={() => resume(false)}><Play size={16} /> Resume</button>
-      <button className="outline-btn" disabled={active || draining || state.pendingConfirmation} onClick={() => resume(true)}><RefreshCw size={16} /> Retry scanner</button>
+      <button className="lime-btn" disabled={active || draining} onClick={() => resume(false)}><Play size={16} /> Resume</button>
+      <button className="outline-btn" disabled={active || draining} onClick={() => resume(true)}><RefreshCw size={16} /> Retry scanner</button>
       {(result?.requiresRemovalConfirmation || result?.recorded) && <button className="outline-btn" disabled={draining} onClick={() => control(() => controller.current?.confirmRemoval())}>Confirm finger removed</button>}
-      {state.pendingConfirmation && <><button className="outline-btn" onClick={() => control(() => controller.current?.retryConfirmation())}>Retry attendance confirmation</button><button className="ghost-btn" onClick={() => control(async () => { paused.current = true; await controller.current?.discardPending(); })}>Cancel pending attempt and review</button></>}
     </div>
     {draining && <p>Waiting for the current finite capture to finish before releasing the scanner.</p>}
     {controlError && <p role="alert">{controlError}</p>}

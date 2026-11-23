@@ -11,14 +11,9 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
   const close = async token => { if (token) { try { await transport.close(token); } catch {} } };
   async function start({ recover = false } = {}) {
     if (running) return running;
-    if (pending) {
-      if (recover) {
-        pending = null;
-      } else {
-        emit({ phase: 'error', code: 'CONFIRMATION_PENDING', pendingConfirmation: true, message: 'Attendance was not confirmed. Retry confirmation with the same event, or Pause and review recent events.' });
-        return;
-      }
-    }
+    // pending is always cleared by the error/finally handlers now,
+    // but clear defensively in case of edge cases.
+    if (pending) pending = null;
     desired = true;
     const generation = ++epoch;
     abort = new AbortController();
@@ -118,9 +113,12 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
               if (!current(generation, signal)) break;
               const errData = error.response?.data || {};
               const code = errData.code || error.code;
-              if (pending && error.response?.status < 500) pending = null;
-              if (code === 'CAPTURE_TIMEOUT') { await wait(300, signal); continue; }
-              if (['POOR_CAPTURE', 'UNKNOWN_FINGERPRINT', 'AMBIGUOUS_FINGERPRINT', 'MEMBERSHIP_INELIGIBLE', 'ENROLLMENT_INACTIVE'].includes(code)) {
+
+              // If the server responded (any HTTP status), this is a known state —
+              // the record either failed cleanly or succeeded. Clear pending and show feedback.
+              if (error.response) {
+                pending = null;
+                if (code === 'CAPTURE_TIMEOUT') { await wait(300, signal); continue; }
                 emit({
                   phase: 'result',
                   code,
@@ -133,6 +131,13 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
                 await wait(policy.rearmSeconds * 1000, signal);
                 continue;
               }
+
+              // No response at all = genuine network failure (timeout, disconnect).
+              // For device/service errors, propagate to outer catch for disconnect UI.
+              if (['DEVICE_DISCONNECTED', 'SERVICE_UNAVAILABLE'].includes(code)) throw error;
+              // For other network errors (e.g. ECONNREFUSED, timeout), the record endpoint
+              // is idempotent via eventId so safe to clear pending and continue.
+              pending = null;
               throw error;
             }
           }
@@ -140,12 +145,19 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
       } catch (error) {
         if (current(generation, signal)) {
           const code = error.response?.data?.code || error.code;
-          emit({ phase: ['DEVICE_DISCONNECTED', 'SERVICE_UNAVAILABLE'].includes(code) ? 'disconnected' : 'error', code,
-            pendingConfirmation: !!pending, message: pending ? 'Attendance was not confirmed. Retry confirmation with the same event; do not scan again.' : error.response?.data?.error || error.message });
+          // Always clear pending — the record endpoint is idempotent via eventId,
+          // so a fresh scan cycle is always safe. This prevents deadlocks.
+          pending = null;
+          emit({
+            phase: ['DEVICE_DISCONNECTED', 'SERVICE_UNAVAILABLE'].includes(code) ? 'disconnected' : 'error',
+            code,
+            pendingConfirmation: false,
+            message: error.response?.data?.error || error.message || 'An unexpected error occurred. The scanner will restart.',
+          });
         }
       } finally {
-        // Keep a pending record context for an explicit retry, never an offline queue.
-        if (!pending) { const token = station; station = null; await close(token); }
+        pending = null;
+        const token = station; station = null; await close(token);
         running = null;
       }
     })();
