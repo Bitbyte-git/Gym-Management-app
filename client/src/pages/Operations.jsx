@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services';
-import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw, Search, X, CheckCircle2, AlertCircle, CreditCard } from 'lucide-react';
+import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw, Search, X, CheckCircle2, AlertCircle, CreditCard, LogOut, Clock, Flame } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
@@ -647,7 +647,16 @@ export default function Operations({ section, user, query = '' }) {
     if (section === 'attendance') {
       const isOpen = Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present'));
       if (staff && isOpen) {
-        add('Check out', 'post', '/attendance/manual-checkout', [field('notes', 'Exit reason')], { memberId: row.member?._id || row.member });
+        buttons.push(
+          <button
+            className="checkout-row-btn"
+            disabled={busy}
+            key="checkout"
+            onClick={() => begin('Check out', 'post', '/attendance/manual-checkout', [field('notes', 'Exit reason')], row, { memberId: row.member?._id || row.member })}
+          >
+            <LogOut size={13} /> Check out
+          </button>
+        );
       }
       if (isAdmin) {
         add('Correct times', 'put', `/attendance/${row._id}/correct`, [field('checkInTime', 'Check-in', 'datetime-local'), { ...field('checkOutTime', 'Check-out', 'datetime-local'), optional: true }, field('correctionReason', 'Correction reason')], {
@@ -703,6 +712,7 @@ export default function Operations({ section, user, query = '' }) {
         const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'M';
         const memberId = value?.memberId || '';
         const phone = value?.mobileNumber || '';
+        const memberDbId = value?._id || (typeof value === 'object' ? value?._id : null);
         return (
           <div className="attendance-member-cell">
             {value?.profilePicture ? (
@@ -722,24 +732,39 @@ export default function Operations({ section, user, query = '' }) {
             >
               {initials}
             </span>
-            <div>
-              <b>{name}</b>
-              <small>{memberId ? `${memberId}` : ''}{phone ? (memberId ? ` · ${phone}` : phone) : (!memberId ? 'Member' : '')}</small>
+            <div className="attendance-member-meta">
+              <button
+                type="button"
+                className="attendance-member-name-btn"
+                onClick={() => memberDbId && openMemberProfile({ member: { _id: memberDbId } })}
+                title="View Member Profile"
+              >
+                {name}
+              </button>
+              <div className="attendance-member-subtags">
+                {memberId && <span className="member-id-capsule">{memberId}</span>}
+                {phone && <span className="member-phone-text">{phone}</span>}
+              </div>
             </div>
           </div>
         );
       }
       if (key === 'sessionName') {
         const session = String(value || 'morning').toLowerCase();
-        return <span className={`session-badge ${session}`}>{session}</span>;
+        return (
+          <span className={`luxury-session-pill ${session}`}>
+            <span className="session-dot" />
+            <span className="session-text">{session.toUpperCase()}</span>
+          </span>
+        );
       }
       if (key === 'checkInTime') {
-        if (!value) return '—';
+        if (!value) return <span className="text-muted">—</span>;
         const d = new Date(value);
         return (
-          <div className="attendance-time-cell">
-            <b>{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</b>
-            <small>{d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</small>
+          <div className="attendance-clock-cell">
+            <span className="clock-digits">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+            <small className="clock-calendar">{d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</small>
           </div>
         );
       }
@@ -747,17 +772,18 @@ export default function Operations({ section, user, query = '' }) {
         const isOpen = Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present'));
         if (isOpen) {
           return (
-            <span className="attendance-live-badge">
-              <span className="pulse-dot" /> Training Active
+            <span className="training-active-pill">
+              <span className="workout-radar-dot" />
+              <span>Training Active</span>
             </span>
           );
         }
-        if (!value) return '—';
+        if (!value) return <span className="text-muted">—</span>;
         const d = new Date(value);
         return (
-          <div className="attendance-time-cell">
-            <b>{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</b>
-            <small>{d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</small>
+          <div className="attendance-clock-cell">
+            <span className="clock-digits">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+            <small className="clock-calendar">{d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</small>
           </div>
         );
       }
@@ -769,24 +795,34 @@ export default function Operations({ section, user, query = '' }) {
           const hrs = Math.floor(mins / 60);
           const rem = mins % 60;
           const formatted = hrs > 0 ? `${hrs}h ${rem}m` : `${mins}m`;
-          return <span className="attendance-duration-pill live">⏱️ Active ({formatted})</span>;
+          return (
+            <span className="gym-time-pill live">
+              <Flame size={12} className="time-flame-icon" />
+              <span>Active ({formatted})</span>
+            </span>
+          );
         }
         const formatted = valueText(value, 'duration');
-        return <span className="attendance-duration-pill done">✓ {formatted}</span>;
+        return (
+          <span className="gym-time-pill completed">
+            <span>{formatted}</span>
+          </span>
+        );
       }
       if (key === 'attendanceStatus') {
         const isOpen = Boolean(row.sessionOpen || (!row.checkOutTime && row.attendanceStatus === 'present'));
         return (
-          <span className={`attendance-status-badge ${isOpen ? 'present' : 'completed'}`}>
-            {isOpen ? 'Active in Studio' : 'Completed'}
+          <span className={`studio-status-pill ${isOpen ? 'active-studio' : 'completed'}`}>
+            <span className={`status-signal-dot ${isOpen ? 'pulse' : ''}`} />
+            <span>{isOpen ? 'ACTIVE IN STUDIO' : 'COMPLETED'}</span>
           </span>
         );
       }
       if (key === 'deviceId') {
         const isBio = String(value || '').toLowerCase().includes('mfs') || String(value || '').toLowerCase().includes('bio');
         return (
-          <span className={`attendance-channel-badge ${isBio ? 'biometric' : ''}`}>
-            {isBio ? `Biometric (${value})` : (value || 'Manual Counter')}
+          <span className={`terminal-device-pill ${isBio ? 'biometric' : 'manual'}`}>
+            {isBio ? <><Fingerprint size={12} className="terminal-icon" /> Biometric (MFS500)</> : (value || 'Manual Counter')}
           </span>
         );
       }
@@ -1209,51 +1245,147 @@ export default function Operations({ section, user, query = '' }) {
         </div>
       </div>
     )}
-    <div className="toolbar operation-tools">
-      {section === 'reports' && <label className="report-type-filter"><span>Report</span><select value={report} onChange={e => setReport(e.target.value)}>{reportTypes.map(type => <option key={type} value={type}>{reportLabels[type]}</option>)}</select></label>}
-      {['reports', 'attendance', 'payments'].includes(section) && <>
-        <label className="date-filter calendar-only-filter"><span>From</span><input aria-label="From date" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/><CalendarDays/></label>
-        <label className="date-filter calendar-only-filter"><span>To</span><input aria-label="To date" type="date" value={endDate} min={startDate} onChange={e => setEndDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/><CalendarDays/></label>
-      </>}
-      <button className="outline-btn" onClick={() => setRevision(v => v + 1)}><RefreshCw size={16}/> Reload</button>
-      <button className="outline-btn" disabled={!visible.length} onClick={exportRows}><Download size={16}/> Download CSV</button>
-      {section === 'members' && staff && <button className="lime-btn" onClick={() => nav('/register')}><Plus size={16}/> Register member</button>}
-      {definition?.create && createAllowed && <button className="lime-btn" onClick={() => begin('Create ' + label(section), 'post', definition.url, definition.create)}><Plus size={16}/> Create</button>}
-      {section === 'attendance' && staff && <>
-        <button className="lime-btn" onClick={() => begin('Manual check-in', 'post', '/attendance/manual-checkin', [member, field('notes', 'Entry reason')])}>Check in member</button>
-        <button className="outline-btn" onClick={() => begin('Manual check-out', 'post', '/attendance/manual-checkout', [member, field('notes', 'Exit reason')])}>Check out member</button>
-        <button className="outline-btn" onClick={() => window.open('/kiosk', '_blank')} title="Open Biometric Attendance Kiosk Terminal">
-          <Fingerprint size={15}/> Open Kiosk
-        </button>
-      </>}
-      {section === 'notifications' && isAdmin && <>
-        <button className="outline-btn" disabled={busy} onClick={async () => {
-          setBusy(true); setError('');
-          try {
-            await api.post('/notifications/membership-expiry-reminder');
-            setNotice('Expiry reminders sent successfully!');
-            setRevision(v => v + 1);
-          } catch (err) {
-            setError(err.response?.data?.error || 'Failed to send expiry reminders');
-          } finally {
-            setBusy(false);
-          }
-        }}>Send expiry reminders</button>
-        <button className="outline-btn" disabled={busy} onClick={async () => {
-          setBusy(true); setError('');
-          try {
-            await api.post('/notifications/payment-due-reminder');
-            setNotice('Payment due reminders sent successfully!');
-            setRevision(v => v + 1);
-          } catch (err) {
-            setError(err.response?.data?.error || 'Failed to send payment due reminders');
-          } finally {
-            setBusy(false);
-          }
-        }}>Send due reminders</button>
-      </>}
-      {section === 'settings' && isAdmin && <button className="lime-btn" onClick={() => begin('Initialize missing default settings', 'post', '/settings/initialize')}>Initialize defaults</button>}
-    </div>
+    {section === 'attendance' ? (
+      <div className="attendance-luxury-toolbar">
+        <div className="attendance-toolbar-left">
+          <div className="attendance-date-range-bar">
+            <label className="attendance-date-label">
+              <span className="date-tag">FROM</span>
+              <input
+                aria-label="From date"
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                onKeyDown={event => event.preventDefault()}
+                onPaste={event => event.preventDefault()}
+                onClick={calendarOnly}
+              />
+              <CalendarDays size={14} className="calendar-icon" />
+            </label>
+            <span className="date-arrow">→</span>
+            <label className="attendance-date-label">
+              <span className="date-tag">TO</span>
+              <input
+                aria-label="To date"
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={e => setEndDate(e.target.value)}
+                onKeyDown={event => event.preventDefault()}
+                onPaste={event => event.preventDefault()}
+                onClick={calendarOnly}
+              />
+              <CalendarDays size={14} className="calendar-icon" />
+            </label>
+          </div>
+
+          <div className="attendance-date-presets">
+            <button
+              type="button"
+              className={`preset-chip ${datePreset === 'today' ? 'active' : ''}`}
+              onClick={() => applyDatePreset('today')}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              className={`preset-chip ${datePreset === 'yesterday' ? 'active' : ''}`}
+              onClick={() => applyDatePreset('yesterday')}
+            >
+              Yesterday
+            </button>
+            <button
+              type="button"
+              className={`preset-chip ${datePreset === '7days' ? 'active' : ''}`}
+              onClick={() => applyDatePreset('7days')}
+            >
+              7 Days
+            </button>
+            <button
+              type="button"
+              className={`preset-chip ${datePreset === 'month' ? 'active' : ''}`}
+              onClick={() => applyDatePreset('month')}
+            >
+              Month
+            </button>
+          </div>
+
+          <button className="outline-btn reload-btn" onClick={() => setRevision(v => v + 1)} title="Refresh records">
+            <RefreshCw size={14} /> Reload
+          </button>
+          <button className="outline-btn export-btn" disabled={!visible.length} onClick={exportRows} title="Download CSV">
+            <Download size={14} /> Export CSV
+          </button>
+        </div>
+
+        <div className="attendance-toolbar-right">
+          {staff && (
+            <>
+              <button
+                className="lime-btn action-checkin-btn"
+                onClick={() => begin('Manual check-in', 'post', '/attendance/manual-checkin', [member, field('notes', 'Entry reason')])}
+              >
+                <Plus size={15} /> Check in member
+              </button>
+              <button
+                className="outline-btn action-checkout-btn"
+                onClick={() => begin('Manual check-out', 'post', '/attendance/manual-checkout', [member, field('notes', 'Exit reason')])}
+              >
+                Check out member
+              </button>
+              <button
+                className="kiosk-launcher-btn"
+                onClick={() => window.open('/kiosk', '_blank')}
+                title="Launch Biometric Attendance Kiosk Terminal in New Tab"
+              >
+                <Fingerprint size={16} className="kiosk-icon-glow" />
+                <span>Open Kiosk</span>
+                <span className="kiosk-arrow">↗</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    ) : (
+      <div className="toolbar operation-tools">
+        {section === 'reports' && <label className="report-type-filter"><span>Report</span><select value={report} onChange={e => setReport(e.target.value)}>{reportTypes.map(type => <option key={type} value={type}>{reportLabels[type]}</option>)}</select></label>}
+        {['reports', 'payments'].includes(section) && <>
+          <label className="date-filter calendar-only-filter"><span>From</span><input aria-label="From date" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/><CalendarDays/></label>
+          <label className="date-filter calendar-only-filter"><span>To</span><input aria-label="To date" type="date" value={endDate} min={startDate} onChange={e => setEndDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/><CalendarDays/></label>
+        </>}
+        <button className="outline-btn" onClick={() => setRevision(v => v + 1)}><RefreshCw size={16}/> Reload</button>
+        <button className="outline-btn" disabled={!visible.length} onClick={exportRows}><Download size={16}/> Download CSV</button>
+        {section === 'members' && staff && <button className="lime-btn" onClick={() => nav('/register')}><Plus size={16}/> Register member</button>}
+        {definition?.create && createAllowed && <button className="lime-btn" onClick={() => begin('Create ' + label(section), 'post', definition.url, definition.create)}><Plus size={16}/> Create</button>}
+        {section === 'notifications' && isAdmin && <>
+          <button className="outline-btn" disabled={busy} onClick={async () => {
+            setBusy(true); setError('');
+            try {
+              await api.post('/notifications/membership-expiry-reminder');
+              setNotice('Expiry reminders sent successfully!');
+              setRevision(v => v + 1);
+            } catch (err) {
+              setError(err.response?.data?.error || 'Failed to send expiry reminders');
+            } finally {
+              setBusy(false);
+            }
+          }}>Send expiry reminders</button>
+          <button className="outline-btn" disabled={busy} onClick={async () => {
+            setBusy(true); setError('');
+            try {
+              await api.post('/notifications/payment-due-reminder');
+              setNotice('Payment due reminders sent successfully!');
+              setRevision(v => v + 1);
+            } catch (err) {
+              setError(err.response?.data?.error || 'Failed to send payment due reminders');
+            } finally {
+              setBusy(false);
+            }
+          }}>Send due reminders</button>
+        </>}
+        {section === 'settings' && isAdmin && <button className="lime-btn" onClick={() => begin('Initialize missing default settings', 'post', '/settings/initialize')}>Initialize defaults</button>}
+      </div>
+    )}
     {section === 'slots' && <p>Each time slot applies every day the gym is open. Members select it once during registration.</p>}
     {error && <div className="error-message management-message" role="alert">{error}</div>}
     {notice && <p role="status">{notice}</p>}
@@ -1336,25 +1468,46 @@ export default function Operations({ section, user, query = '' }) {
     )}
     <AttendancePopup popup={attendancePopup} onClose={() => setAttendancePopup(null)} />
     {section === 'attendance' && (
-      <div className="attendance-filter-tabs">
-        <button
-          type="button"
-          className={`attendance-tab-btn ${attendanceTab === 'all' ? 'active' : ''}`}
-          onClick={() => setAttendanceTab('all')}
-        >
-          All Attendance Records
-          <span className="attendance-tab-badge">{rows.length}</span>
-        </button>
-        <button
-          type="button"
-          className={`attendance-tab-btn ${attendanceTab === 'active' ? 'active' : ''}`}
-          onClick={() => setAttendanceTab('active')}
-        >
-          <span className="pulse-dot" /> Currently Active in Studio
-          <span className="attendance-tab-badge">
-            {rows.filter(r => Boolean(r.sessionOpen || (!r.checkOutTime && r.attendanceStatus === 'present'))).length}
-          </span>
-        </button>
+      <div className="attendance-luxury-segmented-bar">
+        <div className="attendance-segmented-tabs">
+          <button
+            type="button"
+            className={`luxury-tab-item ${attendanceTab === 'all' ? 'active' : ''}`}
+            onClick={() => setAttendanceTab('all')}
+          >
+            <span>All Attendance Records</span>
+            <span className="tab-pill-badge">{rows.length}</span>
+          </button>
+          <button
+            type="button"
+            className={`luxury-tab-item live-pulse ${attendanceTab === 'active' ? 'active' : ''}`}
+            onClick={() => setAttendanceTab('active')}
+          >
+            <span className="beacon-ping" />
+            <span>Currently Active in Studio</span>
+            <span className="tab-pill-badge live">
+              {rows.filter(r => Boolean(r.sessionOpen || (!r.checkOutTime && r.attendanceStatus === 'present'))).length}
+            </span>
+          </button>
+        </div>
+
+        <div className="attendance-session-meter">
+          <div className="session-pill morning">
+            <span className="session-pill-dot" />
+            <span className="session-pill-label">Morning</span>
+            <span className="session-pill-val">{rows.filter(r => (r.sessionName || '').toLowerCase() === 'morning').length}</span>
+          </div>
+          <div className="session-pill afternoon">
+            <span className="session-pill-dot" />
+            <span className="session-pill-label">Afternoon</span>
+            <span className="session-pill-val">{rows.filter(r => (r.sessionName || '').toLowerCase() === 'afternoon').length}</span>
+          </div>
+          <div className="session-pill evening">
+            <span className="session-pill-dot" />
+            <span className="session-pill-label">Evening</span>
+            <span className="session-pill-val">{rows.filter(r => (r.sessionName || '').toLowerCase() === 'evening').length}</span>
+          </div>
+        </div>
       </div>
     )}
     {loading ? (

@@ -1506,3 +1506,670 @@ button.outline-btn:hover {
   border-color: rgba(212, 255, 0, 0.16) !important;
   background: linear-gradient(180deg, rgba(212, 255, 0, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
 }
+
+
+/* ==========================================================================
+   CHECK-IN & ATTENDANCE LUXURY DARK SUITE
+   Apple / Linear Grade Styling: Toolbar, Segmented Tabs, Table Capsules & Badges
+   ========================================================================== */
+
+/* 1. Unified Glass Toolbar */
+.attendance-luxury-toolbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 20px !important;
+  flex-wrap: wrap !important;
+  background: rgba(14, 18, 15, 0.72) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 18px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.attendance-toolbar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+.attendance-date-range-bar {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 5px 12px !important;
+  border-radius: 12px !important;
+}
+
+.attendance-date-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+}
+
+.attendance-date-label .date-tag {
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  text-transform: uppercase !important;
+}
+
+.attendance-date-label input[type="date"] {
+  background: transparent !important;
+  border: none !important;
+  color: #f5f5f7 !important;
+  font-family: inherit !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  width: auto !important;
+  min-width: 105px !important;
+}
+
+.attendance-date-label input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+.attendance-date-label .calendar-icon {
+  color: rgba(212, 255, 0, 0.7) !important;
+  flex-shrink: 0 !important;
+}
+
+.attendance-date-range-bar .date-arrow {
+  color: rgba(255, 255, 255, 0.3) !important;
+  font-size: 0.85rem !important;
+}
+
+.attendance-date-presets {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  padding: 3px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.preset-chip {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.74rem !important;
+  font-weight: 600 !important;
+  padding: 5px 10px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.preset-chip:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.preset-chip.active {
+  color: #080b09 !important;
+  background: #d4ff00 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(212, 255, 0, 0.3) !important;
+}
+
+.attendance-toolbar-left .reload-btn,
+.attendance-toolbar-left .export-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.78rem !important;
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+}
+
+.attendance-toolbar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin-left: auto !important;
+}
+
+.attendance-toolbar-right .action-checkin-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  padding: 7px 15px !important;
+  border-radius: 11px !important;
+}
+
+.attendance-toolbar-right .action-checkout-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.82rem !important;
+  padding: 7px 15px !important;
+  border-radius: 11px !important;
+}
+
+.kiosk-launcher-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 7px 15px !important;
+  border-radius: 11px !important;
+  background: linear-gradient(135deg, rgba(212, 255, 0, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
+  border: 1px solid rgba(212, 255, 0, 0.45) !important;
+  color: #d4ff00 !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 0 16px rgba(212, 255, 0, 0.1) !important;
+}
+
+.kiosk-launcher-btn:hover {
+  background: linear-gradient(135deg, #d4ff00 0%, #b2e600 100%) !important;
+  color: #080b09 !important;
+  border-color: #d4ff00 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(212, 255, 0, 0.35) !important;
+}
+
+.kiosk-icon-glow {
+  transition: transform 0.2s ease !important;
+}
+
+.kiosk-launcher-btn:hover .kiosk-icon-glow {
+  transform: scale(1.15) !important;
+}
+
+.kiosk-arrow {
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.kiosk-launcher-btn:hover .kiosk-arrow {
+  transform: translate(2px, -2px) !important;
+}
+
+/* 2. Luxury Segmented Control Bar & Session Distribution Meter */
+.attendance-luxury-segmented-bar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 20px !important;
+  flex-wrap: wrap !important;
+}
+
+.attendance-segmented-tabs {
+  display: inline-flex !important;
+  align-items: center !important;
+  background: rgba(14, 18, 15, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 4px !important;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.luxury-tab-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 16px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.luxury-tab-item:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.luxury-tab-item.active {
+  color: #080b09 !important;
+  background: #d4ff00 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 18px rgba(212, 255, 0, 0.28) !important;
+}
+
+.tab-pill-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 24px !important;
+  height: 20px !important;
+  padding: 0 7px !important;
+  border-radius: 999px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: inherit !important;
+  transition: all 0.2s ease !important;
+}
+
+.luxury-tab-item.active .tab-pill-badge {
+  background: rgba(8, 11, 9, 0.22) !important;
+  color: #080b09 !important;
+}
+
+.tab-pill-badge.live {
+  background: rgba(212, 255, 0, 0.2) !important;
+  color: #d4ff00 !important;
+}
+
+.luxury-tab-item.active .tab-pill-badge.live {
+  background: #080b09 !important;
+  color: #d4ff00 !important;
+}
+
+.beacon-ping {
+  position: relative !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #d4ff00 !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+.beacon-ping::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: -4px !important;
+  border-radius: 50% !important;
+  border: 2px solid #d4ff00 !important;
+  animation: beaconPulse 1.8s infinite !important;
+}
+
+@keyframes beaconPulse {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.luxury-tab-item.active .beacon-ping {
+  background: #080b09 !important;
+}
+
+.luxury-tab-item.active .beacon-ping::after {
+  border-color: #080b09 !important;
+}
+
+.attendance-session-meter {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(14, 18, 15, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 5px 12px !important;
+  border-radius: 12px !important;
+}
+
+.session-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.74rem !important;
+  font-weight: 600 !important;
+}
+
+.session-pill-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+}
+
+.session-pill.morning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+
+.session-pill.morning .session-pill-dot {
+  background: #fbbf24 !important;
+  box-shadow: 0 0 6px #fbbf24 !important;
+}
+
+.session-pill.afternoon {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+}
+
+.session-pill.afternoon .session-pill-dot {
+  background: #60a5fa !important;
+  box-shadow: 0 0 6px #60a5fa !important;
+}
+
+.session-pill.evening {
+  background: rgba(168, 85, 247, 0.1) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(168, 85, 247, 0.25) !important;
+}
+
+.session-pill.evening .session-pill-dot {
+  background: #c084fc !important;
+  box-shadow: 0 0 6px #c084fc !important;
+}
+
+.session-pill-val {
+  font-weight: 800 !important;
+  padding: 1px 6px !important;
+  border-radius: 6px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* 3. Luxury Attendance Table Styling */
+.attendance-table-card {
+  background: rgba(14, 18, 15, 0.72) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.6) !important;
+}
+
+.attendance-table-card table th {
+  font-size: 0.72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-weight: 700 !important;
+  padding: 16px 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(10, 14, 11, 0.5) !important;
+}
+
+.attendance-table-card table td {
+  padding: 14px 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  vertical-align: middle !important;
+}
+
+.attendance-table-card table tr:hover td {
+  background: rgba(212, 255, 0, 0.02) !important;
+}
+
+/* Fix Actions Column Truncation */
+.attendance-table-card table th:last-child,
+.attendance-table-card table td:last-child {
+  min-width: 175px !important;
+  width: 175px !important;
+  text-align: right !important;
+}
+
+.attendance-table-card .row-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+.attendance-table-card .checkout-row-btn {
+  background: rgba(255, 107, 114, 0.12) !important;
+  border: 1px solid rgba(255, 107, 114, 0.4) !important;
+  color: #ff858b !important;
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  padding: 6px 14px !important;
+  border-radius: 9px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+}
+
+.attendance-table-card .checkout-row-btn:hover {
+  background: #ff6b72 !important;
+  color: #080b09 !important;
+  border-color: #ff6b72 !important;
+  box-shadow: 0 4px 14px rgba(255, 107, 114, 0.4) !important;
+}
+
+/* 4. Attendance Cell Capsules */
+.attendance-member-cell {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.attendance-avatar {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  color: #d4ff00 !important;
+  font-size: 0.85rem !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+}
+
+.attendance-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.attendance-member-name-btn {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  color: #f5f5f7 !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: color 0.18s ease !important;
+  display: block !important;
+}
+
+.attendance-member-name-btn:hover {
+  color: #d4ff00 !important;
+}
+
+.attendance-member-sub {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 2px !important;
+  font-size: 0.74rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.member-id-capsule {
+  background: rgba(255, 255, 255, 0.06) !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* Session capsule */
+.luxury-session-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+.luxury-session-pill.morning {
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+.luxury-session-pill.afternoon {
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+.luxury-session-pill.evening {
+  background: rgba(168, 85, 247, 0.12) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+}
+
+/* Digital Clock Cell */
+.attendance-clock-cell {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.clock-digits {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #f5f5f7 !important;
+  letter-spacing: 0.03em !important;
+}
+
+.clock-calendar {
+  font-size: 0.7rem !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-weight: 500 !important;
+}
+
+/* Training Active Pill */
+.training-active-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 11px !important;
+  border-radius: 999px !important;
+  background: rgba(212, 255, 0, 0.1) !important;
+  border: 1px solid rgba(212, 255, 0, 0.35) !important;
+  color: #d4ff00 !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.workout-radar-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #d4ff00 !important;
+  box-shadow: 0 0 8px #d4ff00 !important;
+  animation: radarPing 1.8s infinite !important;
+}
+
+@keyframes radarPing {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* Gym Duration Pill */
+.gym-time-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.gym-time-pill.live {
+  background: rgba(212, 255, 0, 0.08) !important;
+  border: 1px solid rgba(212, 255, 0, 0.28) !important;
+  color: #d4ff00 !important;
+}
+
+.gym-time-pill.completed {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Studio Status Pill */
+.studio-status-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.studio-status-pill.active-studio {
+  background: rgba(34, 197, 94, 0.14) !important;
+  border: 1px solid rgba(34, 197, 94, 0.45) !important;
+  color: #4ade80 !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.18) !important;
+}
+
+.studio-status-pill.completed {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Terminal / Scanner Hardware Pill */
+.terminal-device-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+}
+
+.terminal-device-pill.biometric {
+  background: rgba(212, 255, 0, 0.06) !important;
+  border: 1px solid rgba(212, 255, 0, 0.22) !important;
+  color: #e2f784 !important;
+}
+
+.terminal-device-pill.manual {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
