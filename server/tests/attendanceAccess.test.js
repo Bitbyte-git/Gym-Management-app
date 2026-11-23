@@ -197,12 +197,12 @@ test('validateAttendanceAccess auto-unfreezes a frozen paid membership with vali
   const now = new Date('2026-11-23T12:00:00Z');
 
   const originalMembershipFindOne = MemberMembership.findOne;
+  const originalMembershipUpdateOne = MemberMembership.updateOne;
   const originalProfileUpdateOne = MemberProfile.updateOne;
   const originalGymHoursFindOne = GymOperatingHours.findOne;
   const originalSystemSettingFindOne = SystemSetting.findOne;
 
   try {
-    let savedMembership = null;
     const mockMembership = {
       _id: 'mem_frozen',
       member: memberId,
@@ -212,14 +212,24 @@ test('validateAttendanceAccess auto-unfreezes a frozen paid membership with vali
       status: 'frozen',
       paymentStatus: 'paid',
       frozenAt: new Date('2026-11-20T00:00:00Z'),
-      save: async function() { savedMembership = this; },
       populate: function() { return this; },
+    };
+
+    let updatedMembershipFields = null;
+    MemberMembership.updateOne = async (query, update) => {
+      updatedMembershipFields = update.$set;
+      return { acknowledged: true };
     };
 
     MemberMembership.findOne = (query) => {
       if (query.status === 'active') {
         // getCurrentMembership checks status: 'active', so returns null when frozen
         return {
+          populate: () => ({
+            sort: () => ({
+              session: async () => null,
+            }),
+          }),
           sort: () => ({
             session: async () => null,
           }),
@@ -259,11 +269,12 @@ test('validateAttendanceAccess auto-unfreezes a frozen paid membership with vali
 
     const result = await validateAttendanceAccess(member, now);
     assert.ok(result.membership, 'Should return membership');
-    assert.equal(mockMembership.status, 'active', 'Membership status should be auto-unfrozen to active');
-    assert.equal(mockMembership.frozenAt, undefined, 'frozenAt should be cleared');
+    assert.equal(updatedMembershipFields?.status, 'active', 'Membership status should be auto-unfrozen to active via updateOne');
+    assert.equal(result.membership.status, 'active');
     assert.equal(updatedProfileFields?.membershipStatus, 'active', 'Profile status auto-healed to active');
   } finally {
     MemberMembership.findOne = originalMembershipFindOne;
+    MemberMembership.updateOne = originalMembershipUpdateOne;
     MemberProfile.updateOne = originalProfileUpdateOne;
     GymOperatingHours.findOne = originalGymHoursFindOne;
     SystemSetting.findOne = originalSystemSettingFindOne;

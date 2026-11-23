@@ -356,9 +356,6 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
             try {
               ({ slotAllocation, membership: validatedMembership } = await validateAttendanceAccess(member, now, session));
               if (validatedMembership) {
-                if (!validatedMembership.membershipPlan?.name && validatedMembership.populate) {
-                  try { await validatedMembership.populate('membershipPlan', 'name price duration'); } catch (e) {}
-                }
                 result.membership = {
                   planName: validatedMembership.membershipPlan?.name || 'Membership Plan',
                   startDate: validatedMembership.startDate,

@@ -225,6 +225,43 @@ export default function AttendancePopup({ popup, onClose }) {
             </div>
           )}
 
+          {popup.isPendingConfirmation && (
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'center' }}>
+              {popup.onDiscard && (
+                <button
+                  type="button"
+                  className="lime-btn"
+                  onClick={popup.onDiscard}
+                  style={{
+                    padding: '9px 18px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Clear & Scan Again
+                </button>
+              )}
+              {popup.onRetry && (
+                <button
+                  type="button"
+                  className="outline-btn"
+                  onClick={popup.onRetry}
+                  style={{
+                    padding: '9px 18px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Retry Confirmation
+                </button>
+              )}
+            </div>
+          )}
+
           {isSuccess && popup.dailySpending?.totalHoursFormatted && (
             <div className="attendance-popup-spending">
               <Flame size={13} color="var(--lime, #C6FF00)" />

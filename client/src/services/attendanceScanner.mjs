@@ -11,7 +11,14 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
   const close = async token => { if (token) { try { await transport.close(token); } catch {} } };
   async function start({ recover = false } = {}) {
     if (running) return running;
-    if (pending) { emit({ phase: 'error', code: 'CONFIRMATION_PENDING', pendingConfirmation: true, message: 'Attendance was not confirmed. Retry confirmation with the same event, or Pause and review recent events.' }); return; }
+    if (pending) {
+      if (recover) {
+        pending = null;
+      } else {
+        emit({ phase: 'error', code: 'CONFIRMATION_PENDING', pendingConfirmation: true, message: 'Attendance was not confirmed. Retry confirmation with the same event, or Pause and review recent events.' });
+        return;
+      }
+    }
     desired = true;
     const generation = ++epoch;
     abort = new AbortController();
@@ -170,9 +177,9 @@ export function createAttendanceScanner({ scanner, transport, onState, wait = de
     }
   }
   async function discardPending() {
-    await stop('Paused. Review recent events before resuming.');
     pending = null;
-    emit({ phase: 'paused', message: 'Paused. Review recent events before resuming.' });
+    await stop('Scanning paused. Review recent events before resuming.');
+    emit({ phase: 'paused', pendingConfirmation: false, message: 'Scanning paused. Ready to resume.' });
   }
   return { start, stop, confirmRemoval, retryConfirmation, discardPending };
 }

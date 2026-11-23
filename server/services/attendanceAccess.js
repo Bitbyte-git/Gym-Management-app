@@ -15,7 +15,7 @@ const getCurrentMembership = async (memberId, now = new Date(), session = null) 
   paymentStatus: 'paid',
   startDate: { $lte: now },
   endDate: { $gte: now },
-}).sort({ endDate: -1 }).session(session);
+}).populate('membershipPlan', 'name price duration').sort({ endDate: -1 }).session(session);
 
 const validateAttendanceAccess = async (member, now = new Date(), session = null) => {
   // Query member's latest membership with plan details for rich biometric error reporting
@@ -66,13 +66,22 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
       if (membership.status === 'frozen') {
         // Auto-unfreeze on punch: member has returned to the gym!
         const frozenDuration = membership.frozenAt ? Math.max(0, now.getTime() - membership.frozenAt.getTime()) : 0;
-        membership.endDate = new Date(membership.endDate.getTime() + frozenDuration);
+        const newEndDate = new Date(membership.endDate.getTime() + frozenDuration);
+        await MemberMembership.updateOne(
+          { _id: membership._id },
+          { $set: { status: 'active', endDate: newEndDate }, $unset: { frozenAt: 1 } },
+          session ? { session } : {}
+        );
+        membership.endDate = newEndDate;
         membership.status = 'active';
         membership.frozenAt = undefined;
-        await membership.save({ session });
       } else if (membership.status !== 'active') {
+        await MemberMembership.updateOne(
+          { _id: membership._id },
+          { $set: { status: 'active' } },
+          session ? { session } : {}
+        );
         membership.status = 'active';
-        await membership.save({ session });
       }
     }
   }

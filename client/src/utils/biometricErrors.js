@@ -275,6 +275,22 @@ export function parseBiometricFeedback(next = {}) {
     };
   }
 
+  // Pending attendance confirmation
+  if (
+    code === 'CONFIRMATION_PENDING' ||
+    msgLower.includes('not confirmed') ||
+    msgLower.includes('retry confirmation')
+  ) {
+    return {
+      type: 'warning',
+      title: 'Confirmation Pending',
+      subtitle: rawMsg || 'Attendance punch was interrupted before server confirmation. Click below to retry or cancel and scan again.',
+      member,
+      isPendingConfirmation: true,
+      action: 'retry_confirmation',
+    };
+  }
+
   // Default fallback
   return {
     type: 'error',

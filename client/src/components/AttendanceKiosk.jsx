@@ -94,6 +94,15 @@ export default function AttendanceKiosk({ user, onRecorded }) {
         next.phase === 'disconnected'
       ) {
         const feedback = parseBiometricFeedback(next);
+        if (next.pendingConfirmation) {
+          feedback.isPendingConfirmation = true;
+          feedback.onRetry = () => control(() => controller.current?.retryConfirmation());
+          feedback.onDiscard = () => control(async () => {
+            await controller.current?.discardPending();
+            setPopup(null);
+            resume(true);
+          });
+        }
         triggerPopup(feedback);
       }
     } });
@@ -154,8 +163,18 @@ export default function AttendanceKiosk({ user, onRecorded }) {
     }
   };
 
+  const handleClosePopup = () => {
+    if (popup?.isPendingConfirmation) {
+      control(async () => {
+        await controller.current?.discardPending();
+        resume(true);
+      });
+    }
+    setPopup(null);
+  };
+
   return <section className="attendance-kiosk" aria-label="Automatic fingerprint attendance">
-    <AttendancePopup popup={popup} onClose={() => setPopup(null)} />
+    <AttendancePopup popup={popup} onClose={handleClosePopup} />
     <div className="kiosk-status"><span className={'scanner-dot ' + (state.device ? 'connected' : '')} /><span>{state.device ? state.device.model + ' connected' : 'Scanner connection not confirmed'}</span><span className="kiosk-phase">{state.phase}</span>{overview?.identificationAvailable && overview?.developmentOnly && <span>Local development matching</span>}</div>
     <div className="kiosk-instruction">
       {result?.recorded && result.member ? (
