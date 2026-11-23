@@ -55,7 +55,7 @@ export default function Contact() {
                   <div>
                     <h4 style={{ fontSize: '15px', color: '#f5f5f7', margin: '0 0 4px', fontWeight: 600 }}>Reception Hotline</h4>
                     <p style={{ fontSize: '13px', color: '#f5f5f7', margin: '0 0 2px', fontWeight: 600 }}>
-                      +91 98765 43210 &nbsp;•&nbsp; +91 94421 88990
+                      +91 96884 26590
                     </p>
                     <small style={{ fontSize: '11px', color: '#86868b' }}>Mon – Sat: 5:00 AM – 9:00 PM</small>
                   </div>
