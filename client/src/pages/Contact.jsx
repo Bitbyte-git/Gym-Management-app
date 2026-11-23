@@ -41,7 +41,7 @@ export default function Contact() {
                   <div>
                     <h4 style={{ fontSize: '15px', color: '#f5f5f7', margin: '0 0 4px', fontWeight: 600 }}>Studio Location</h4>
                     <p style={{ fontSize: '13px', color: '#86868b', margin: '0 0 2px', lineHeight: 1.4 }}>
-                      Vino Fitness Studio, Race Course Road, Coimbatore, Tamil Nadu – 641018
+                      MSC COMPLEX, Dharmapuri Main Rd, Teacher's Colony, Kottamettupatti, Tamil Nadu 636455
                     </p>
                   </div>
                 </div>

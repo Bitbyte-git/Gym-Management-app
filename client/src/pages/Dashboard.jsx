@@ -1,10 +1,11 @@
 import Operations from './Operations';
 import Biometrics from './Biometrics';
+import SettingsHub from '../components/SettingsHub';
 import { Brand } from '../components/Brand';
 import { DashboardContentSkeleton } from '../components/Skeleton';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Dumbbell, CreditCard, CalendarCheck, ReceiptIndianRupee, ChartNoAxesCombined, Search, Plus, ArrowUpRight, LogOut, Menu, X, ChevronRight, ChevronDown, SlidersHorizontal, WalletCards, UserCheck, Clock3, Flame, Utensils, Target, Loader2, Fingerprint, IndianRupee, Bell, Settings, Layers, ShieldCheck, CalendarRange, CalendarDays, UserPlus, DoorOpen, FileText, MapPin, Activity } from 'lucide-react';
+import { LayoutDashboard, Users, Dumbbell, CreditCard, CalendarCheck, ReceiptIndianRupee, ChartNoAxesCombined, Search, Plus, ArrowUpRight, ArrowLeft, LogOut, Menu, X, ChevronRight, WalletCards, UserCheck, Clock3, Flame, Utensils, Target, Loader2, Fingerprint, IndianRupee, Bell, Settings, Layers, ShieldCheck, CalendarRange, CalendarDays, UserPlus, DoorOpen, FileText, MapPin, Activity } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api, dashboardService, memberService } from '../services';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
@@ -46,8 +47,8 @@ const adminNav = [
   [FileText, 'Audit trail', 'audit'],
 ];
 const receptionSections = ['dashboard', 'members', 'biometrics', 'plans', 'memberships', 'attendance', 'payments', 'slots', 'slotAllocations', 'notifications'];
-const adminCoreSections = ['dashboard', 'members', 'biometrics', 'trainers', 'plans', 'memberships', 'attendance', 'payments', 'slots', 'notifications'];
-const adminManagementSections = ['slotAllocations', 'allocations', 'hours', 'availability', 'reports', 'users', 'audit', 'settings'];
+const adminSidebarSections = ['dashboard', 'members', 'biometrics', 'trainers', 'plans', 'memberships', 'attendance', 'payments', 'slots', 'notifications', 'settings'];
+const adminManagementSections = ['availability', 'hours', 'users', 'allocations', 'slotAllocations', 'reports', 'audit'];
 const trainerNav = [
   [LayoutDashboard, 'Overview', 'dashboard'],
   [Users, 'My members', 'members'],
@@ -75,17 +76,21 @@ export default function Dashboard({ role = 'admin' }) {
   
   const current = loc.pathname.split('/').pop();
   const staffWorkspace = role === 'admin' || role === 'reception';
-  const links = staffWorkspace ? (role === 'reception' ? adminNav.filter(item => receptionSections.includes(item[2])) : adminNav) : role === 'trainer' ? trainerNav : memberNav;
-  const title = links.find(x => x[2] === current)?.[1] || 'Overview';
+  const adminNavDisplay = adminNav.filter(item => adminSidebarSections.includes(item[2]));
+  const links = staffWorkspace
+    ? (role === 'reception' ? adminNav.filter(item => receptionSections.includes(item[2])) : adminNavDisplay)
+    : role === 'trainer'
+    ? trainerNav
+    : memberNav;
 
-  const isCurrentInMgmt = adminManagementSections.includes(current);
-  const [mgmtOpen, setMgmtOpen] = useState(isCurrentInMgmt);
+  const allowedSections = role === 'admin'
+    ? adminNav.map(item => item[2])
+    : role === 'reception'
+    ? receptionSections
+    : links.map(item => item[2]);
+  const isAllowedSection = allowedSections.includes(current);
 
-  useEffect(() => {
-    if (isCurrentInMgmt) {
-      setMgmtOpen(true);
-    }
-  }, [isCurrentInMgmt]);
+  const title = adminNav.find(x => x[2] === current)?.[1] || links.find(x => x[2] === current)?.[1] || 'Overview';
 
   const handleLogout = async () => {
     await logout();
@@ -112,57 +117,11 @@ export default function Dashboard({ role = 'admin' }) {
           <ChevronRight size={16} />
         </div>
         <nav>
-          {role === 'admin' ? (
-            <>
-              {adminNav.filter(item => adminCoreSections.includes(item[2])).map(([Icon, label, path]) => (
-                <button
-                  className={current === path ? 'active' : ''}
-                  key={path}
-                  onClick={() => {
-                    nav(`/${role}/${path}`);
-                    setMenu(false);
-                  }}
-                >
-                  <Icon />
-                  {label}
-                </button>
-              ))}
-              <div className="nav-section-divider">
-                <button
-                  type="button"
-                  className={`nav-group-toggle ${mgmtOpen ? 'open' : ''} ${isCurrentInMgmt ? 'active-parent' : ''}`}
-                  onClick={() => setMgmtOpen(prev => !prev)}
-                  title="Toggle Management & Settings"
-                >
-                  <span className="nav-group-title">
-                    <SlidersHorizontal size={13} />
-                    Management & Settings
-                  </span>
-                  <ChevronDown className={`group-chevron ${mgmtOpen ? 'rotated' : ''}`} size={14} />
-                </button>
-              </div>
-              {mgmtOpen && (
-                <div className="nav-group-items">
-                  {adminNav.filter(item => adminManagementSections.includes(item[2])).map(([Icon, label, path]) => (
-                    <button
-                      className={current === path ? 'active' : ''}
-                      key={path}
-                      onClick={() => {
-                        nav(`/${role}/${path}`);
-                        setMenu(false);
-                      }}
-                    >
-                      <Icon />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            links.map(([Icon, label, path]) => (
+          {links.map(([Icon, label, path]) => {
+            const isActive = current === path || (path === 'settings' && adminManagementSections.includes(current));
+            return (
               <button
-                className={current === path ? 'active' : ''}
+                className={isActive ? 'active' : ''}
                 key={path}
                 onClick={() => {
                   nav(`/${role}/${path}`);
@@ -172,8 +131,8 @@ export default function Dashboard({ role = 'admin' }) {
                 <Icon />
                 {label}
               </button>
-            ))
-          )}
+            );
+          })}
         </nav>
         <div className="side-bottom">
           <button onClick={handleLogout}>
@@ -218,8 +177,21 @@ export default function Dashboard({ role = 'admin' }) {
           </div>
         </header>
         {current === 'dashboard' && <Overview role={role} onNavigate={nav} />}
-        {current !== 'dashboard' && (links.some(item => item[2] === current)
-          ? current === 'biometrics' ? <Biometrics user={user} /> : <Operations section={current} user={user} query={query}/>
+        {current !== 'dashboard' && (isAllowedSection
+          ? current === 'biometrics'
+            ? <Biometrics user={user} />
+            : current === 'settings' && role === 'admin'
+            ? <SettingsHub onNavigate={nav} user={user} query={query} />
+            : (
+              <>
+                {role === 'admin' && adminManagementSections.includes(current) && (
+                  <button className="settings-subpage-back" onClick={() => nav('/admin/settings')}>
+                    <ArrowLeft size={14} /> Back to Settings Hub
+                  </button>
+                )}
+                <Operations section={current} user={user} query={query} />
+              </>
+            )
           : <div className="dash-content"><p>This section is unavailable for your role.</p></div>)}
       </main>
     </div>
