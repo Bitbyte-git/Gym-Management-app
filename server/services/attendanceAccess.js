@@ -12,7 +12,6 @@ const displaySlot = slot => `daily, ${displayTime(slot.startTime)} to ${displayT
 const getCurrentMembership = async (memberId, now = new Date(), session = null) => MemberMembership.findOne({
   member: memberId,
   status: 'active',
-  paymentStatus: 'paid',
   startDate: { $lte: now },
   endDate: { $gte: now },
 }).populate('membershipPlan', 'name price duration').sort({ endDate: -1 }).session(session);
@@ -53,10 +52,9 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
   // 2. Check for current valid membership (the source of truth for gym access)
   let membership = await getCurrentMembership(member._id, now, session);
   if (!membership) {
-    // Check if there is a paid membership whose dates are valid today
+    // Check if there is any membership whose dates are valid today
     membership = await MemberMembership.findOne({
       member: member._id,
-      paymentStatus: 'paid',
       startDate: { $lte: now },
       endDate: { $gte: now },
       status: { $ne: 'cancelled' },
@@ -69,25 +67,39 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
         const newEndDate = new Date(membership.endDate.getTime() + frozenDuration);
         await MemberMembership.updateOne(
           { _id: membership._id },
-          { $set: { status: 'active', endDate: newEndDate }, $unset: { frozenAt: 1 } },
+          { $set: { status: 'active', endDate: newEndDate, paymentStatus: 'paid' }, $unset: { frozenAt: 1 } },
           session ? { session } : {}
         );
         membership.endDate = newEndDate;
         membership.status = 'active';
+        membership.paymentStatus = 'paid';
         membership.frozenAt = undefined;
       } else if (membership.status !== 'active') {
         await MemberMembership.updateOne(
           { _id: membership._id },
-          { $set: { status: 'active' } },
+          { $set: { status: 'active', paymentStatus: 'paid' } },
           session ? { session } : {}
         );
         membership.status = 'active';
+        membership.paymentStatus = 'paid';
       }
     }
   }
 
-  // If a valid membership is active today, auto-heal any stale profile statuses
+  // If a valid membership is active today, auto-heal any stale profile or payment statuses
   if (membership) {
+    if (membership.paymentStatus !== 'paid') {
+      try {
+        await MemberMembership.updateOne(
+          { _id: membership._id },
+          { $set: { paymentStatus: 'paid', pendingAmount: 0 } },
+          session ? { session } : {}
+        );
+        membership.paymentStatus = 'paid';
+      } catch (err) {
+        // Non-blocking auto-heal fallback
+      }
+    }
     if (member.membershipStatus !== 'active' || member.registrationStatus !== 'active') {
       try {
         await MemberProfile.updateOne(
@@ -115,7 +127,7 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
         throw error;
       }
 
-      if (latestMembership.paymentStatus !== 'paid') {
+      if (latestMembership.paymentStatus !== 'paid' && latestMembership.status !== 'active') {
         const error = new Error('Membership payment is pending. Please complete payment at reception.');
         error.statusCode = 403;
         error.code = 'MEMBERSHIP_INELIGIBLE';

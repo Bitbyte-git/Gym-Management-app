@@ -19,6 +19,11 @@ const reconcile = async () => {
       { status: 'frozen', frozenAt: null, paymentStatus: 'paid', startDate: { $lte: now }, endDate: { $gte: now } },
       { $set: { status: 'active' } }
     );
+    // Auto-heal active memberships with valid future dates whose paymentStatus is not marked as paid
+    await MemberMembership.updateMany(
+      { status: 'active', startDate: { $lte: now }, endDate: { $gte: now }, paymentStatus: { $ne: 'paid' } },
+      { $set: { paymentStatus: 'paid', pendingAmount: 0 } }
+    );
     const allocations = await MemberSlotAllocation.find({ status: 'active', endDate: { $lt: now } }).select('_id');
     for (const allocation of allocations) {
       const session = await mongoose.startSession();

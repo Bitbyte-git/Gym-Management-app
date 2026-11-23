@@ -343,22 +343,10 @@ async function seed() {
           startDate = new Date(endDate.getTime() - Math.max(plan.duration, 1) * 30 * dayMs);
         }
 
-        // Payment status & dues
+        // Payment status & dues: active members have fully paid memberships
         let paymentStatus = 'paid';
         let amountPaid = plan.price;
         let pendingAmount = 0;
-        if (memberStatus === 'active') {
-          const payRand = Math.random();
-          if (payRand > 0.96) {
-            paymentStatus = 'partial';
-            amountPaid = Math.round(plan.price * 0.5);
-            pendingAmount = plan.price - amountPaid;
-          } else if (payRand > 0.94) {
-            paymentStatus = 'pending';
-            amountPaid = 0;
-            pendingAmount = plan.price;
-          }
-        }
 
         // Assign a gym time slot
         const assignedSlot = randomChoice(slots);

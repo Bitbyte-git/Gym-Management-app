@@ -350,3 +350,88 @@ test('validateAttendanceAccess accepts check-in during gym closed hours and mark
     SystemSetting.findOne = originalSystemSettingFindOne;
   }
 });
+
+test('validateAttendanceAccess allows active member with valid future dates even if paymentStatus is pending, auto-healing to paid', async () => {
+  const memberId = '507f1f77bcf86cd799439167';
+  const member = {
+    _id: memberId,
+    memberId: 'GYM1671',
+    fullName: 'Kiran Das',
+    registrationStatus: 'active',
+    membershipStatus: 'active',
+  };
+  const now = new Date('2026-11-23T15:53:00Z');
+
+  const originalMembershipFindOne = MemberMembership.findOne;
+  const originalMembershipUpdateOne = MemberMembership.updateOne;
+  const originalProfileUpdateOne = MemberProfile.updateOne;
+  const originalGymHoursFindOne = GymOperatingHours.findOne;
+  const originalSystemSettingFindOne = SystemSetting.findOne;
+
+  try {
+    let updatedMembership = null;
+    MemberMembership.updateOne = async (query, update) => {
+      updatedMembership = update.$set;
+      return { acknowledged: true };
+    };
+
+    MemberMembership.findOne = () => ({
+      populate: () => ({
+        sort: () => ({
+          session: async () => ({
+            _id: 'mem_kiran',
+            member: memberId,
+            membershipPlan: { name: 'Standard' },
+            startDate: new Date('2026-11-09T00:00:00Z'),
+            endDate: new Date('2027-02-09T23:59:59Z'),
+            status: 'active',
+            paymentStatus: 'pending', // Pending payment!
+            totalAmount: 5000,
+            amountPaid: 0,
+            pendingAmount: 5000,
+          }),
+        }),
+      }),
+      sort: () => ({
+        session: async () => ({
+          _id: 'mem_kiran',
+          member: memberId,
+          membershipPlan: { name: 'Standard' },
+          startDate: new Date('2026-11-09T00:00:00Z'),
+          endDate: new Date('2027-02-09T23:59:59Z'),
+          status: 'active',
+          paymentStatus: 'pending',
+          totalAmount: 5000,
+          amountPaid: 0,
+          pendingAmount: 5000,
+        }),
+      }),
+    });
+
+    GymOperatingHours.findOne = () => ({
+      session: async () => ({
+        isOpen: true,
+        openTime: '00:00',
+        closeTime: '23:59',
+        sessions: [],
+      }),
+    });
+
+    SystemSetting.findOne = () => ({
+      session: async () => ({ value: false }),
+    });
+
+    // Should NOT throw 'Membership payment is pending'
+    const result = await validateAttendanceAccess(member, now);
+    assert.ok(result.membership, 'Should return membership');
+    assert.equal(result.membership.status, 'active');
+    assert.equal(result.membership.paymentStatus, 'paid', 'Payment status should be auto-healed to paid');
+    assert.equal(updatedMembership?.paymentStatus, 'paid');
+  } finally {
+    MemberMembership.findOne = originalMembershipFindOne;
+    MemberMembership.updateOne = originalMembershipUpdateOne;
+    MemberProfile.updateOne = originalProfileUpdateOne;
+    GymOperatingHours.findOne = originalGymHoursFindOne;
+    SystemSetting.findOne = originalSystemSettingFindOne;
+  }
+});
