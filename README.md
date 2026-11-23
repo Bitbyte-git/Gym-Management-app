@@ -99,3 +99,5 @@ Reception scanner lifecycle, transactional attendance sessions, rollout and rema
 
 
 Final Commit 
+
+System - Design Completed
