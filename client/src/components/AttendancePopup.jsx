@@ -11,6 +11,7 @@ import {
   CreditCard,
   ArrowRight,
   Calendar,
+  Clock,
 } from 'lucide-react';
 
 const formatDate = (dateVal) => {
@@ -177,6 +178,21 @@ export default function AttendancePopup({ popup, onClose }) {
                       }}
                     >
                       ALREADY RECORDED
+                    </span>
+                  )}
+                  {popup.isSpecialHours && (
+                    <span
+                      className="kiosk-punch-pill"
+                      style={{
+                        background: 'rgba(56, 189, 248, 0.15)',
+                        color: '#38bdf8',
+                        border: '1px solid rgba(56, 189, 248, 0.35)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <Clock size={11} /> SPECIAL OPENING TIME
                     </span>
                   )}
                   {popup.sessionName && (

@@ -280,3 +280,73 @@ test('validateAttendanceAccess auto-unfreezes a frozen paid membership with vali
     SystemSetting.findOne = originalSystemSettingFindOne;
   }
 });
+
+test('validateAttendanceAccess accepts check-in during gym closed hours and marks isSpecialHours=true', async () => {
+  const memberId = '507f1f77bcf86cd799439099';
+  const member = {
+    _id: memberId,
+    memberId: 'GYM1099',
+    fullName: 'Special Hours Member',
+    registrationStatus: 'active',
+    membershipStatus: 'active',
+  };
+  const now = new Date('2026-11-23T13:30:00Z');
+
+  const originalMembershipFindOne = MemberMembership.findOne;
+  const originalProfileUpdateOne = MemberProfile.updateOne;
+  const originalGymHoursFindOne = GymOperatingHours.findOne;
+  const originalSystemSettingFindOne = SystemSetting.findOne;
+
+  try {
+    MemberMembership.findOne = () => ({
+      populate: () => ({
+        sort: () => ({
+          session: async () => ({
+            _id: 'mem_special',
+            member: memberId,
+            membershipPlan: { name: 'Premium' },
+            startDate: new Date('2026-11-09T00:00:00Z'),
+            endDate: new Date('2027-05-09T23:59:59Z'),
+            status: 'active',
+            paymentStatus: 'paid',
+          }),
+        }),
+      }),
+      sort: () => ({
+        session: async () => ({
+          _id: 'mem_special',
+          member: memberId,
+          membershipPlan: { name: 'Premium' },
+          startDate: new Date('2026-11-09T00:00:00Z'),
+          endDate: new Date('2027-05-09T23:59:59Z'),
+          status: 'active',
+          paymentStatus: 'paid',
+        }),
+      }),
+    });
+
+    // Mock Gym is closed today or in afternoon break
+    GymOperatingHours.findOne = () => ({
+      session: async () => ({
+        isOpen: false, // Closed!
+        openTime: '06:00',
+        closeTime: '21:00',
+        sessions: [],
+      }),
+    });
+
+    SystemSetting.findOne = () => ({
+      session: async () => ({ value: false }),
+    });
+
+    // Should NOT throw 'The gym is currently closed'
+    const result = await validateAttendanceAccess(member, now);
+    assert.ok(result.membership, 'Should return membership');
+    assert.equal(result.isSpecialHours, true, 'isSpecialHours should be true when gym is closed');
+  } finally {
+    MemberMembership.findOne = originalMembershipFindOne;
+    MemberProfile.updateOne = originalProfileUpdateOne;
+    GymOperatingHours.findOne = originalGymHoursFindOne;
+    SystemSetting.findOne = originalSystemSettingFindOne;
+  }
+});

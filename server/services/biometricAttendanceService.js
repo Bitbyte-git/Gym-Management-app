@@ -354,8 +354,9 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
             // First punch of this session today -> Check-in!
             let slotAllocation;
             let validatedMembership;
+            let isSpecialHours = false;
             try {
-              ({ slotAllocation, membership: validatedMembership } = await validateAttendanceAccess(member, now, session));
+              ({ slotAllocation, membership: validatedMembership, isSpecialHours } = await validateAttendanceAccess(member, now, session));
               if (validatedMembership) {
                 result.membership = {
                   planName: validatedMembership.membershipPlan?.name || 'Membership Plan',
@@ -392,6 +393,7 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
             }
 
             punchRecord.punchType = 'checkin';
+            const checkInNotes = isSpecialHours ? 'Special opening time attendance' : undefined;
             [attendance] = await Attendance.create([{
               member: member._id,
               branch: config.gym.branchId,
@@ -407,8 +409,10 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
               checkInReceptionist: operator,
               deviceId: 'MFS500',
               slotAllocation: slotAllocation?._id,
+              notes: checkInNotes,
             }], { session });
             result.action = 'checkin';
+            result.isSpecialHours = Boolean(isSpecialHours);
           }
         }
 
@@ -431,7 +435,9 @@ async function record({ stationToken, verificationToken, eventId }, operator) {
           const sessionLabel = (attendance.sessionName || currentSession).charAt(0).toUpperCase() +
             (attendance.sessionName || currentSession).slice(1);
           if (result.action === 'checkin') {
-            result.message = `Checked in (${sessionLabel} session)`;
+            result.message = result.isSpecialHours
+              ? `Checked in (${sessionLabel} session - Special Opening Time)`
+              : `Checked in (${sessionLabel} session)`;
           } else {
             result.message = `${result.updatedCheckout ? 'Check-out updated' : 'Check-out recorded'}: ${formatDuration(attendance.duration)} in ${sessionLabel} session (Today's Total: ${dailySpending.totalHoursFormatted})`;
           }

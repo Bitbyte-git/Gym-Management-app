@@ -149,17 +149,25 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
 
   const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const { day: currentDay, time: currentTime } = clockAt(now);
-  const operatingHours = await GymOperatingHours.findOne({ dayOfWeek: currentDay }).session(session);
-  if (!operatingHours) {
-    const error = new Error('Gym operating hours are not configured for today');
-    error.statusCode = 503;
-    throw error;
+  let operatingHours = null;
+  try {
+    operatingHours = await GymOperatingHours.findOne({ dayOfWeek: currentDay }).session(session);
+  } catch (err) {
+    operatingHours = null;
   }
-  if (!operatingHours.isOpen || currentTime < operatingHours.openTime || currentTime >= operatingHours.closeTime || (operatingHours.sessions?.length && !operatingHours.sessions.some(session => currentTime >= session.startTime && currentTime < session.endTime))) {
-    const error = new Error('The gym is currently closed');
-    error.statusCode = 403;
-    throw error;
-  }
+
+  // Practical gym attendance logic:
+  // If the member is physically at the scanner punching attendance, the gym is open!
+  // Rather than blocking them with "The gym is currently closed", accept the punch
+  // and record it under a Special Opening Time.
+  const isOutsideScheduledHours = !operatingHours ||
+    !operatingHours.isOpen ||
+    currentTime < operatingHours.openTime ||
+    currentTime >= operatingHours.closeTime ||
+    (operatingHours.sessions?.length > 0 && !operatingHours.sessions.some(s => currentTime >= s.startTime && currentTime < s.endTime));
+
+  const isSpecialHours = Boolean(isOutsideScheduledHours);
+
   const timingSetting = await SystemSetting.findOne({ key: 'enforce_slot_timing' }).session(session);
   const enforceSlotTiming = timingSetting ? timingSetting.value === true : false;
   let slotAllocation = null;
@@ -186,7 +194,7 @@ const validateAttendanceAccess = async (member, now = new Date(), session = null
     }
   }
 
-  return { membership, slotAllocation };
+  return { membership, slotAllocation, isSpecialHours, operatingHours };
 };
 
 

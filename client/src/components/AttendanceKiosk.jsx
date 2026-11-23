@@ -73,17 +73,20 @@ export default function AttendanceKiosk({ user, onRecorded }) {
         recorded.current?.();
         triggerPopup({
           type: 'success',
-          title: 'Thank you! Attendance marked',
+          title: next.result.isSpecialHours ? 'Welcome! Special Opening Attendance' : 'Thank you! Attendance marked',
           subtitle: next.result.reconfirmed
             ? (next.result.message || 'Check-in confirmed. You are already checked in.')
             : next.result.action === 'checkout'
               ? (next.result.message || `Check-out recorded (${next.result.sessionDurationFormatted || 'session workout'}).`)
-              : 'Check-in recorded successfully. Welcome to Vino Fitness Studio!',
+              : next.result.isSpecialHours
+                ? 'Check-in recorded under Special Opening Time. Welcome to Vino Fitness Studio!'
+                : 'Check-in recorded successfully. Welcome to Vino Fitness Studio!',
           member: next.result.member,
           action: next.result.action === 'checkout' ? 'Check out' : 'Check in',
           sessionName: next.result.sessionName,
           duration: next.result.action === 'checkout' ? next.result.sessionDurationFormatted : null,
           dailySpending: next.result.dailySpending,
+          isSpecialHours: Boolean(next.result.isSpecialHours),
         });
       } else if (
         next.code === 'UNKNOWN_FINGERPRINT' ||
