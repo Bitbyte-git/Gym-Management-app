@@ -211,6 +211,12 @@
   color: #ff8585 !important;
 }
 
+.verification-tool-btn.muted {
+  background: rgba(255, 107, 114, 0.08) !important;
+  border-color: rgba(255, 107, 114, 0.3) !important;
+  color: #ff9ca1 !important;
+}
+
 /* --------------------------------------------------------------------------
    MAIN BODY & SCANNER STAGE
    -------------------------------------------------------------------------- */

@@ -17,6 +17,8 @@ import {
   Sparkles,
   ShieldCheck,
   LogOut,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,6 +27,7 @@ import { createAttendanceScanner } from '../services/attendanceScanner.mjs';
 import AttendancePopup from '../components/AttendancePopup';
 import { parseBiometricFeedback } from '../utils/biometricErrors';
 import { Brand } from '../components/Brand';
+import { isAudioEnabled, setAudioEnabled } from '../utils/kioskAudio';
 import '../attendance-kiosk.css';
 
 const initial = { phase: 'initializing', message: 'Connecting to biometric scanner…' };
@@ -38,6 +41,7 @@ export default function AttendanceVerification({ standalone = true }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [pausedState, setPausedState] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(isAudioEnabled);
   const [clientKey] = useState('');
 
   const controller = useRef(null);
@@ -221,6 +225,12 @@ export default function AttendanceVerification({ standalone = true }) {
     };
   }, [clientKey]);
 
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    setAudioEnabled(next);
+  };
+
   const togglePause = async () => {
     if (paused.current) {
       paused.current = false;
@@ -305,6 +315,14 @@ export default function AttendanceVerification({ standalone = true }) {
           </div>
 
           <div className="verification-controls">
+            <button
+              className={`verification-tool-btn ${soundEnabled ? '' : 'muted'}`}
+              onClick={toggleSound}
+              title={soundEnabled ? 'Mute Punch Voice & Chimes' : 'Enable Punch Voice & Chimes'}
+            >
+              {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} style={{ color: '#ff6b72' }} />}
+              <span>{soundEnabled ? 'Sound On' : 'Muted'}</span>
+            </button>
             <button
               className={`verification-tool-btn ${pausedState ? 'paused' : ''}`}
               onClick={togglePause}

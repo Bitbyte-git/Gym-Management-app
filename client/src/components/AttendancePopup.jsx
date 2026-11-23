@@ -13,6 +13,7 @@ import {
   Calendar,
   Clock,
 } from 'lucide-react';
+import { playPunchFeedback } from '../utils/kioskAudio';
 
 const formatDate = (dateVal) => {
   if (!dateVal) return '—';
@@ -36,7 +37,8 @@ export default function AttendancePopup({ popup, onClose }) {
   });
 
   useEffect(() => {
-    if (!popup) return;
+    if (!popup || popup.isSilent) return;
+    playPunchFeedback(popup);
     const isSpecial = popup.action === 'expired' || Boolean(popup.membership || popup.errorData?.membership);
     const duration = isSpecial ? 7000 : 4000; // 7s for expired membership gives ample time to read plan & dates
     const timer = setTimeout(() => {
