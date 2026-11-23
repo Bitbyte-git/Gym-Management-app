@@ -70,7 +70,7 @@ export default function Dashboard({ role = 'admin' }) {
   const [menu, setMenu] = useState(false);
   const [query, setQuery] = useState('');
   const { user, logout } = useAuth();
-  
+
   const current = loc.pathname.split('/').pop();
   const staffWorkspace = role === 'admin' || role === 'reception';
   const links = staffWorkspace ? (role === 'reception' ? adminNav.filter(item => receptionSections.includes(item[2])) : adminNav) : role === 'trainer' ? trainerNav : memberNav;
@@ -159,7 +159,7 @@ export default function Dashboard({ role = 'admin' }) {
         </header>
         {current === 'dashboard' && <Overview role={role} onNavigate={nav} />}
         {current !== 'dashboard' && (links.some(item => item[2] === current)
-          ? current === 'biometrics' ? <Biometrics user={user} /> : <Operations section={current} user={user} query={query}/>
+          ? current === 'biometrics' ? <Biometrics user={user} /> : <Operations section={current} user={user} query={query} />
           : <div className="dash-content"><p>This section is unavailable for your role.</p></div>)}
       </main>
     </div>
@@ -185,8 +185,8 @@ function Overview({ role, onNavigate }) {
     try {
       const statsResponse = await dashboardService[
         role === 'admin' || role === 'reception' ? 'getAdminStats' :
-        role === 'trainer' ? 'getTrainerStats' :
-        'getMemberStats'
+          role === 'trainer' ? 'getTrainerStats' :
+            'getMemberStats'
       ]();
       let dashboardData = statsResponse.data.data;
       if (role === 'admin' && user?.role === 'admin') {
@@ -314,13 +314,13 @@ function Overview({ role, onNavigate }) {
     <div className="dash-content">
       <div className={`welcome ${administrator ? 'admin-welcome' : ''}`}>
         <div>
-          {administrator && <span className="admin-live"><i/> LIVE BUSINESS OVERVIEW</span>}
+          {administrator && <span className="admin-live"><i /> LIVE BUSINESS OVERVIEW</span>}
           <h2>{trainer ? 'Your members are moving.' : administrator ? `Welcome back, ${user?.name || 'Admin'}.` : `Good morning, ${user?.name || 'User'}.`}</h2>
           <p>{trainer ? 'Here is what your coaching day looks like.' : administrator ? 'Monitor performance, revenue and daily operations from one place.' : 'Here\'s the pulse of your gym today.'}</p>
         </div>
         {administrator ? <div className="admin-quick-actions">
-          <button className="lime-btn" onClick={() => onNavigate('/register')}><Plus/> Register member</button>
-          <button className="outline-btn" onClick={() => onNavigate('/admin/reports')}><ChartNoAxesCombined/> Reports</button>
+          <button className="lime-btn" onClick={() => onNavigate('/register')}><Plus /> Register member</button>
+          <button className="outline-btn" onClick={() => onNavigate('/admin/reports')}><ChartNoAxesCombined /> Reports</button>
         </div> : staffWorkspace && <button className="outline-btn" onClick={() => onNavigate(`/${role}/members`)}>View members</button>}
       </div>
       <section className="stats">
@@ -333,7 +333,7 @@ function Overview({ role, onNavigate }) {
           </article>
         ))}
       </section>
-      {administrator && <AdminAnalytics stats={stats} onNavigate={onNavigate}/>} 
+      {administrator && <AdminAnalytics stats={stats} onNavigate={onNavigate} />}
       {staffWorkspace && (membersError
         ? <div className="table-card management-message error-message" role="alert">{membersError}</div>
         : <MemberTable compact rows={members} onViewAll={() => onNavigate(`/${role}/members`)} />)}
@@ -380,42 +380,42 @@ function AdminAnalytics({ stats, onNavigate }) {
     </section>
     <section className="analytics-grid">
       <article className="analytics-card analytics-wide">
-        <ChartTitle eyebrow="ATTENDANCE" title="Check-ins over the last 7 days"/>
+        <ChartTitle eyebrow="ATTENDANCE" title="Check-ins over the last 7 days" />
         <div className="chart-body"><ResponsiveContainer width="100%" height="100%"><AreaChart data={attendance} margin={{ left: -20, right: 8, top: 10 }}>
-          <defs><linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C6FF00" stopOpacity={0.25}/><stop offset="100%" stopColor="#C6FF00" stopOpacity={0}/></linearGradient></defs>
-          <CartesianGrid stroke="#252D1B" vertical={false}/><XAxis dataKey="date" tickFormatter={value => new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { weekday: 'short' })} axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={tooltipStyle}/><Area type="monotone" dataKey="checkIns" stroke="#C6FF00" strokeWidth={3} fill="url(#attendanceFill)"/>
+          <defs><linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C6FF00" stopOpacity={0.25} /><stop offset="100%" stopColor="#C6FF00" stopOpacity={0} /></linearGradient></defs>
+          <CartesianGrid stroke="#252D1B" vertical={false} /><XAxis dataKey="date" tickFormatter={value => new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { weekday: 'short' })} axisLine={false} tickLine={false} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} /><Tooltip contentStyle={tooltipStyle} /><Area type="monotone" dataKey="checkIns" stroke="#C6FF00" strokeWidth={3} fill="url(#attendanceFill)" />
         </AreaChart></ResponsiveContainer></div>
       </article>
       <article className="analytics-card">
-        <ChartTitle eyebrow="MEMBERSHIPS" title="Status distribution"/>
-        <div className="donut-layout"><div className="donut-chart"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={memberships} dataKey="value" nameKey="name" innerRadius={58} outerRadius={82} paddingAngle={3}>{memberships.map((item, index) => <Cell key={item.name} fill={CHART_COLORS[index % CHART_COLORS.length]}/>)}</Pie><Tooltip contentStyle={tooltipStyle}/></PieChart></ResponsiveContainer><strong>{memberships.reduce((sum, item) => sum + item.value, 0)}<small>Total</small></strong></div><ChartLegend data={memberships}/></div>
+        <ChartTitle eyebrow="MEMBERSHIPS" title="Status distribution" />
+        <div className="donut-layout"><div className="donut-chart"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={memberships} dataKey="value" nameKey="name" innerRadius={58} outerRadius={82} paddingAngle={3}>{memberships.map((item, index) => <Cell key={item.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Pie><Tooltip contentStyle={tooltipStyle} /></PieChart></ResponsiveContainer><strong>{memberships.reduce((sum, item) => sum + item.value, 0)}<small>Total</small></strong></div><ChartLegend data={memberships} /></div>
       </article>
       <article className="analytics-card analytics-wide">
-        <ChartTitle eyebrow="REVENUE" title="Completed payments over 6 months" value={money(revenue.reduce((sum, item) => sum + item.revenue, 0))}/>
-        <div className="chart-body"><ResponsiveContainer width="100%" height="100%"><BarChart data={revenue} margin={{ left: 4, right: 8, top: 10 }}><CartesianGrid stroke="#252D1B" vertical={false}/><XAxis dataKey="label" axisLine={false} tickLine={false}/><YAxis tickFormatter={value => `₹${Math.round(value / 1000)}k`} axisLine={false} tickLine={false}/><Tooltip contentStyle={tooltipStyle} formatter={value => money(value)}/><Bar dataKey="revenue" fill="#C6FF00" radius={[6, 6, 0, 0]} maxBarSize={42}/></BarChart></ResponsiveContainer></div>
+        <ChartTitle eyebrow="REVENUE" title="Completed payments over 6 months" value={money(revenue.reduce((sum, item) => sum + item.revenue, 0))} />
+        <div className="chart-body"><ResponsiveContainer width="100%" height="100%"><BarChart data={revenue} margin={{ left: 4, right: 8, top: 10 }}><CartesianGrid stroke="#252D1B" vertical={false} /><XAxis dataKey="label" axisLine={false} tickLine={false} /><YAxis tickFormatter={value => `₹${Math.round(value / 1000)}k`} axisLine={false} tickLine={false} /><Tooltip contentStyle={tooltipStyle} formatter={value => money(value)} /><Bar dataKey="revenue" fill="#C6FF00" radius={[6, 6, 0, 0]} maxBarSize={42} /></BarChart></ResponsiveContainer></div>
       </article>
       <article className="analytics-card">
-        <ChartTitle eyebrow="CAPACITY" title="Daily slot utilization"/>
-        <div className="slot-bars">{slots.length ? slots.map(slot => <div key={`${slot.name}-${slot.time}`}><p><span>{slot.name}<small>{slot.time}</small></span><b>{slot.members}/{slot.capacity}</b></p><div><i style={{ width: `${Math.min(slot.utilization, 100)}%` }}/></div></div>) : <p className="chart-empty">No slot data available.</p>}</div>
+        <ChartTitle eyebrow="CAPACITY" title="Daily slot utilization" />
+        <div className="slot-bars">{slots.length ? slots.map(slot => <div key={`${slot.name}-${slot.time}`}><p><span>{slot.name}<small>{slot.time}</small></span><b>{slot.members}/{slot.capacity}</b></p><div><i style={{ width: `${Math.min(slot.utilization, 100)}%` }} /></div></div>) : <p className="chart-empty">No slot data available.</p>}</div>
       </article>
     </section>
     <section className="analytics-lower-grid">
       <article className="analytics-card payment-mix-card">
-        <ChartTitle eyebrow="PAYMENT MIX" title="Revenue by payment channel" value={money(paymentTotal)}/>
+        <ChartTitle eyebrow="PAYMENT MIX" title="Revenue by payment channel" value={money(paymentTotal)} />
         <div className="payment-mix">{paymentMethods.length ? paymentMethods.map((method, index) => <div key={method.name}>
-          <i style={{ background: CHART_COLORS[index % CHART_COLORS.length] }}/>
+          <i style={{ background: CHART_COLORS[index % CHART_COLORS.length] }} />
           <span><b>{method.name.replaceAll('_', ' ')}</b><small>{method.payments} payment{method.payments === 1 ? '' : 's'}</small></span>
           <strong>{money(method.value)}</strong>
           <em>{paymentTotal ? Math.round(method.value / paymentTotal * 100) : 0}%</em>
         </div>) : <p className="chart-empty">Completed payments will appear here.</p>}</div>
       </article>
       <article className="analytics-card admin-actions-card">
-        <ChartTitle eyebrow="QUICK MANAGEMENT" title="Common admin actions"/>
+        <ChartTitle eyebrow="QUICK MANAGEMENT" title="Common admin actions" />
         <div className="admin-action-grid">
-          <button onClick={() => onNavigate('/admin/members')}><Users/><span><b>Members</b><small>Profiles and status</small></span><ChevronRight/></button>
-          <button onClick={() => onNavigate('/admin/attendance')}><CalendarCheck/><span><b>Attendance</b><small>Check-ins and history</small></span><ChevronRight/></button>
-          <button onClick={() => onNavigate('/admin/payments')}><ReceiptIndianRupee/><span><b>Payments</b><small>Revenue and receipts</small></span><ChevronRight/></button>
-          <button onClick={() => onNavigate('/admin/memberships')}><CreditCard/><span><b>Memberships</b><small>Plans and renewals</small></span><ChevronRight/></button>
+          <button onClick={() => onNavigate('/admin/members')}><Users /><span><b>Members</b><small>Profiles and status</small></span><ChevronRight /></button>
+          <button onClick={() => onNavigate('/admin/attendance')}><CalendarCheck /><span><b>Attendance</b><small>Check-ins and history</small></span><ChevronRight /></button>
+          <button onClick={() => onNavigate('/admin/payments')}><ReceiptIndianRupee /><span><b>Payments</b><small>Revenue and receipts</small></span><ChevronRight /></button>
+          <button onClick={() => onNavigate('/admin/memberships')}><CreditCard /><span><b>Memberships</b><small>Plans and renewals</small></span><ChevronRight /></button>
         </div>
       </article>
     </section>
@@ -427,7 +427,7 @@ function ChartTitle({ eyebrow, title, value }) {
 }
 
 function ChartLegend({ data }) {
-  return <div className="chart-legend">{data.map((item, index) => <p key={item.name}><i style={{ background: CHART_COLORS[index % CHART_COLORS.length] }}/><span>{item.name.replaceAll('_', ' ')}</span><b>{item.value}</b></p>)}</div>;
+  return <div className="chart-legend">{data.map((item, index) => <p key={item.name}><i style={{ background: CHART_COLORS[index % CHART_COLORS.length] }} /><span>{item.name.replaceAll('_', ' ')}</span><b>{item.value}</b></p>)}</div>;
 }
 
 function MemberOverview({ user, stats, onNavigate }) {
@@ -479,7 +479,7 @@ function MemberOverview({ user, stats, onNavigate }) {
             ? `Checked in at ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
             : 'No check-in today'}</span>
           <span><Flame /> {attendance?.checkOutTime
-            ? `Latest session: ${attendance.duration >= 60 ? `${Math.floor(attendance.duration/60)}h ${attendance.duration%60}m` : `${attendance.duration}m`}`
+            ? `Latest session: ${attendance.duration >= 60 ? `${Math.floor(attendance.duration / 60)}h ${attendance.duration % 60}m` : `${attendance.duration}m`}`
             : attendance?.checkInTime ? 'Currently active in gym' : 'Attendance tracked at biometric scanner'}</span>
           {stats?.todaySpending?.breakdown && stats.todaySpending.totalMinutes > 0 && (
             <small style={{ color: 'var(--muted)', marginTop: '4px', display: 'block', fontSize: '11px' }}>
@@ -553,9 +553,9 @@ function MemberTable({ compact = false, rows = [], onViewAll }) {
                     </span>
                   </div>
                 </td>
-                  <td>{m.mobileNumber || '—'}</td>
-                  <td><span className={'status ' + (m.registrationStatus || 'pending').toLowerCase()}>{m.registrationStatus || 'Pending'}</span></td>
-                </tr>
+                <td>{m.mobileNumber || '—'}</td>
+                <td><span className={'status ' + (m.registrationStatus || 'pending').toLowerCase()}>{m.registrationStatus || 'Pending'}</span></td>
+              </tr>
             ))}
           </tbody>
         </table>

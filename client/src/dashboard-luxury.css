@@ -7,7 +7,7 @@
    -------------------------------------------------------------------------- */
 .app-shell {
   background-color: #080b09 !important;
-  background-image: 
+  background-image:
     radial-gradient(circle at 45% -10%, rgba(212, 255, 0, 0.045) 0%, transparent 55%),
     radial-gradient(circle at 95% 85%, rgba(52, 211, 153, 0.035) 0%, transparent 45%),
     radial-gradient(circle at 10% 90%, rgba(212, 255, 0, 0.025) 0%, transparent 40%) !important;
@@ -23,7 +23,7 @@
    2. LUXURY SIDEBAR
    -------------------------------------------------------------------------- */
 .side {
-  width: 260px !important;
+  width: 275px !important;
   background: rgba(10, 14, 11, 0.88) !important;
   backdrop-filter: blur(28px) !important;
   -webkit-backdrop-filter: blur(28px) !important;
@@ -45,7 +45,7 @@
   background: rgba(255, 255, 255, 0.025) !important;
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
   border-radius: 14px !important;
-  padding: 10px 12px !important;
+  padding: 11px 14px !important;
   margin: 4px 0 16px !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
@@ -56,8 +56,8 @@
 }
 
 .location-icon-badge {
-  width: 32px !important;
-  height: 32px !important;
+  width: 34px !important;
+  height: 34px !important;
   border-radius: 10px !important;
   background: rgba(212, 255, 0, 0.1) !important;
   border: 1px solid rgba(212, 255, 0, 0.22) !important;
@@ -69,7 +69,7 @@
 
 .location b {
   display: block !important;
-  font-size: 13px !important;
+  font-size: 13.5px !important;
   font-weight: 600 !important;
   color: #ffffff !important;
   line-height: 1.2 !important;
@@ -78,7 +78,7 @@
 
 .location small {
   display: block !important;
-  font-size: 11px !important;
+  font-size: 11.5px !important;
   color: #8c968f !important;
   margin-top: 2px !important;
 }
@@ -92,12 +92,11 @@
 .side nav {
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
-  padding: 4px 0 !important;
+  gap: 4px !important;
+  padding: 6px 0 !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   min-height: 0 !important;
-  flex: 1 !important;
   scrollbar-width: thin !important;
   scrollbar-color: rgba(255, 255, 255, 0.16) transparent !important;
 }
@@ -120,13 +119,13 @@
 }
 
 .side nav button {
-  height: 40px !important;
-  min-height: 40px !important;
-  border-radius: 10px !important;
-  font-size: 13.5px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
   font-weight: 500 !important;
   color: #8c968f !important;
-  padding: 0 14px !important;
+  padding: 0 15px !important;
   gap: 13px !important;
   background: transparent !important;
   border: 1px solid transparent !important;
@@ -135,9 +134,6 @@
   display: flex !important;
   align-items: center !important;
   letter-spacing: -0.01em !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
 }
 
 .side nav button:hover {
@@ -147,8 +143,8 @@
 }
 
 .side nav button svg {
-  width: 17px !important;
-  height: 17px !important;
+  width: 19px !important;
+  height: 19px !important;
   color: #727d74 !important;
   transition: all 0.18s ease !important;
   flex-shrink: 0 !important;
@@ -181,14 +177,14 @@
   gap: 8px !important;
 }
 
-.side-bottom > button {
-  height: 38px !important;
-  border-radius: 10px !important;
-  font-size: 13px !important;
+.side-bottom>button {
+  height: 42px !important;
+  border-radius: 12px !important;
+  font-size: 13.5px !important;
   font-weight: 500 !important;
   color: #8c968f !important;
-  padding: 0 14px !important;
-  gap: 12px !important;
+  padding: 0 15px !important;
+  gap: 13px !important;
   background: transparent !important;
   border: 1px solid transparent !important;
   transition: all 0.18s ease !important;
@@ -197,15 +193,15 @@
   align-items: center !important;
 }
 
-.side-bottom > button:hover {
+.side-bottom>button:hover {
   color: #ff6b72 !important;
   background: rgba(255, 107, 114, 0.08) !important;
   border-color: rgba(255, 107, 114, 0.2) !important;
 }
 
-.side-bottom > button svg {
-  width: 16px !important;
-  height: 16px !important;
+.side-bottom>button svg {
+  width: 18px !important;
+  height: 18px !important;
 }
 
 .user-chip {
@@ -218,7 +214,7 @@
   padding: 8px 12px !important;
 }
 
-.user-chip > span {
+.user-chip>span {
   width: 32px !important;
   height: 32px !important;
   border-radius: 9px !important;
@@ -250,7 +246,7 @@
    3. WORKSPACE HEADER
    -------------------------------------------------------------------------- */
 .workspace {
-  margin-left: 260px !important;
+  margin-left: 275px !important;
   min-height: 100vh !important;
 }
 
