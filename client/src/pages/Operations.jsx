@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services';
-import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw, Search, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
@@ -10,6 +10,7 @@ import { TableSkeleton } from '../components/Skeleton';
 // AttendanceKiosk biometric scanner delegated to standalone Kiosk (/kiosk)
 import AttendancePopup from '../components/AttendancePopup';
 import { parseBiometricFeedback } from '../utils/biometricErrors';
+import { createMorFinAuth } from '../services/morfinAuth.mjs';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const field = (name, label, type = 'text', options) => ({ name, label, type, options });
@@ -190,6 +191,102 @@ export default function Operations({ section, user, query = '' }) {
   const [attendanceTab, setAttendanceTab] = useState('all');
   const [attendancePopup, setAttendancePopup] = useState(null);
   const [fingerprintMember, setFingerprintMember] = useState(null);
+
+  // Dedicated member search & fingerprint identification state
+  const [memberSearch, setMemberSearch] = useState(query || '');
+  const [isScanningFingerprint, setIsScanningFingerprint] = useState(false);
+  const [fingerprintScanMessage, setFingerprintScanMessage] = useState(null);
+
+  useEffect(() => {
+    if (query !== memberSearch) {
+      setMemberSearch(query || '');
+    }
+  }, [query]);
+
+  const handleSearchChange = (val) => {
+    setMemberSearch(val);
+    setPage(1);
+    if (!val) {
+      setFingerprintScanMessage(null);
+    }
+  };
+
+  const handleFingerprintSearch = async () => {
+    setIsScanningFingerprint(true);
+    setFingerprintScanMessage({ type: 'info', text: 'Connecting scanner... Please place member’s finger firmly on the sensor.' });
+    setError('');
+
+    try {
+      // 1. Fetch candidate gallery templates
+      const res = await api.get('/attendance/biometric/candidates');
+      const candidates = res.data?.data || [];
+
+      if (!candidates.length) {
+        setFingerprintScanMessage({
+          type: 'warning',
+          text: 'No members have enrolled fingerprints in the system yet.',
+        });
+        setIsScanningFingerprint(false);
+        return;
+      }
+
+      // 2. Connect to scanner and capture probe
+      const scanner = createMorFinAuth({
+        baseUrl: import.meta.env.VITE_MANTRA_SERVICE_URL || 'https://localhost:8030/morfinauth',
+      });
+
+      const capture = await scanner.capture();
+      if (!capture?.templateBase64) {
+        throw new Error('No fingerprint template captured. Please reposition finger and try again.');
+      }
+
+      setFingerprintScanMessage({ type: 'info', text: 'Comparing fingerprint against member records...' });
+
+      // 3. Fast client-side biometric matching
+      let matchedCandidate = null;
+      for (const candidate of candidates) {
+        try {
+          const check = await scanner.verify({
+            probeTemplate: capture.templateBase64,
+            galleryTemplate: candidate.galleryTemplate,
+            templateFormat: 'FMR_V2005',
+          });
+          if (check && check.matched) {
+            matchedCandidate = candidate;
+            break;
+          }
+        } catch {
+          // ignore single verification error
+        }
+      }
+
+      if (matchedCandidate) {
+        const queryTerm = matchedCandidate.memberCode || matchedCandidate.fullName;
+        setMemberSearch(queryTerm);
+        setPage(1);
+        setFingerprintScanMessage({
+          type: 'success',
+          text: `✓ Fingerprint Matched: ${matchedCandidate.fullName} (${matchedCandidate.memberCode || 'Enrolled Member'})`,
+        });
+      } else {
+        setFingerprintScanMessage({
+          type: 'error',
+          text: 'Fingerprint not recognized. No enrolled member matched this scan.',
+        });
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.error || err.message || 'Fingerprint search failed';
+      setFingerprintScanMessage({
+        type: 'error',
+        text: errMsg.includes('Failed to fetch') || errMsg.includes('Cannot reach')
+          ? 'Mantra biometric service is offline. Ensure MorFinAuth is running on https://localhost:8030.'
+          : errMsg,
+      });
+    } finally {
+      setIsScanningFingerprint(false);
+    }
+  };
+
   const initialFilters = {
     status: 'all',
     membershipStatus: 'all',
@@ -201,6 +298,7 @@ export default function Operations({ section, user, query = '' }) {
     specialization: 'all',
     plan: 'all',
     role: 'all',
+    biometricStatus: 'all',
   };
   const [filters, setFilters] = useState(initialFilters);
   const [datePreset, setDatePreset] = useState('');
@@ -279,7 +377,8 @@ export default function Operations({ section, user, query = '' }) {
         const params = {
           page,
           limit: 25,
-          search: query || undefined,
+          search: (section === 'members' ? (memberSearch || query) : query) || undefined,
+          biometricStatus: filters.biometricStatus !== 'all' ? filters.biometricStatus : undefined,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
           status: filters.status !== 'all' ? filters.status : undefined,
@@ -305,7 +404,7 @@ export default function Operations({ section, user, query = '' }) {
       finally { if (active) setLoading(false); }
     };
     load(); return () => { active = false; };
-  }, [section, user, query, page, revision, report, startDate, endDate, filters]);
+  }, [section, user, query, memberSearch, page, revision, report, startDate, endDate, filters]);
 
   const begin = async (title, method, url, fields = [], row = {}, defaults = {}) => {
     setError(''); setNotice(''); setBusy(true);
@@ -800,6 +899,72 @@ export default function Operations({ section, user, query = '' }) {
         </button>
       </div>
     )}
+    {section === 'members' && staff && (
+      <div className="member-search-container">
+        <div className="member-search-bar">
+          <div className="member-search-input-wrap">
+            <Search size={17} className="member-search-icon" />
+            <input
+              type="text"
+              value={memberSearch}
+              onChange={e => handleSearchChange(e.target.value)}
+              placeholder="Search by Member ID (e.g. GYM1087), Full Name, Mobile Number, or scan Fingerprint..."
+              className="member-search-input"
+            />
+            {memberSearch && (
+              <button
+                type="button"
+                className="member-search-clear"
+                onClick={() => handleSearchChange('')}
+                title="Clear search"
+              >
+                <X size={15} />
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className={`member-fingerprint-search-btn ${isScanningFingerprint ? 'scanning' : ''}`}
+            onClick={handleFingerprintSearch}
+            disabled={isScanningFingerprint}
+            title="Scan member's finger on biometric reader to identify them"
+          >
+            {isScanningFingerprint ? (
+              <>
+                <Loader2 size={16} className="spin" />
+                <span>Scanning Finger...</span>
+              </>
+            ) : (
+              <>
+                <Fingerprint size={16} />
+                <span>Search by Fingerprint</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {fingerprintScanMessage && (
+          <div className={`fingerprint-search-alert ${fingerprintScanMessage.type}`}>
+            {fingerprintScanMessage.type === 'success' ? (
+              <CheckCircle2 size={16} />
+            ) : (
+              <AlertCircle size={16} />
+            )}
+            <span>{fingerprintScanMessage.text}</span>
+            <button
+              type="button"
+              className="alert-close-btn"
+              onClick={() => setFingerprintScanMessage(null)}
+              title="Dismiss notification"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+      </div>
+    )}
+
     {filterableSections.includes(section) && (
       <div className="section-filter-bar">
         <div className="filter-bar-header">
@@ -830,6 +995,14 @@ export default function Operations({ section, user, query = '' }) {
                 <option value="expired">Expired</option>
                 <option value="frozen">Frozen</option>
                 <option value="none">No Plan</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Biometric</label>
+              <select value={filters.biometricStatus || 'all'} onChange={e => handleFilterChange('biometricStatus', e.target.value)}>
+                <option value="all">All Biometrics</option>
+                <option value="enrolled">Fingerprint Enrolled</option>
+                <option value="unenrolled">Not Enrolled</option>
               </select>
             </div>
           </>
