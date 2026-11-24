@@ -216,6 +216,127 @@ export function getBestTamilVoice() {
  *  - string phrase
  *  - or cue object: { tamil: '...', phonetic: '...', english: '...' }
  */
+const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
+const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+export const WELCOME_AUDIO_URL = `${cleanBase}/Welcome-Audio.mp3`;
+export const THANKYOU_AUDIO_URL = `${cleanBase}/Thankyou-Audio.mp3`;
+
+let currentPlayingAudio = null;
+
+export function stopCurrentAudio() {
+  if (currentPlayingAudio) {
+    try {
+      currentPlayingAudio.pause();
+      currentPlayingAudio.currentTime = 0;
+    } catch { }
+    currentPlayingAudio = null;
+  }
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch { }
+  }
+}
+
+// Preload audio files for zero-latency instant playback
+if (typeof window !== 'undefined') {
+  try {
+    const p1 = new Audio();
+    p1.src = WELCOME_AUDIO_URL;
+    p1.preload = 'auto';
+
+    const p2 = new Audio();
+    p2.src = THANKYOU_AUDIO_URL;
+    p2.preload = 'auto';
+  } catch { }
+}
+
+/**
+ * Plays an audio file from the public directory with fallback to SpeechSynthesis
+ */
+export function playAudioFile(url, fallbackCue = null) {
+  if (!isAudioEnabled() || typeof window === 'undefined') return Promise.resolve(false);
+
+  return new Promise((resolve) => {
+    stopCurrentAudio();
+
+    try {
+      const audio = new Audio(url);
+      currentPlayingAudio = audio;
+
+      audio.onended = () => {
+        if (currentPlayingAudio === audio) currentPlayingAudio = null;
+        resolve(true);
+      };
+
+      audio.onerror = (e) => {
+        console.warn(`[KioskAudio] Failed to play audio file ${url}, falling back to voice cue:`, e);
+        if (currentPlayingAudio === audio) currentPlayingAudio = null;
+        if (fallbackCue) {
+          speakVoiceCue(fallbackCue);
+        }
+        resolve(false);
+      };
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn(`[KioskAudio] Playback prevented for ${url}:`, err.message);
+          if (currentPlayingAudio === audio) currentPlayingAudio = null;
+          if (fallbackCue) {
+            speakVoiceCue(fallbackCue);
+          }
+          resolve(false);
+        });
+      }
+    } catch (err) {
+      console.warn(`[KioskAudio] Audio instantiation error for ${url}:`, err.message);
+      if (fallbackCue) {
+        speakVoiceCue(fallbackCue);
+      }
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Plays custom recorded welcome audio from client/public/Welcome-Audio.mp3
+ */
+export function playWelcomeAudio(memberName = '') {
+  const firstName = memberName ? memberName.split(' ')[0] : '';
+  const fallbackCue = {
+    tamil: firstName
+      ? `ஹேய் ${firstName}! வெல்கம் டூ வினோ ஃபிட்னஸ்.`
+      : 'ஹேய்! வெல்கம் டூ வினோ ஃபிட்னஸ்.',
+    phonetic: firstName
+      ? `Hai ${firstName}! Welcome To Vino Fitness`
+      : 'Hai! Vino Fitness Studio-vukku nalvaravu.',
+    english: firstName
+      ? `Welcome ${firstName} to Vino Fitness Studio!`
+      : 'Welcome to Vino Fitness Studio!',
+  };
+  return playAudioFile(WELCOME_AUDIO_URL, fallbackCue);
+}
+
+/**
+ * Plays custom recorded thank you / send-off audio from client/public/Thankyou-Audio.mp3
+ */
+export function playThankYouAudio(memberName = '') {
+  const firstName = memberName ? memberName.split(' ')[0] : '';
+  const fallbackCue = {
+    tamil: firstName
+      ? `நன்றி ${firstName}!,கம் பேக் சூன்.`
+      : 'நன்றி! இந்த நாள் இனிய நாளாக அமையட்டும்.',
+    phonetic: firstName
+      ? `Nandri ${firstName}! Comeback Soon.`
+      : 'Nandri! Come Back Soon.',
+    english: firstName
+      ? `Goodbye ${firstName}! Have a great day.`
+      : 'Check-out recorded. Have a great day!',
+  };
+  return playAudioFile(THANKYOU_AUDIO_URL, fallbackCue);
+}
+
 export function speakVoiceCue(cue, options = {}) {
   if (!isAudioEnabled() || !cue) return;
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -283,29 +404,25 @@ export function playPunchFeedback(popup) {
   const memberName = popup.member?.fullName || '';
   const firstName = memberName ? memberName.split(' ')[0] : '';
   const action = popup.action;
-  const isCheckout = action === 'checkout' || action === 'Check out';
-  const isReconfirmed = popup.reconfirmed || popup.isReconfirmed;
   const subtitle = String(popup.subtitle || '').toLowerCase();
   const title = String(popup.title || '').toLowerCase();
+  const isCheckout = action === 'checkout' || action === 'Check out' ||
+    String(action).toLowerCase().includes('out') ||
+    subtitle.includes('check-out') || subtitle.includes('checkout') ||
+    title.includes('check-out') || title.includes('checkout');
+  const isReconfirmed = popup.reconfirmed || popup.isReconfirmed;
+
+  // Stop any lingering audio or speech from rapid succession punches
+  stopCurrentAudio();
 
   // 1. Success cases
   if (isSuccess) {
     if (isCheckout) {
-      // Send-off message in Tamil
+      // Send-off audio playback (client/public/Thankyou-Audio.mp3)
       playChime('checkout');
       setTimeout(() => {
-        speakVoiceCue({
-          tamil: firstName
-            ? `நன்றி ${firstName}!,கம் பேக் சூன்.`
-            : 'நன்றி! . இந்த நாள் இனிய நாளாக அமையட்டும்.',
-          phonetic: firstName
-            ? `Nandri ${firstName}! Comeback Soon.`
-            : 'Nandri! Come Back Soon.',
-          english: firstName
-            ? `Goodbye ${firstName}! Have a great day.`
-            : 'Check-out recorded. Have a great day!',
-        });
-      }, 150);
+        playThankYouAudio(memberName);
+      }, 100);
       return;
     }
 
@@ -324,25 +441,15 @@ export function playPunchFeedback(popup) {
             ? `You are already checked in, ${firstName}.`
             : 'Attendance already recorded.',
         });
-      }, 500);
+      }, 400);
       return;
     }
 
-    // Standard Check-in (Auto-Welcome message in Tamil)
+    // Standard Check-in (client/public/Welcome-Audio.mp3)
     playChime('checkin');
     setTimeout(() => {
-      speakVoiceCue({
-        tamil: firstName
-          ? `ஹேய் ${firstName}! வெல்கம் டூ வினோ ஃபிட்னஸ்.`
-          : 'ஹேய்! வெல்கம் டூ வினோ ஃபிட்னஸ்.',
-        phonetic: firstName
-          ? `Hai ${firstName}! Welcome To Vino Fitness `
-          : 'Hai! Vino Fitness Studio-vukku nalvaravu.',
-        english: firstName
-          ? `Welcome ${firstName} to Vino Fitness Studio!`
-          : 'Welcome to Vino Fitness Studio!',
-      });
-    }, 150);
+      playWelcomeAudio(memberName);
+    }, 100);
     return;
   }
 
