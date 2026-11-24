@@ -144,35 +144,57 @@ export default function Biometrics({ user }) {
 
   return (
     <div className="dash-content operations biometric-page">
-      <section className="table-card biometric-card">
-        <div style={{ marginBottom: '8px' }}>
-          <h2><Fingerprint aria-hidden="true" /> Fingerprint Enrollment</h2>
-          <p style={{ margin: '4px 0 0', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
+      <div className="attendance-kiosk-notice-banner biometric-notice-banner">
+        <div className="kiosk-notice-info">
+          <div className="kiosk-notice-pill">
+            <Fingerprint size={16} />
+            <span>MFS500 HARDWARE WORKSTATION ACTIVE</span>
+          </div>
+          <h3>Biometric Fingerprint Enrollment</h3>
+          <p>
             {own
-              ? 'View or register your biometric fingerprint for studio entry.'
-              : 'Enroll biometric fingerprints for pending members. Once enrolled, members are removed from this list — edit existing fingerprints in the Members section.'}
+              ? 'View or register your biometric fingerprint for studio turnstile touchless access.'
+              : 'Enroll biometric fingerprints for pending members with the Mantra MFS500 optical reader. Once enrolled, members automatically qualify for turnstile punch entry.'}
           </p>
+        </div>
+      </div>
+
+      <section className="table-card biometric-luxury-card">
+        <div className="biometric-card-header">
+          <div className="biometric-header-badge">
+            <Fingerprint size={20} className="kiosk-icon-glow" />
+            <div>
+              <h3>Provision Biometric Credential</h3>
+              <p>
+                {own
+                  ? 'Select finger position and capture your live biometric fingerprint.'
+                  : 'Fast-track member provisioning. Choose an un-enrolled member, select the finger, and capture on scanner.'}
+              </p>
+            </div>
+          </div>
         </div>
 
         {!own && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', maxWidth: '640px' }}>
-            <label>
-              <span>Search pending member</span>
+          <div className="biometric-member-picker-grid">
+            <label className="biometric-field">
+              <span className="field-label-tag">SEARCH PENDING MEMBER</span>
               <input
                 value={search}
                 disabled={busy}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search name, phone, or ID…"
+                placeholder="Search by name, phone, or Member ID…"
+                className="luxury-input"
               />
             </label>
-            <label>
-              <span>Select un-enrolled member</span>
+            <label className="biometric-field">
+              <span className="field-label-tag">SELECT UN-ENROLLED MEMBER</span>
               <select
                 value={memberId}
                 disabled={busy}
                 onChange={e => setMemberId(e.target.value)}
+                className="luxury-select"
               >
-                <option value="">Choose pending member ({members.length} found)</option>
+                <option value="">Choose pending member ({members.length} available)</option>
                 {members.map(m => (
                   <option key={m._id} value={m._id}>
                     {m.memberId} — {m.fullName}
@@ -183,93 +205,101 @@ export default function Biometrics({ user }) {
           </div>
         )}
 
-        <label style={{ maxWidth: '320px' }}>
-          <span>Finger position</span>
-          <select
-            value={finger}
-            disabled={busy}
-            onChange={e => { setFinger(e.target.value); setCapture(null); }}
-          >
-            {fingers.map(f => (
-              <option key={f} value={f}>
-                {f.replaceAll('_', ' ').toUpperCase()}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="biometric-finger-row">
+          <label className="biometric-field finger-select-field">
+            <span className="field-label-tag">FINGER POSITION</span>
+            <select
+              value={finger}
+              disabled={busy}
+              onChange={e => { setFinger(e.target.value); setCapture(null); }}
+              className="luxury-select"
+            >
+              {fingers.map(f => (
+                <option key={f} value={f}>
+                  {f.replaceAll('_', ' ').toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         {enrollment && (
-          <div style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--color-border-default)',
-            borderRadius: '10px',
-            padding: '14px 18px',
-            maxWidth: '560px',
-            margin: '4px 0'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontWeight: 700, fontSize: '13px' }}>
-              <CheckCircle2 size={16} /> Active Fingerprint Enrolled
+          <div className="biometric-active-enrollment-card">
+            <div className="active-enrollment-badge">
+              <CheckCircle2 size={16} />
+              <span>ACTIVE FINGERPRINT ENROLLED</span>
             </div>
-            <p style={{ margin: '6px 0 10px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-              Finger: <strong>{enrollment.fingerPosition?.replaceAll('_', ' ').toUpperCase() || 'RIGHT INDEX'}</strong>
-              {' • '}
+            <p className="active-enrollment-meta">
+              Position: <strong>{enrollment.fingerPosition?.replaceAll('_', ' ').toUpperCase() || 'RIGHT INDEX'}</strong>
+              <span className="meta-sep">•</span>
               Enrolled: {new Date(enrollment.enrollmentDate).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
             {!own && (
-              <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                Already enrolled. To edit or replace this fingerprint, go to the <strong>Members</strong> section.
+              <p className="active-enrollment-hint">
+                Already enrolled. To edit or replace this fingerprint, open the <strong>Members</strong> module and use the fingerprint action.
               </p>
             )}
           </div>
         )}
 
         {capability && !capability.enrollmentStorage && (
-          <p role="status" className="alert-warning" style={{ padding: '10px 14px', borderRadius: '8px', maxWidth: '560px' }}>
-            Enrollment storage needs a backend encryption key before captures can be saved.
+          <p role="status" className="alert-warning biometric-alert">
+            Enrollment storage requires a backend encryption key before biometric captures can be securely saved.
           </p>
         )}
 
-        <div className="biometric-actions">
+        <div className="biometric-action-toolbar">
           <button
-            className="lime-btn"
+            className="lime-btn biometric-scan-btn"
             disabled={busy || !memberId || !capability?.enrollmentStorage || (!!enrollment && !replace)}
             onClick={scan}
           >
             {busy ? <Loader2 className="animate-spin" size={16} /> : <Fingerprint size={16} />}
-            {capture ? 'Scan again' : 'Capture fingerprint'}
+            <span>{capture ? 'Scan Again' : 'Capture Fingerprint'}</span>
           </button>
           {capture && (
             <button
-              className="ghost-btn"
+              className="outline-btn"
               onClick={() => { setCapture(null); setMessage(''); }}
             >
-              Clear capture
+              Clear Capture
             </button>
           )}
         </div>
 
         {capture && (
-          <div className="biometric-preview" style={{ maxWidth: '560px' }}>
-            <img src={'data:image/bmp;base64,' + capture.imageBase64} alt="Captured fingerprint preview" />
-            <div>
-              <p><strong>Scan Quality: {capture.quality}/100</strong></p>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>
-                Device: {capture.deviceModel || 'MFS500'} • Encrypted template ready
+          <div className="biometric-capture-card">
+            <div className="biometric-preview-canvas">
+              <img src={'data:image/bmp;base64,' + capture.imageBase64} alt="Captured fingerprint preview" />
+            </div>
+            <div className="biometric-capture-details">
+              <div className="quality-meter-head">
+                <span>Scan Quality</span>
+                <strong>{capture.quality}/100</strong>
+              </div>
+              <div className="quality-progress-track">
+                <div
+                  className={`quality-progress-bar ${capture.quality >= 60 ? 'good' : 'warning'}`}
+                  style={{ width: `${Math.min(100, Math.max(10, capture.quality))}%` }}
+                />
+              </div>
+              <p className="capture-subtext">
+                Optical Device: {capture.deviceModel || 'MFS500'} • ANSI/NIST template generated
               </p>
-              <button className="lime-btn" disabled={busy} onClick={save}>
-                Save enrollment
+              <button className="lime-btn save-capture-btn" disabled={busy} onClick={save}>
+                <CheckCircle2 size={16} /> Save Biometric Enrollment
               </button>
             </div>
           </div>
         )}
 
         {enrollment && own && (
-          <div className="biometric-actions" style={{ marginTop: '6px' }}>
+          <div className="biometric-danger-zone">
             {deleteConfirm ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--alert-error-text)', fontSize: '13px' }}>Delete this fingerprint?</span>
+              <div className="delete-confirm-box">
+                <span className="delete-warn-text">Delete this fingerprint enrollment?</span>
                 <button className="outline-btn btn-destructive" disabled={busy} onClick={remove}>
-                  Confirm deletion
+                  Confirm Deletion
                 </button>
                 <button className="ghost-btn" disabled={busy} onClick={() => setDeleteConfirm(false)}>
                   Cancel
@@ -277,14 +307,14 @@ export default function Biometrics({ user }) {
               </div>
             ) : (
               <button className="outline-btn btn-destructive" disabled={busy} onClick={() => setDeleteConfirm(true)}>
-                Delete fingerprint
+                Delete Fingerprint
               </button>
             )}
           </div>
         )}
 
-        {message && <div className="alert-success" style={{ margin: '10px 0 0', maxWidth: '560px' }}>{message}</div>}
-        {error && <div className="alert-error" style={{ margin: '10px 0 0', maxWidth: '560px' }}>{error}</div>}
+        {message && <div className="alert-success biometric-alert-box">{message}</div>}
+        {error && <div className="alert-error biometric-alert-box">{error}</div>}
       </section>
     </div>
   );

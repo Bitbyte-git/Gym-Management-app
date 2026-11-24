@@ -2173,3 +2173,1064 @@ button.outline-btn:hover {
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: rgba(255, 255, 255, 0.6) !important;
 }
+
+
+/* ==========================================================================
+   UNIVERSAL LUXURY SUITE FOR ALL MODULES
+   Members, Trainers, Plans, Memberships, Payments, Slots, Allocations,
+   Reports, Staff Users, Audit, Settings, and Biometrics
+   ========================================================================== */
+
+/* 1. Universal Table Card for All Modules */
+.table-card {
+  background: rgba(14, 18, 15, 0.72) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.6) !important;
+  margin-bottom: 24px !important;
+}
+
+.table-card .card-head {
+  padding: 18px 22px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(10, 14, 11, 0.4) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.table-card .card-head p {
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  text-transform: uppercase !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.table-card .card-head h3 {
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+}
+
+.table-card table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.table-card table th {
+  font-size: 0.72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-weight: 700 !important;
+  padding: 16px 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(10, 14, 11, 0.5) !important;
+  white-space: nowrap !important;
+}
+
+.table-card table td {
+  padding: 14px 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  vertical-align: middle !important;
+  color: #e5e5ea !important;
+  font-size: 0.85rem !important;
+}
+
+.table-card table tr:hover td {
+  background: rgba(212, 255, 0, 0.02) !important;
+}
+
+/* Universal Actions Column - Never Truncates */
+.table-card table th:last-child,
+.table-card table td:last-child {
+  min-width: 180px !important;
+  text-align: right !important;
+}
+
+.table-card .row-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  white-space: nowrap !important;
+}
+
+.table-card .row-actions button,
+.table-card .row-actions .outline-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 12px !important;
+  border-radius: 9px !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f5f5f7 !important;
+}
+
+.table-card .row-actions button:hover,
+.table-card .row-actions .outline-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.table-card .row-actions .btn-edit:hover {
+  background: rgba(212, 255, 0, 0.15) !important;
+  border-color: #d4ff00 !important;
+  color: #d4ff00 !important;
+}
+
+.table-card .row-actions .btn-warning {
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: #fbbf24 !important;
+}
+
+.table-card .row-actions .btn-warning:hover {
+  background: rgba(245, 158, 11, 0.2) !important;
+  border-color: #fbbf24 !important;
+}
+
+.table-card .row-actions .btn-destructive {
+  border-color: rgba(255, 107, 114, 0.35) !important;
+  color: #ff858b !important;
+}
+
+.table-card .row-actions .btn-destructive:hover {
+  background: #ff6b72 !important;
+  color: #080b09 !important;
+  border-color: #ff6b72 !important;
+  box-shadow: 0 4px 14px rgba(255, 107, 114, 0.4) !important;
+}
+
+.table-card .row-actions .whatsapp-btn-table {
+  background: rgba(37, 211, 102, 0.1) !important;
+  border: 1px solid rgba(37, 211, 102, 0.35) !important;
+  color: #25d366 !important;
+}
+
+.table-card .row-actions .whatsapp-btn-table:hover {
+  background: #25d366 !important;
+  color: #080b09 !important;
+  border-color: #25d366 !important;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4) !important;
+}
+
+/* 2. Universal Luxury Toolbar */
+.luxury-toolbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 20px !important;
+  flex-wrap: wrap !important;
+  background: rgba(14, 18, 15, 0.72) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 18px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.luxury-toolbar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+.luxury-toolbar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin-left: auto !important;
+}
+
+.report-type-filter {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 5px 12px !important;
+  border-radius: 12px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  text-transform: uppercase !important;
+}
+
+.report-type-filter select {
+  background: transparent !important;
+  border: none !important;
+  color: #f5f5f7 !important;
+  font-family: inherit !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  outline: none !important;
+  cursor: pointer !important;
+}
+
+/* 3. Section Filter Bar */
+.section-filter-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+  background: rgba(14, 18, 15, 0.72) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 10px 18px !important;
+  margin-bottom: 20px !important;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.filter-bar-header {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: #d4ff00 !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding-right: 8px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.filter-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.filter-item label {
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  text-transform: uppercase !important;
+}
+
+.filter-item select {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f5f5f7 !important;
+  font-family: inherit !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+  outline: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.filter-item select:focus {
+  border-color: rgba(212, 255, 0, 0.4) !important;
+  box-shadow: 0 0 12px rgba(212, 255, 0, 0.15) !important;
+}
+
+.filter-presets-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  padding: 3px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.filter-preset-btn {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.74rem !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.filter-preset-btn:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.filter-preset-btn.active {
+  color: #080b09 !important;
+  background: #d4ff00 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(212, 255, 0, 0.3) !important;
+}
+
+.filter-bar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: auto !important;
+}
+
+.filter-clear-btn {
+  background: rgba(255, 107, 114, 0.12) !important;
+  border: 1px solid rgba(255, 107, 114, 0.35) !important;
+  color: #ff858b !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  padding: 5px 11px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.filter-clear-btn:hover {
+  background: #ff6b72 !important;
+  color: #080b09 !important;
+  border-color: #ff6b72 !important;
+}
+
+.filter-results-badge {
+  font-size: 0.74rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.filter-results-badge b {
+  color: #d4ff00 !important;
+}
+
+/* 4. Universal Status Pills */
+.luxury-status-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 11px !important;
+  border-radius: 999px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+.luxury-status-pill .status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+/* Emerald / Green / Active */
+.luxury-status-pill.active,
+.luxury-status-pill.completed,
+.luxury-status-pill.paid,
+.luxury-status-pill.present,
+.luxury-status-pill.enrolled {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  color: #4ade80 !important;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.12) !important;
+}
+
+.luxury-status-pill.active .status-dot,
+.luxury-status-pill.completed .status-dot,
+.luxury-status-pill.paid .status-dot,
+.luxury-status-pill.present .status-dot,
+.luxury-status-pill.enrolled .status-dot {
+  background: #4ade80 !important;
+  box-shadow: 0 0 6px #4ade80 !important;
+}
+
+/* Amber / Yellow / Pending */
+.luxury-status-pill.pending,
+.luxury-status-pill.pending_registration,
+.luxury-status-pill.pending_payment,
+.luxury-status-pill.pending_biometric,
+.luxury-status-pill.partial,
+.luxury-status-pill.unenrolled {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  color: #fbbf24 !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12) !important;
+}
+
+.luxury-status-pill.pending .status-dot,
+.luxury-status-pill.pending_registration .status-dot,
+.luxury-status-pill.pending_payment .status-dot,
+.luxury-status-pill.pending_biometric .status-dot,
+.luxury-status-pill.partial .status-dot,
+.luxury-status-pill.unenrolled .status-dot {
+  background: #fbbf24 !important;
+  box-shadow: 0 0 6px #fbbf24 !important;
+}
+
+/* Coral / Rose / Expired / Suspended / Cancelled */
+.luxury-status-pill.expired,
+.luxury-status-pill.suspended,
+.luxury-status-pill.failed,
+.luxury-status-pill.cancelled,
+.luxury-status-pill.inactive,
+.luxury-status-pill.absent,
+.luxury-status-pill.overdue {
+  background: rgba(255, 107, 114, 0.12) !important;
+  border: 1px solid rgba(255, 107, 114, 0.4) !important;
+  color: #ff858b !important;
+  box-shadow: 0 0 10px rgba(255, 107, 114, 0.12) !important;
+}
+
+.luxury-status-pill.expired .status-dot,
+.luxury-status-pill.suspended .status-dot,
+.luxury-status-pill.failed .status-dot,
+.luxury-status-pill.cancelled .status-dot,
+.luxury-status-pill.inactive .status-dot,
+.luxury-status-pill.absent .status-dot,
+.luxury-status-pill.overdue .status-dot {
+  background: #ff6b72 !important;
+  box-shadow: 0 0 6px #ff6b72 !important;
+}
+
+/* Ice Cyan / Blue / Frozen / On Leave */
+.luxury-status-pill.frozen,
+.luxury-status-pill.on_leave,
+.luxury-status-pill.late,
+.luxury-status-pill.early_leave {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.12) !important;
+}
+
+.luxury-status-pill.frozen .status-dot,
+.luxury-status-pill.on_leave .status-dot,
+.luxury-status-pill.late .status-dot,
+.luxury-status-pill.early_leave .status-dot {
+  background: #38bdf8 !important;
+  box-shadow: 0 0 6px #38bdf8 !important;
+}
+
+.luxury-status-pill.none,
+.luxury-status-pill.unknown {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.luxury-status-pill.none .status-dot,
+.luxury-status-pill.unknown .status-dot {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 5. Luxury Cells Across All Modules */
+
+/* Plan Cell & Badges */
+.luxury-plan-cell {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.luxury-plan-badge {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  font-size: 0.88rem !important;
+}
+
+.luxury-duration-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 3px 9px !important;
+  border-radius: 6px !important;
+  background: rgba(212, 255, 0, 0.08) !important;
+  border: 1px solid rgba(212, 255, 0, 0.25) !important;
+  color: #d4ff00 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+}
+
+/* Payment Due & Paid Capsules */
+.payment-due-capsule {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 107, 114, 0.12) !important;
+  border: 1px solid rgba(255, 107, 114, 0.35) !important;
+  color: #ff858b !important;
+  font-size: 0.76rem !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.payment-paid-capsule {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  background: rgba(34, 197, 94, 0.12) !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+  color: #4ade80 !important;
+  font-size: 0.76rem !important;
+  font-weight: 700 !important;
+}
+
+/* Currency & Amounts */
+.luxury-currency-amount {
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  color: #d4ff00 !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Receipt & Monospace Capsules */
+.receipt-capsule {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: #e5e5ea !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+}
+
+/* Payment Method Pills */
+.payment-method-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f5f5f7 !important;
+}
+
+.payment-method-pill .method-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+}
+
+.payment-method-pill.online_gateway {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #60a5fa !important;
+}
+
+.payment-method-pill.online_gateway .method-dot {
+  background: #60a5fa !important;
+  box-shadow: 0 0 6px #60a5fa !important;
+}
+
+.payment-method-pill.cash {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  color: #4ade80 !important;
+}
+
+.payment-method-pill.cash .method-dot {
+  background: #4ade80 !important;
+  box-shadow: 0 0 6px #4ade80 !important;
+}
+
+/* Specialization & Experience Pills */
+.luxury-spec-pill {
+  display: inline-flex !important;
+  padding: 3px 9px !important;
+  border-radius: 6px !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  color: #38bdf8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+}
+
+.luxury-exp-pill {
+  display: inline-flex !important;
+  padding: 3px 9px !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+}
+
+.session-pill-cluster {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Slot Badges */
+.slot-name-badge {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  font-size: 0.85rem !important;
+}
+
+.slot-capacity-capsule {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 3px 9px !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Role & Audit Badges */
+.luxury-role-badge {
+  display: inline-flex !important;
+  padding: 3px 10px !important;
+  border-radius: 7px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+.luxury-role-badge.admin {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  color: #fbbf24 !important;
+}
+
+.luxury-role-badge.reception {
+  background: rgba(212, 255, 0, 0.1) !important;
+  border: 1px solid rgba(212, 255, 0, 0.35) !important;
+  color: #d4ff00 !important;
+}
+
+.luxury-role-badge.trainer {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  color: #38bdf8 !important;
+}
+
+.luxury-role-badge.member {
+  background: rgba(168, 85, 247, 0.12) !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+  color: #c084fc !important;
+}
+
+.luxury-audit-badge {
+  display: inline-flex !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.luxury-audit-badge.create {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+  color: #4ade80 !important;
+}
+
+.luxury-audit-badge.update {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border: 1px solid rgba(59, 130, 246, 0.35) !important;
+  color: #60a5fa !important;
+}
+
+.luxury-audit-badge.delete {
+  background: rgba(255, 107, 114, 0.12) !important;
+  border: 1px solid rgba(255, 107, 114, 0.35) !important;
+  color: #ff858b !important;
+}
+
+.luxury-audit-badge.login {
+  background: rgba(212, 255, 0, 0.1) !important;
+  border: 1px solid rgba(212, 255, 0, 0.35) !important;
+  color: #d4ff00 !important;
+}
+
+/* 6. Payment & Report Summary Grids */
+.payment-summary-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+.payment-summary-grid article {
+  background: rgba(14, 18, 15, 0.72) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.22s ease !important;
+}
+
+.payment-summary-grid article:hover {
+  border-color: rgba(212, 255, 0, 0.25) !important;
+  transform: translateY(-2px) !important;
+}
+
+.payment-summary-grid article span {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  text-transform: uppercase !important;
+  display: block !important;
+  margin-bottom: 6px !important;
+}
+
+.payment-summary-grid article strong {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: #d4ff00 !important;
+  display: block !important;
+  margin-bottom: 4px !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.payment-summary-grid article small {
+  font-size: 0.72rem !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.payment-summary-grid article:nth-child(2) strong {
+  color: #38bdf8 !important;
+}
+
+.payment-summary-grid article:nth-child(3) strong {
+  color: #4ade80 !important;
+}
+
+.payment-summary-grid article:nth-child(4) strong {
+  color: #ff858b !important;
+}
+
+.report-summary {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+.report-summary article {
+  background: rgba(14, 18, 15, 0.72) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.report-summary article span {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  text-transform: uppercase !important;
+  display: block !important;
+  margin-bottom: 6px !important;
+}
+
+.report-summary article strong {
+  font-size: 1.4rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  display: block !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* 7. Biometrics Module Luxury Styling */
+.biometric-notice-banner {
+  margin-bottom: 20px !important;
+}
+
+.biometric-luxury-card {
+  padding: 24px 28px !important;
+}
+
+.biometric-card-header {
+  margin-bottom: 24px !important;
+  padding-bottom: 18px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.biometric-header-badge {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.biometric-header-badge h3 {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.biometric-header-badge p {
+  font-size: 0.82rem !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  margin: 0 !important;
+}
+
+.biometric-member-picker-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.biometric-field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 7px !important;
+}
+
+.field-label-tag {
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  text-transform: uppercase !important;
+}
+
+.luxury-input,
+.luxury-select {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: #f5f5f7 !important;
+  font-family: inherit !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.luxury-input:focus,
+.luxury-select:focus {
+  border-color: rgba(212, 255, 0, 0.45) !important;
+  box-shadow: 0 0 16px rgba(212, 255, 0, 0.15) !important;
+}
+
+.biometric-finger-row {
+  margin-bottom: 22px !important;
+}
+
+.finger-select-field {
+  max-width: 320px !important;
+}
+
+.biometric-active-enrollment-card {
+  background: rgba(34, 197, 94, 0.08) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  margin-bottom: 22px !important;
+}
+
+.active-enrollment-badge {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #4ade80 !important;
+  font-weight: 800 !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 6px !important;
+}
+
+.active-enrollment-meta {
+  margin: 0 0 6px 0 !important;
+  font-size: 0.82rem !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.active-enrollment-meta strong {
+  color: #ffffff !important;
+}
+
+.meta-sep {
+  margin: 0 8px !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.active-enrollment-hint {
+  margin: 0 !important;
+  font-size: 0.75rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.biometric-action-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 22px !important;
+}
+
+.biometric-scan-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 22px !important;
+  border-radius: 12px !important;
+  font-size: 0.88rem !important;
+  font-weight: 800 !important;
+}
+
+.biometric-capture-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 22px !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 16px !important;
+  padding: 18px 22px !important;
+  margin-bottom: 22px !important;
+  max-width: 620px !important;
+  flex-wrap: wrap !important;
+}
+
+.biometric-preview-canvas {
+  width: 90px !important;
+  height: 120px !important;
+  border-radius: 12px !important;
+  background: #000000 !important;
+  border: 1.5px solid rgba(212, 255, 0, 0.35) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 0 16px rgba(212, 255, 0, 0.15) !important;
+}
+
+.biometric-preview-canvas img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.biometric-capture-details {
+  flex: 1 !important;
+  min-width: 220px !important;
+}
+
+.quality-meter-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 6px !important;
+  font-size: 0.78rem !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.quality-meter-head strong {
+  color: #d4ff00 !important;
+  font-size: 0.88rem !important;
+}
+
+.quality-progress-track {
+  width: 100% !important;
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  overflow: hidden !important;
+  margin-bottom: 8px !important;
+}
+
+.quality-progress-bar {
+  height: 100% !important;
+  border-radius: 999px !important;
+  transition: width 0.3s ease !important;
+}
+
+.quality-progress-bar.good {
+  background: linear-gradient(90deg, #4ade80, #d4ff00) !important;
+}
+
+.quality-progress-bar.warning {
+  background: #fbbf24 !important;
+}
+
+.capture-subtext {
+  font-size: 0.72rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  margin: 0 0 12px 0 !important;
+}
+
+.save-capture-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 18px !important;
+  border-radius: 10px !important;
+  font-size: 0.82rem !important;
+}
+
+.biometric-danger-zone {
+  margin-top: 14px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.delete-confirm-box {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+.delete-warn-text {
+  font-size: 0.82rem !important;
+  color: #ff858b !important;
+  font-weight: 700 !important;
+}
+
+.biometric-alert-box {
+  margin-top: 16px !important;
+  max-width: 620px !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+}

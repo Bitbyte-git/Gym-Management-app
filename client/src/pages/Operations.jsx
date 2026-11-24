@@ -706,49 +706,234 @@ export default function Operations({ section, user, query = '' }) {
   } : null;
   const renderCell = (row, key) => {
     const value = row[key];
-    if (section === 'attendance') {
-      if (key === 'member') {
-        const name = value?.fullName || (typeof value === 'string' ? value : 'Unknown member');
-        const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'M';
-        const memberId = value?.memberId || '';
-        const phone = value?.mobileNumber || '';
-        const memberDbId = value?._id || (typeof value === 'object' ? value?._id : null);
-        return (
-          <div className="attendance-member-cell">
-            {value?.profilePicture ? (
-              <img
-                src={value.profilePicture}
-                alt={name}
-                className="attendance-avatar-img-sm"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
-                }}
-              />
-            ) : null}
-            <span
-              className="attendance-avatar"
-              style={{ display: value?.profilePicture ? 'none' : 'grid' }}
+    if (key === 'member') {
+      const name = value?.fullName || (typeof value === 'string' ? value : 'Unknown member');
+      const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'M';
+      const memberId = value?.memberId || '';
+      const phone = value?.mobileNumber || '';
+      const memberDbId = value?._id || (typeof value === 'object' ? value?._id : null);
+      return (
+        <div className="attendance-member-cell">
+          {value?.profilePicture ? (
+            <img
+              src={value.profilePicture}
+              alt={name}
+              className="attendance-avatar-img-sm"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+              }}
+            />
+          ) : null}
+          <span
+            className="attendance-avatar"
+            style={{ display: value?.profilePicture ? 'none' : 'grid' }}
+          >
+            {initials}
+          </span>
+          <div className="attendance-member-meta">
+            <button
+              type="button"
+              className="attendance-member-name-btn"
+              onClick={() => memberDbId && openMemberProfile({ member: { _id: memberDbId } })}
+              title="View Member Profile"
             >
-              {initials}
-            </span>
-            <div className="attendance-member-meta">
+              {name}
+            </button>
+            <div className="attendance-member-subtags">
+              {memberId && <span className="member-id-capsule">{memberId}</span>}
+              {phone && <span className="member-phone-text">{phone}</span>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (key === 'trainer') {
+      const name = value?.fullName || (typeof value === 'string' ? value : 'Trainer');
+      const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'TR';
+      const trainerId = value?.trainerId || '';
+      return (
+        <div className="attendance-member-cell trainer-cell">
+          <span className="attendance-avatar trainer-avatar">{initials}</span>
+          <div className="attendance-member-meta">
+            <b className="trainer-name">{name}</b>
+            <div className="attendance-member-subtags">
+              {trainerId && <span className="member-id-capsule trainer-id">{trainerId}</span>}
+              {value?.specialization && <span className="luxury-spec-pill">{value.specialization}</span>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (key === 'user' && typeof value === 'object') {
+      const name = value?.name || value?.email || 'User';
+      const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
+      return (
+        <div className="attendance-member-cell user-cell">
+          <span className="attendance-avatar user-avatar">{initials}</span>
+          <div className="attendance-member-meta">
+            <b>{name}</b>
+            <small className="user-email-text">{value?.email || ''}</small>
+          </div>
+        </div>
+      );
+    }
+    if (key === 'fullName') {
+      const name = value || 'Unnamed';
+      const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || (section === 'trainers' ? 'TR' : 'M');
+      const subId = row.memberId || row.trainerId || '';
+      const subPhone = row.mobileNumber || row.user?.email || row.email || '';
+      const memberDbId = row._id || null;
+      return (
+        <div className="attendance-member-cell">
+          {row.profilePicture ? (
+            <img
+              src={row.profilePicture}
+              alt={name}
+              className="attendance-avatar-img-sm"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+              }}
+            />
+          ) : null}
+          <span
+            className="attendance-avatar"
+            style={{ display: row.profilePicture ? 'none' : 'grid' }}
+          >
+            {initials}
+          </span>
+          <div className="attendance-member-meta">
+            {section === 'members' ? (
               <button
                 type="button"
                 className="attendance-member-name-btn"
-                onClick={() => memberDbId && openMemberProfile({ member: { _id: memberDbId } })}
+                onClick={() => memberDbId && openMemberProfile(row)}
                 title="View Member Profile"
               >
                 {name}
               </button>
-              <div className="attendance-member-subtags">
-                {memberId && <span className="member-id-capsule">{memberId}</span>}
-                {phone && <span className="member-phone-text">{phone}</span>}
-              </div>
+            ) : (
+              <b className="attendance-person-name">{name}</b>
+            )}
+            <div className="attendance-member-subtags">
+              {subId && <span className="member-id-capsule">{subId}</span>}
+              {subPhone && <span className="member-phone-text">{subPhone}</span>}
             </div>
+          </div>
+        </div>
+      );
+    }
+    if (key === 'memberId' || key === 'trainerId') {
+      if (!value) return <span className="text-muted">—</span>;
+      return <span className="member-id-capsule">{value}</span>;
+    }
+    if (key === 'mobileNumber') {
+      if (!value) return <span className="text-muted">—</span>;
+      return <span className="member-phone-text">{value}</span>;
+    }
+    if (key === 'membershipPlan') {
+      const planName = value?.name || (typeof value === 'string' ? value : 'Standard Plan');
+      const duration = value?.duration ? `${value.duration}M` : '';
+      return (
+        <div className="luxury-plan-cell">
+          <span className="luxury-plan-badge">{planName}</span>
+          {duration && <span className="luxury-duration-pill">{duration}</span>}
+        </div>
+      );
+    }
+    if (key === 'pendingAmount') {
+      const amt = Number(value || 0);
+      if (amt > 0) {
+        return (
+          <span className="payment-due-capsule">
+            <AlertCircle size={12} /> ₹{amt.toLocaleString('en-IN')} Due
+          </span>
+        );
+      }
+      return (
+        <span className="payment-paid-capsule">
+          <CheckCircle2 size={12} /> Paid
+        </span>
+      );
+    }
+    if (key === 'specialization') {
+      if (!value) return <span className="text-muted">—</span>;
+      return <span className="luxury-spec-pill">{value}</span>;
+    }
+    if (key === 'experience') {
+      if (value === undefined || value === null || value === '') return <span className="text-muted">—</span>;
+      return <span className="luxury-exp-pill">{value} Yrs Exp</span>;
+    }
+    if (key === 'convenientTimings') {
+      if (Array.isArray(value) && value.length) {
+        return (
+          <div className="session-pill-cluster">
+            {value.map(t => (
+              <span key={t} className={`session-pill ${t.toLowerCase()}`}>
+                <span className="session-pill-dot" />
+                <span className="session-pill-label">{label(t)}</span>
+              </span>
+            ))}
           </div>
         );
       }
+      return <span className="text-muted">—</span>;
+    }
+    if (key === 'receiptNumber') {
+      if (!value) return <span className="text-muted">—</span>;
+      return <span className="receipt-capsule">{value}</span>;
+    }
+    if (section === 'payments' && key === 'amount') {
+      return <strong className="luxury-currency-amount">₹{Number(value || 0).toLocaleString('en-IN')}</strong>;
+    }
+    if (key === 'paymentMethod') {
+      const method = String(value || '').toLowerCase();
+      const methodLabel = method === 'online_gateway' ? 'Razorpay' : method === 'cash' ? 'Cash Counter' : method === 'upi' ? 'UPI' : method === 'card' ? 'Card' : label(method || 'unknown');
+      return (
+        <span className={`payment-method-pill ${method}`}>
+          <span className="method-dot" />
+          <span>{methodLabel}</span>
+        </span>
+      );
+    }
+    if (key === 'whatsappStatus') {
+      const status = value || 'Not Sent';
+      return <span className={`whatsapp-status-badge ${status.toLowerCase().replace(/\s+/g, '-')}`}>{status}</span>;
+    }
+    if (key === 'role') {
+      const r = String(value || '').toLowerCase();
+      return <span className={`luxury-role-badge ${r}`}>{label(r)}</span>;
+    }
+    if (section === 'audit' && key === 'action') {
+      const act = String(value || '').toUpperCase();
+      const actClass = act.toLowerCase();
+      return <span className={`luxury-audit-badge ${actClass}`}>{act}</span>;
+    }
+    if (['startDate', 'endDate', 'assignedAt', 'createdAt', 'timestamp', 'updatedAt'].includes(key)) {
+      if (!value) return <span className="text-muted">—</span>;
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return String(value);
+      return (
+        <div className="attendance-clock-cell">
+          <span className="clock-digits">{d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+          <small className="clock-calendar">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+        </div>
+      );
+    }
+    if (['startTime', 'endTime', 'openTime', 'closeTime'].includes(key)) {
+      if (!value) return <span className="text-muted">—</span>;
+      return <span className="clock-digits">{displayClock(value)}</span>;
+    }
+    if (key === 'timeSlot') {
+      const slotName = value?.name || (typeof value === 'object' ? `${value.startTime} - ${value.endTime}` : value);
+      return <span className="slot-name-badge">{slotName || 'General Slot'}</span>;
+    }
+    if (section === 'slots' && key === 'currentCapacity') {
+      const max = row.maxCapacity || row.capacity || 0;
+      return <span className="slot-capacity-capsule">{value} / {max} Members</span>;
+    }
+    if (section === 'attendance') {
       if (key === 'sessionName') {
         const session = String(value || 'morning').toLowerCase();
         return (
@@ -827,24 +1012,6 @@ export default function Operations({ section, user, query = '' }) {
         );
       }
     }
-    if (section === 'notifications' && key === 'member') {
-      const relatedData = row.relatedData || {};
-      const memberId = relatedData.memberId;
-      const memberName = relatedData.memberName;
-      const memberDbId = relatedData.memberDbId;
-      
-      if (memberId && memberName && memberDbId) {
-        return (
-          <button 
-            className="member-id-link" 
-            onClick={() => openMemberProfile({ member: { _id: memberDbId } })}
-          >
-            {memberName} ({memberId})
-          </button>
-        );
-      }
-      return '—';
-    }
     if (section === 'notifications' && key === 'message') {
       const relatedData = row.relatedData || {};
       if (relatedData.memberId && relatedData.memberName) {
@@ -852,70 +1019,35 @@ export default function Operations({ section, user, query = '' }) {
       }
       return value;
     }
-    if (section === 'members' && key === 'fullName') {
-      const name = value || 'Unnamed member';
-      const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'M';
-      return (
-        <div className="attendance-member-cell">
-          {row.profilePicture ? (
-            <img
-              src={row.profilePicture}
-              alt={name}
-              className="attendance-avatar-img-sm"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
-              }}
-            />
-          ) : null}
-          <span
-            className="attendance-avatar"
-            style={{ width: 34, height: 34, fontSize: 11, borderRadius: 8, display: row.profilePicture ? 'none' : 'grid' }}
-          >
-            {initials}
-          </span>
-          <div>
-            <b>{name}</b>
-            <small>{row.user?.email || row.mobileNumber || 'Member'}</small>
-          </div>
-        </div>
-      );
-    }
-    if (section === 'payments' && key === 'member') {
-      const name = value?.fullName || 'Unknown member';
-      return <div className="payment-member"><i>{name.split(' ').map(part => part[0]).join('').slice(0, 2)}</i><span><b>{name}</b><small>{value?.memberId || 'Member'}</small></span></div>;
-    }
-    if (section === 'payments' && key === 'transactionId') return <code className="transaction-reference" title={value}>{value}</code>;
-    if (section === 'payments' && key === 'amount') return <strong className="payment-amount">{valueText(value, key)}</strong>;
-    if (section === 'payments' && key === 'paymentMethod') return <span className={`payment-method ${value}`}>{value === 'online_gateway' ? 'Razorpay' : label(value || 'unknown')}</span>;
-    if (section === 'payments' && key === 'whatsappStatus') {
-      const status = value || 'Not Sent';
-      return <span className={`whatsapp-status-badge ${status.toLowerCase().replace(/\s+/g, '-')}`}>{status}</span>;
-    }
-    if (key === 'sessionName') {
-      const session = String(value || 'morning').toLowerCase();
-      return <span className={`session-badge ${session}`}>{session}</span>;
-    }
     if (section === 'plans') {
       if (key === 'duration') {
         const num = Number(value);
         const text = num === 1 ? '1 Month' : num === 12 ? '12 Months (1 Year)' : `${num} Months`;
-        return <span className="status active" style={{ background: 'rgba(212, 255, 0, 0.08)', color: '#d4ff00', border: '1px solid rgba(212, 255, 0, 0.25)', fontWeight: 600 }}>{text}</span>;
+        return <span className="luxury-duration-pill">{text}</span>;
       }
       if (key === 'price') {
-        return <strong style={{ color: '#ffffff', fontSize: '14px', fontWeight: 700 }}>{valueText(value, 'price', section)}</strong>;
+        return <strong className="luxury-currency-amount">₹{Number(value || 0).toLocaleString('en-IN')}</strong>;
       }
     }
-    if (section === 'slots') {
-      if (key === 'startTime' || key === 'endTime') {
-        return <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#e0e0e0', letterSpacing: '0.04em' }}>{displayClock(value)}</span>;
-      }
-      if (key === 'currentCapacity') {
-        const max = row.maxCapacity || 0;
-        return <span style={{ display: 'inline-flex', padding: '3px 10px', borderRadius: '6px', background: 'rgba(255, 255, 255, 0.06)', color: '#ffffff', fontSize: '12px', fontWeight: 600 }}>{value} / {max}</span>;
-      }
+    if (key === 'sessionName') {
+      const session = String(value || 'morning').toLowerCase();
+      return (
+        <span className={`luxury-session-pill ${session}`}>
+          <span className="session-dot" />
+          <span className="session-text">{session.toUpperCase()}</span>
+        </span>
+      );
     }
-    if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus', 'membershipStatus'].includes(key)) return <span className={`status ${String(value || '').toLowerCase()}`}>{label(String(value || 'unknown'))}</span>;
+    if (['status', 'paymentStatus', 'registrationStatus', 'attendanceStatus', 'membershipStatus'].includes(key)) {
+      const raw = String(value || 'unknown').toLowerCase();
+      const cleanClass = raw.replace(/\s+/g, '_');
+      return (
+        <span className={`luxury-status-pill ${cleanClass}`}>
+          <span className="status-dot" />
+          <span>{label(raw)}</span>
+        </span>
+      );
+    }
     return valueText(value, key, section);
   };
   const help = sectionHelp[section];
@@ -1347,43 +1479,84 @@ export default function Operations({ section, user, query = '' }) {
         </div>
       </div>
     ) : (
-      <div className="toolbar operation-tools">
-        {section === 'reports' && <label className="report-type-filter"><span>Report</span><select value={report} onChange={e => setReport(e.target.value)}>{reportTypes.map(type => <option key={type} value={type}>{reportLabels[type]}</option>)}</select></label>}
-        {['reports', 'payments'].includes(section) && <>
-          <label className="date-filter calendar-only-filter"><span>From</span><input aria-label="From date" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/><CalendarDays/></label>
-          <label className="date-filter calendar-only-filter"><span>To</span><input aria-label="To date" type="date" value={endDate} min={startDate} onChange={e => setEndDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/><CalendarDays/></label>
-        </>}
-        <button className="outline-btn" onClick={() => setRevision(v => v + 1)}><RefreshCw size={16}/> Reload</button>
-        <button className="outline-btn" disabled={!visible.length} onClick={exportRows}><Download size={16}/> Download CSV</button>
-        {section === 'members' && staff && <button className="lime-btn" onClick={() => nav('/register')}><Plus size={16}/> Register member</button>}
-        {definition?.create && createAllowed && <button className="lime-btn" onClick={() => begin('Create ' + label(section), 'post', definition.url, definition.create)}><Plus size={16}/> Create</button>}
-        {section === 'notifications' && isAdmin && <>
-          <button className="outline-btn" disabled={busy} onClick={async () => {
-            setBusy(true); setError('');
-            try {
-              await api.post('/notifications/membership-expiry-reminder');
-              setNotice('Expiry reminders sent successfully!');
-              setRevision(v => v + 1);
-            } catch (err) {
-              setError(err.response?.data?.error || 'Failed to send expiry reminders');
-            } finally {
-              setBusy(false);
-            }
-          }}>Send expiry reminders</button>
-          <button className="outline-btn" disabled={busy} onClick={async () => {
-            setBusy(true); setError('');
-            try {
-              await api.post('/notifications/payment-due-reminder');
-              setNotice('Payment due reminders sent successfully!');
-              setRevision(v => v + 1);
-            } catch (err) {
-              setError(err.response?.data?.error || 'Failed to send payment due reminders');
-            } finally {
-              setBusy(false);
-            }
-          }}>Send due reminders</button>
-        </>}
-        {section === 'settings' && isAdmin && <button className="lime-btn" onClick={() => begin('Initialize missing default settings', 'post', '/settings/initialize')}>Initialize defaults</button>}
+      <div className="luxury-toolbar operation-tools">
+        <div className="luxury-toolbar-left">
+          {section === 'reports' && (
+            <label className="report-type-filter">
+              <span>Report</span>
+              <select value={report} onChange={e => setReport(e.target.value)}>
+                {reportTypes.map(type => <option key={type} value={type}>{reportLabels[type]}</option>)}
+              </select>
+            </label>
+          )}
+          {['reports', 'payments'].includes(section) && (
+            <div className="attendance-date-range-bar">
+              <label className="attendance-date-label">
+                <span className="date-tag">FROM</span>
+                <input aria-label="From date" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/>
+                <CalendarDays size={14} className="calendar-icon" />
+              </label>
+              <span className="date-arrow">→</span>
+              <label className="attendance-date-label">
+                <span className="date-tag">TO</span>
+                <input aria-label="To date" type="date" value={endDate} min={startDate} onChange={e => setEndDate(e.target.value)} onKeyDown={event => event.preventDefault()} onPaste={event => event.preventDefault()} onClick={calendarOnly}/>
+                <CalendarDays size={14} className="calendar-icon" />
+              </label>
+            </div>
+          )}
+          <button className="outline-btn reload-btn" onClick={() => setRevision(v => v + 1)}>
+            <RefreshCw size={14}/> Reload
+          </button>
+          <button className="outline-btn export-btn" disabled={!visible.length} onClick={exportRows}>
+            <Download size={14}/> Export CSV
+          </button>
+        </div>
+
+        <div className="luxury-toolbar-right">
+          {section === 'members' && staff && (
+            <button className="lime-btn" onClick={() => nav('/register')}>
+              <Plus size={16}/> Register member
+            </button>
+          )}
+          {definition?.create && createAllowed && (
+            <button className="lime-btn" onClick={() => begin('Create ' + label(section), 'post', definition.url, definition.create)}>
+              <Plus size={16}/> Create {label(section)}
+            </button>
+          )}
+          {section === 'notifications' && isAdmin && (
+            <>
+              <button className="outline-btn" disabled={busy} onClick={async () => {
+                setBusy(true); setError('');
+                try {
+                  await api.post('/notifications/membership-expiry-reminder');
+                  setNotice('Expiry reminders sent successfully!');
+                  setRevision(v => v + 1);
+                } catch (err) {
+                  setError(err.response?.data?.error || 'Failed to send expiry reminders');
+                } finally {
+                  setBusy(false);
+                }
+              }}>Send expiry reminders</button>
+              <button className="outline-btn" disabled={busy} onClick={async () => {
+                setBusy(true); setError('');
+                try {
+                  await api.post('/notifications/payment-due-reminder');
+                  setNotice('Payment due reminders sent successfully!');
+                  setRevision(v => v + 1);
+                } catch (err) {
+                  setError(err.response?.data?.error || 'Failed to send payment due reminders');
+                } finally {
+                  setBusy(false);
+                }
+              }}>Send due reminders</button>
+            </>
+          )}
+          {section === 'settings' && isAdmin && (
+            <button className="lime-btn" onClick={() => begin('Initialize missing default settings', 'post', '/settings/initialize')}>
+              Initialize defaults
+            </button>
+          )}
+        </div>
       </div>
     )}
     {section === 'slots' && <p>Each time slot applies every day the gym is open. Members select it once during registration.</p>}
