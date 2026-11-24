@@ -228,9 +228,9 @@ export function speakVoiceCue(cue, options = {}) {
     const tamilVoice = getBestTamilVoice();
     const hasNativeTamilVoice = Boolean(
       tamilVoice &&
-        ((tamilVoice.lang || '').toLowerCase().startsWith('ta') ||
-          (tamilVoice.name || '').toLowerCase().includes('tamil') ||
-          (tamilVoice.name || '').includes('தமிழ்'))
+      ((tamilVoice.lang || '').toLowerCase().startsWith('ta') ||
+        (tamilVoice.name || '').toLowerCase().includes('tamil') ||
+        (tamilVoice.name || '').includes('தமிழ்'))
     );
 
     let textToSpeak = '';
@@ -296,16 +296,16 @@ export function playPunchFeedback(popup) {
       setTimeout(() => {
         speakVoiceCue({
           tamil: firstName
-            ? `நன்றி ${firstName}! இன்றைய உடற்பயிற்சி முடிந்தது, மீண்டும் வருக. இந்த நாள் இனிய நாளாக அமையட்டும்.`
-            : 'நன்றி! இன்றைய உடற்பயிற்சி முடிந்தது, மீண்டும் வருக. இந்த நாள் இனிய நாளாக அமையட்டும்.',
+            ? `நன்றி ${firstName}!,கம் பேக் சூன்.`
+            : 'நன்றி! . இந்த நாள் இனிய நாளாக அமையட்டும்.',
           phonetic: firstName
-            ? `Nandri ${firstName}! Udar-payirchi mudindhadhu, meendum varuga. Iniya naalaaga amaiyattum.`
-            : 'Nandri! Udar-payirchi mudindhadhu, meendum varuga. Iniya naalaaga amaiyattum.',
+            ? `Nandri ${firstName}! Comeback Soon.`
+            : 'Nandri! Come Back Soon.',
           english: firstName
             ? `Goodbye ${firstName}! Have a great day.`
             : 'Check-out recorded. Have a great day!',
         });
-      }, 550);
+      }, 150);
       return;
     }
 
@@ -333,16 +333,16 @@ export function playPunchFeedback(popup) {
     setTimeout(() => {
       speakVoiceCue({
         tamil: firstName
-          ? `வணக்கம் ${firstName}! வினோ ஃபிட்னஸ் ஸ்டுடியோவிற்கு நல்வரவு. உடற்பயிற்சியை தொடங்குங்கள்.`
-          : 'வணக்கம்! வினோ ஃபிட்னஸ் ஸ்டுடியோவிற்கு நல்வரவு. உடற்பயிற்சியை தொடங்குங்கள்.',
+          ? `ஹேய் ${firstName}! வெல்கம் டூ வினோ ஃபிட்னஸ்.`
+          : 'ஹேய்! வெல்கம் டூ வினோ ஃபிட்னஸ்.',
         phonetic: firstName
-          ? `Vanakkam ${firstName}! Vino Fitness Studio-vukku nalvaravu.`
-          : 'Vanakkam! Vino Fitness Studio-vukku nalvaravu.',
+          ? `Hai ${firstName}! Welcome To Vino Fitness `
+          : 'Hai! Vino Fitness Studio-vukku nalvaravu.',
         english: firstName
           ? `Welcome ${firstName} to Vino Fitness Studio!`
           : 'Welcome to Vino Fitness Studio!',
       });
-    }, 550);
+    }, 150);
     return;
   }
 

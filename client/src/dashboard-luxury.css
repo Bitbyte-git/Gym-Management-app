@@ -3234,3 +3234,559 @@ button.outline-btn:hover {
   font-size: 0.84rem !important;
   font-weight: 600 !important;
 }
+
+
+/* ==========================================================================
+   MEMBER PROFILE MODAL — APPLE LUXURY SUITE & EDIT EXPERIENCE
+   Compact width, custom scrollbars, frosted glass, admin profile editing
+   ========================================================================== */
+
+.member-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 120 !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+}
+
+.member-profile-modal {
+  max-width: 630px !important;
+  width: 100% !important;
+  max-height: calc(100vh - 48px) !important;
+  background: rgba(14, 18, 15, 0.96) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 255, 0, 0.04) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+}
+
+.member-profile-modal::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.member-profile-modal::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.member-profile-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 999px !important;
+}
+
+.member-profile-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 255, 0, 0.4) !important;
+}
+
+/* Modal Hero Header */
+.member-profile-hero {
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+  padding: 22px 24px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(10, 14, 11, 0.6) !important;
+  position: relative !important;
+}
+
+.member-profile-avatar-wrap {
+  width: 68px !important;
+  height: 68px !important;
+  border-radius: 18px !important;
+  position: relative !important;
+  border: 2px solid rgba(212, 255, 0, 0.35) !important;
+  box-shadow: 0 0 20px rgba(212, 255, 0, 0.12) !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+}
+
+.member-profile-avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 16px !important;
+  object-fit: cover !important;
+}
+
+.member-profile-avatar {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 16px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: linear-gradient(135deg, rgba(212, 255, 0, 0.2) 0%, rgba(212, 255, 0, 0.05) 100%) !important;
+  color: #d4ff00 !important;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.member-profile-avatar-edit-btn {
+  position: absolute !important;
+  bottom: -4px !important;
+  right: -4px !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  background: #d4ff00 !important;
+  color: #080b09 !important;
+  border: 2px solid #080b09 !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+}
+
+.member-profile-avatar-edit-btn:hover {
+  transform: scale(1.15) !important;
+}
+
+.member-profile-identity {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.member-profile-tag {
+  color: #d4ff00 !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+  display: block !important;
+  margin-bottom: 2px !important;
+}
+
+.member-profile-identity h2 {
+  font-size: 1.45rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  margin: 0 0 5px 0 !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.member-profile-meta-chips {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.joined-date-text {
+  font-size: 0.76rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.member-hero-right-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-left: auto !important;
+  padding-right: 32px !important;
+}
+
+.member-profile-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  white-space: nowrap !important;
+}
+
+.member-profile-status.active {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+  color: #4ade80 !important;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.15) !important;
+}
+
+.member-profile-status .status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #4ade80 !important;
+  box-shadow: 0 0 6px #4ade80 !important;
+}
+
+.member-modal-close {
+  position: absolute !important;
+  right: 18px !important;
+  top: 18px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.member-modal-close:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Metrics Bar */
+.member-profile-metrics {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 10px !important;
+  padding: 14px 24px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.metric-box {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  text-align: center !important;
+}
+
+.metric-box small {
+  font-size: 0.65rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.07em !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  display: block !important;
+  margin-bottom: 4px !important;
+  text-transform: uppercase !important;
+}
+
+.metric-box strong {
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+/* Modal Body */
+.member-profile-body {
+  padding: 20px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
+}
+
+.member-profile-section {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  padding: 16px 18px !important;
+}
+
+.member-section-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+  color: #d4ff00 !important;
+}
+
+.member-section-title h3 {
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+}
+
+.member-section-title p {
+  font-size: 0.74rem !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  margin: 2px 0 0 0 !important;
+}
+
+.member-info-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+}
+
+.member-info-grid.compact {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.profile-info-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 11px !important;
+  padding: 10px 14px !important;
+}
+
+.profile-info-icon-wrap {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  background: rgba(212, 255, 0, 0.08) !important;
+  color: #d4ff00 !important;
+  display: grid !important;
+  place-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.profile-info-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.profile-info-label {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  display: block !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  margin-bottom: 2px !important;
+}
+
+.profile-info-value {
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  word-break: break-word !important;
+  display: block !important;
+}
+
+/* Health Notes Grid */
+.health-note-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+.health-note-grid div {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+.health-note-grid small {
+  font-size: 0.65rem !important;
+  font-weight: 800 !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  display: block !important;
+  margin-bottom: 4px !important;
+}
+
+.health-note-grid p {
+  font-size: 0.82rem !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  margin: 0 !important;
+}
+
+.health-consent {
+  font-size: 0.74rem !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+/* Admin Profile Edit Form */
+.member-profile-edit-form {
+  padding: 20px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.member-edit-head-notice {
+  background: rgba(212, 255, 0, 0.06) !important;
+  border: 1px solid rgba(212, 255, 0, 0.2) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+}
+
+.edit-notice-badge {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: #d4ff00 !important;
+  font-size: 0.74rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 4px !important;
+}
+
+.member-edit-head-notice p {
+  margin: 0 !important;
+  font-size: 0.76rem !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.profile-alert {
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  font-size: 0.8rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.member-edit-form-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 14px !important;
+}
+
+.member-form-section-title {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.07em !important;
+  color: #d4ff00 !important;
+  text-transform: uppercase !important;
+  padding-top: 10px !important;
+  margin-top: 6px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.luxury-field-label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.luxury-field-label.full-width {
+  grid-column: 1 / -1 !important;
+}
+
+.field-tag {
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  text-transform: uppercase !important;
+}
+
+.luxury-form-input,
+.luxury-form-select,
+.luxury-form-textarea {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: #f5f5f7 !important;
+  font-family: inherit !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  padding: 9px 13px !important;
+  border-radius: 10px !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.luxury-form-input:focus,
+.luxury-form-select:focus,
+.luxury-form-textarea:focus {
+  border-color: rgba(212, 255, 0, 0.45) !important;
+  box-shadow: 0 0 14px rgba(212, 255, 0, 0.15) !important;
+}
+
+.luxury-form-textarea {
+  resize: vertical !important;
+  min-height: 60px !important;
+}
+
+/* Modal Footer */
+.member-profile-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(10, 14, 11, 0.6) !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+}
+
+.footer-role-notice {
+  font-size: 0.74rem !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.footer-action-buttons {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: auto !important;
+}
+
+.edit-member-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 16px !important;
+  border-radius: 10px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: #f5f5f7 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.edit-member-btn:hover {
+  border-color: #d4ff00 !important;
+  color: #d4ff00 !important;
+  background: rgba(212, 255, 0, 0.08) !important;
+  transform: translateY(-1px) !important;
+}
+
+.done-btn,
+.save-profile-btn {
+  padding: 8px 22px !important;
+  border-radius: 10px !important;
+  font-size: 0.84rem !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 600px) {
+  .member-profile-metrics {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .member-info-grid,
+  .member-edit-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .member-hero-right-actions {
+    display: none !important;
+  }
+}
