@@ -131,7 +131,7 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
         const list = res.data?.data || [];
         setMembership(list[0] || null);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => {
         if (isMounted) setLoadingMembership(false);
       });
@@ -162,9 +162,8 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
   const planName =
     membership?.membershipPlan?.name || membership?.planName || 'Membership Plan';
   const planDuration = membership?.membershipPlan?.duration
-    ? `${membership.membershipPlan.duration} ${
-        membership.membershipPlan.durationUnit || 'Months'
-      }`
+    ? `${membership.membershipPlan.duration} ${membership.membershipPlan.durationUnit || 'Months'
+    }`
     : '';
 
   const handlePhotoUpload = async (e) => {
@@ -313,18 +312,15 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
               <span className="member-id-capsule">{currentMember.memberId || 'GYM-NEW'}</span>
               <span className="meta-sep">•</span>
               <span className="joined-date-text">Joined {date(currentMember.createdAt)}</span>
+              <span className="meta-sep">•</span>
+              <span className={`member-profile-status ${active ? 'active' : ''}`}>
+                <span className="status-dot" />
+                <span className="status-text">{active ? 'ACTIVE' : text(currentMember.membershipStatus || 'INACTIVE')}</span>
+              </span>
             </div>
             {uploadError && <small className="avatar-upload-err">{uploadError}</small>}
           </div>
-
-          <div className="member-hero-right-actions">
-            <div className={`member-profile-status ${active ? 'active' : ''}`}>
-              <span className="status-dot" />
-              <span className="status-text" style={{ whiteSpace: 'nowrap' }}>{active ? 'ACTIVE MEMBER' : text(currentMember.membershipStatus || 'INACTIVE')}</span>
-            </div>
-          </div>
         </header>
-
         {isEditing ? (
           /* ================= EDIT MODE (ADMIN / RECEPTION) ================= */
           <form className="member-profile-edit-form" onSubmit={handleSaveProfile}>

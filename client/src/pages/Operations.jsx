@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services';
-import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw, Search, X, CheckCircle2, AlertCircle, CreditCard, LogOut, Clock, Flame } from 'lucide-react';
+import { CalendarDays, Loader2, Plus, RefreshCw, Download, Fingerprint, SlidersHorizontal, RotateCcw, Search, X, CheckCircle2, AlertCircle, CreditCard, LogOut, Clock, Flame, UserRound, Edit3, AlertTriangle } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 import PaymentReceipt from '../components/PaymentReceipt';
 import MemberProfileModal from '../components/MemberProfileModal';
@@ -581,42 +581,64 @@ export default function Operations({ section, user, query = '' }) {
     const buttons = [];
     const add = (title, method, url, fields, defaults) => {
       let btnClass = 'outline-btn';
-      if (/^edit/i.test(title)) btnClass = 'outline-btn btn-edit';
-      else if (/leave|freeze|suspend/i.test(title)) btnClass = 'outline-btn btn-warning';
-      else if (/deactivate|delete|cancel|remove|refund/i.test(title)) btnClass = 'outline-btn btn-destructive';
-      buttons.push(<button className={btnClass} disabled={busy} key={title} onClick={() => begin(title, method, url, fields, row, defaults)}>{title}</button>);
+      let icon = null;
+      if (/^edit/i.test(title)) {
+        btnClass = 'outline-btn btn-edit';
+        icon = <Edit3 size={13} />;
+      } else if (/leave|freeze|suspend/i.test(title)) {
+        btnClass = 'outline-btn btn-warning';
+        icon = <AlertTriangle size={13} />;
+      } else if (/deactivate|delete|cancel|remove|refund/i.test(title)) {
+        btnClass = 'outline-btn btn-destructive';
+        icon = <X size={13} />;
+      }
+      buttons.push(
+        <button className={btnClass} disabled={busy} key={title} onClick={() => begin(title, method, url, fields, row, defaults)}>
+          {icon} {title}
+        </button>
+      );
     };
     const canEdit = (isAdmin && section !== 'profile') ||
       (user.role === 'reception' && section === 'slots') ||
       (section === 'profile' && user.role === 'member');
-    if (definition?.edit && canEdit) add('Edit', 'put', section === 'profile' ? definition.url : `${definition.url}/${row._id}`, definition.edit);
     if (section === 'members') {
-      buttons.push(<button className="outline-btn" disabled={busy} key="details" onClick={() => openMemberProfile(row)}>View profile</button>);
       buttons.push(
         <button
-          className="outline-btn"
+          className="outline-btn btn-view-profile"
+          disabled={busy}
+          key="details"
+          onClick={() => openMemberProfile(row)}
+          title="View Member Profile"
+        >
+          <UserRound size={13} /> Profile
+        </button>
+      );
+      buttons.push(
+        <button
+          className="outline-btn btn-plan-details"
           disabled={busy}
           key="plan-details"
           onClick={() => setPlanMember(row)}
           title="View latest membership plan & validity dates"
         >
-          <CreditCard size={14} /> Plan Details
+          <CreditCard size={13} /> Plan
         </button>
       );
     }
     if (section === 'members' && staff) {
       buttons.push(
         <button
-          className="outline-btn"
+          className="outline-btn btn-fingerprint"
           disabled={busy}
           key="fingerprint"
           onClick={() => setFingerprintMember(row)}
           title={row.biometricEnrolled ? 'Edit or replace member fingerprint' : 'Add member fingerprint'}
         >
-          <Fingerprint size={14} /> {row.biometricEnrolled ? 'Edit Fingerprint' : 'Add Fingerprint'}
+          <Fingerprint size={13} /> Fingerprint
         </button>
       );
     }
+    if (definition?.edit && canEdit) add('Edit', 'put', section === 'profile' ? definition.url : `${definition.url}/${row._id}`, definition.edit);
     if (section === 'members' && isAdmin) {
       if (row.registrationStatus === 'suspended') {
         add('Reactivate', 'put', `/members/${row._id}`, [field('registrationStatus', 'Status', 'select', ['completed', 'pending'])], { registrationStatus: 'completed' });
@@ -781,8 +803,10 @@ export default function Operations({ section, user, query = '' }) {
     if (key === 'fullName') {
       const name = value || 'Unnamed';
       const initials = name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || (section === 'trainers' ? 'TR' : 'M');
-      const subId = row.memberId || row.trainerId || '';
-      const subPhone = row.mobileNumber || row.user?.email || row.email || '';
+      const showSubId = !columns.includes('memberId') && !columns.includes('trainerId');
+      const showSubPhone = !columns.includes('mobileNumber');
+      const subId = showSubId ? (row.memberId || row.trainerId || '') : '';
+      const subPhone = showSubPhone ? (row.mobileNumber || row.user?.email || row.email || '') : '';
       const memberDbId = row._id || null;
       return (
         <div className="attendance-member-cell">
@@ -810,16 +834,19 @@ export default function Operations({ section, user, query = '' }) {
                 className="attendance-member-name-btn"
                 onClick={() => memberDbId && openMemberProfile(row)}
                 title="View Member Profile"
+                style={{ whiteSpace: 'nowrap' }}
               >
                 {name}
               </button>
             ) : (
-              <b className="attendance-person-name">{name}</b>
+              <b className="attendance-person-name" style={{ whiteSpace: 'nowrap' }}>{name}</b>
             )}
-            <div className="attendance-member-subtags">
-              {subId && <span className="member-id-capsule">{subId}</span>}
-              {subPhone && <span className="member-phone-text">{subPhone}</span>}
-            </div>
+            {(subId || subPhone) ? (
+              <div className="attendance-member-subtags">
+                {subId && <span className="member-id-capsule">{subId}</span>}
+                {subPhone && <span className="member-phone-text">{subPhone}</span>}
+              </div>
+            ) : null}
           </div>
         </div>
       );
