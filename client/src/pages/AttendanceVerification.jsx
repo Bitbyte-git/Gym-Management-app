@@ -19,6 +19,7 @@ import {
   LogOut,
   Volume2,
   VolumeX,
+  Languages,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,7 +28,15 @@ import { createAttendanceScanner } from '../services/attendanceScanner.mjs';
 import AttendancePopup from '../components/AttendancePopup';
 import { parseBiometricFeedback } from '../utils/biometricErrors';
 import { Brand } from '../components/Brand';
-import { isAudioEnabled, setAudioEnabled } from '../utils/kioskAudio';
+import {
+  isAudioEnabled,
+  setAudioEnabled,
+  getAudioMode,
+  setAudioMode,
+  speakVoiceCue,
+  speakEnglishCue,
+  playWelcomeAudio,
+} from '../utils/kioskAudio';
 import '../attendance-kiosk.css';
 
 const initial = { phase: 'initializing', message: 'Connecting to biometric scanner…' };
@@ -42,6 +51,7 @@ export default function AttendanceVerification({ standalone = true }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [pausedState, setPausedState] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(isAudioEnabled);
+  const [audioMode, setAudioModeState] = useState(getAudioMode);
   const [clientKey] = useState('');
 
   const controller = useRef(null);
@@ -231,6 +241,37 @@ export default function AttendanceVerification({ standalone = true }) {
     setAudioEnabled(next);
   };
 
+  useEffect(() => {
+    const handleAudioModeUpdate = (e) => {
+      if (e.detail?.mode) setAudioModeState(e.detail.mode);
+    };
+    window.addEventListener('pulsefit:audio-mode-changed', handleAudioModeUpdate);
+    return () => window.removeEventListener('pulsefit:audio-mode-changed', handleAudioModeUpdate);
+  }, []);
+
+  const handleSelectAudioMode = (e) => {
+    const selected = e.target.value;
+    setAudioModeState(selected);
+    setAudioMode(selected);
+
+    // Audio cue preview for immediate feedback
+    if (soundEnabled) {
+      if (selected === 'tamil') {
+        speakVoiceCue({
+          tamil: 'தமிழ் குரல் முறை தேர்வு செய்யப்பட்டது.',
+          phonetic: 'Tamil kural murai thervu seiyappattadhu.',
+          english: 'Tamil voice mode enabled.',
+        });
+      } else if (selected === 'english') {
+        speakEnglishCue({
+          english: 'English voice mode enabled.',
+        });
+      } else if (selected === '11labs') {
+        playWelcomeAudio('');
+      }
+    }
+  };
+
   const togglePause = async () => {
     if (paused.current) {
       paused.current = false;
@@ -323,6 +364,23 @@ export default function AttendanceVerification({ standalone = true }) {
               {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} style={{ color: '#ff6b72' }} />}
               <span>{soundEnabled ? 'Sound On' : 'Muted'}</span>
             </button>
+            <div
+              className={`verification-audio-dropdown-wrapper ${soundEnabled ? '' : 'disabled'}`}
+              title="Voice Announcement Mode"
+            >
+              <Languages size={15} className="verification-audio-dropdown-icon" />
+              <select
+                className="verification-audio-dropdown-select"
+                value={audioMode}
+                onChange={handleSelectAudioMode}
+                disabled={!soundEnabled}
+                aria-label="Voice Announcement Mode"
+              >
+                <option value="tamil">Tamil</option>
+                <option value="english">English</option>
+                <option value="11labs">11-Labs</option>
+              </select>
+            </div>
             <button
               className={`verification-tool-btn ${pausedState ? 'paused' : ''}`}
               onClick={togglePause}

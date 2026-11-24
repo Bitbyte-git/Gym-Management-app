@@ -220,6 +220,37 @@ const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import
 const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 export const WELCOME_AUDIO_URL = `${cleanBase}/Welcome-Audio.mp3`;
 export const THANKYOU_AUDIO_URL = `${cleanBase}/Thankyou-Audio.mp3`;
+export const SUBSCRIPTION_EXPIRED_AUDIO_URL = `${cleanBase}/Subscription-Expired.mp3`;
+export const FINGERPRINT_NOT_RECOGNIZED_AUDIO_URL = `${cleanBase}/Fingerprint-Not-Recogonized.mp3`;
+
+export const AUDIO_MODES = {
+  ELEVEN_LABS: '11labs',
+  TAMIL: 'tamil',
+  ENGLISH: 'english',
+};
+
+const STORAGE_KEY_AUDIO_MODE = 'pulsefit_kiosk_audio_mode';
+
+export function getAudioMode() {
+  if (typeof window === 'undefined') return AUDIO_MODES.ELEVEN_LABS;
+  try {
+    const val = localStorage.getItem(STORAGE_KEY_AUDIO_MODE);
+    if (val && Object.values(AUDIO_MODES).includes(val)) {
+      return val;
+    }
+  } catch { }
+  return AUDIO_MODES.ELEVEN_LABS;
+}
+
+export function setAudioMode(mode) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (Object.values(AUDIO_MODES).includes(mode)) {
+      localStorage.setItem(STORAGE_KEY_AUDIO_MODE, mode);
+      window.dispatchEvent(new CustomEvent('pulsefit:audio-mode-changed', { detail: { mode } }));
+    }
+  } catch { }
+}
 
 let currentPlayingAudio = null;
 
@@ -241,13 +272,16 @@ export function stopCurrentAudio() {
 // Preload audio files for zero-latency instant playback
 if (typeof window !== 'undefined') {
   try {
-    const p1 = new Audio();
-    p1.src = WELCOME_AUDIO_URL;
-    p1.preload = 'auto';
-
-    const p2 = new Audio();
-    p2.src = THANKYOU_AUDIO_URL;
-    p2.preload = 'auto';
+    [
+      WELCOME_AUDIO_URL,
+      THANKYOU_AUDIO_URL,
+      SUBSCRIPTION_EXPIRED_AUDIO_URL,
+      FINGERPRINT_NOT_RECOGNIZED_AUDIO_URL,
+    ].forEach((url) => {
+      const p = new Audio();
+      p.src = url;
+      p.preload = 'auto';
+    });
   } catch { }
 }
 
@@ -337,6 +371,68 @@ export function playThankYouAudio(memberName = '') {
   return playAudioFile(THANKYOU_AUDIO_URL, fallbackCue);
 }
 
+/**
+ * Plays custom recorded subscription expired audio from client/public/Subscription-Expired.mp3
+ */
+export function playExpiredAudio(memberName = '') {
+  const firstName = memberName ? memberName.split(' ')[0] : '';
+  const fallbackCue = {
+    tamil: firstName
+      ? `மன்னிக்கவும் ${firstName}, உங்கள் உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.`
+      : 'உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.',
+    phonetic: firstName
+      ? `Mannikkavum ${firstName}, ungal membership mudivadhaindhadhu. Reception-ai anugavum.`
+      : 'Membership mudivadhaindhadhu. Reception-ai anugavum.',
+    english: firstName
+      ? `Sorry ${firstName}, your membership has expired. Please contact reception.`
+      : 'Membership expired. Please visit reception.',
+  };
+  return playAudioFile(SUBSCRIPTION_EXPIRED_AUDIO_URL, fallbackCue);
+}
+
+/**
+ * Plays custom recorded unrecognized fingerprint audio from client/public/Fingerprint-Not-Recogonized.mp3
+ */
+export function playFingerprintNotRecognizedAudio() {
+  const fallbackCue = {
+    tamil: 'கைரேகை பொருந்தவில்லை. தயவுசெய்து மீண்டும் வைக்கவும்.',
+    phonetic: 'Kairaigai porundhavillai. Meendum vaikkavum.',
+    english: 'Fingerprint not recognized. Please scan again.',
+  };
+  return playAudioFile(FINGERPRINT_NOT_RECOGNIZED_AUDIO_URL, fallbackCue);
+}
+
+/**
+ * Clear, professional English announcement with member's name
+ */
+export function speakEnglishCue(cue, options = {}) {
+  if (!isAudioEnabled() || !cue) return;
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+  try {
+    window.speechSynthesis.cancel();
+    const textToSpeak = typeof cue === 'object' ? (cue.english || cue.phonetic || cue.tamil || '') : String(cue);
+    if (!textToSpeak) return;
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    const femaleVoice = getBestFemaleVoice();
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+      utterance.lang = femaleVoice.lang || 'en-US';
+    } else {
+      utterance.lang = 'en-US';
+    }
+
+    utterance.rate = options.rate ?? 0.90;
+    utterance.pitch = options.pitch ?? 1.0;
+    utterance.volume = options.volume ?? 1.0;
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.warn('[KioskAudio] English speech error:', err.message);
+  }
+}
+
 export function speakVoiceCue(cue, options = {}) {
   if (!isAudioEnabled() || !cue) return;
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -399,9 +495,10 @@ export function speakVoiceCue(cue, options = {}) {
 export function playPunchFeedback(popup) {
   if (!popup || !isAudioEnabled()) return;
 
+  const currentMode = getAudioMode();
   const isSuccess = popup.type === 'success';
   const isWarning = popup.type === 'warning';
-  const memberName = popup.member?.fullName || '';
+  const memberName = popup.member?.fullName || popup.errorData?.member?.fullName || '';
   const firstName = memberName ? memberName.split(' ')[0] : '';
   const action = popup.action;
   const subtitle = String(popup.subtitle || '').toLowerCase();
@@ -418,82 +515,158 @@ export function playPunchFeedback(popup) {
   // 1. Success cases
   if (isSuccess) {
     if (isCheckout) {
-      // Send-off audio playback (client/public/Thankyou-Audio.mp3)
       playChime('checkout');
       setTimeout(() => {
-        playThankYouAudio(memberName);
+        if (currentMode === AUDIO_MODES.ELEVEN_LABS) {
+          playThankYouAudio(memberName);
+        } else if (currentMode === AUDIO_MODES.ENGLISH) {
+          speakEnglishCue({
+            english: firstName
+              ? `Thank you ${firstName}! Have a great day and come back soon.`
+              : 'Thank you! Check-out recorded. Have a great day and come back soon.',
+          });
+        } else {
+          // Tamil mode (TTS with member name)
+          speakVoiceCue({
+            tamil: firstName
+              ? `நன்றி ${firstName}!,கம் பேக் சூன்.`
+              : 'நன்றி! இந்த நாள் இனிய நாளாக அமையட்டும்.',
+            phonetic: firstName
+              ? `Nandri ${firstName}! Comeback Soon.`
+              : 'Nandri! Come Back Soon.',
+            english: firstName
+              ? `Goodbye ${firstName}! Have a great day.`
+              : 'Check-out recorded. Have a great day!',
+          });
+        }
       }, 100);
       return;
     }
 
     if (isReconfirmed || subtitle.includes('already')) {
-      // Already checked in message in Tamil
       playChime('reconfirmed');
       setTimeout(() => {
-        speakVoiceCue({
-          tamil: firstName
-            ? `வணக்கம் ${firstName}, நீங்கள் ஏற்கனவே வருகை பதிவு செய்துள்ளீர்கள்.`
-            : 'நீங்கள் ஏற்கனவே வருகை பதிவு செய்துள்ளீர்கள்.',
-          phonetic: firstName
-            ? `Vanakkam ${firstName}, neengal yaerkkanavae varugai padhivu seidhu-vitteergal.`
-            : 'Neengal yaerkkanavae varugai padhivu seidhu-vitteergal.',
-          english: firstName
-            ? `You are already checked in, ${firstName}.`
-            : 'Attendance already recorded.',
-        });
-      }, 400);
+        if (currentMode === AUDIO_MODES.ENGLISH) {
+          speakEnglishCue({
+            english: firstName
+              ? `Welcome back ${firstName}, you are already checked in.`
+              : 'You are already checked in for this session.',
+          });
+        } else {
+          speakVoiceCue({
+            tamil: firstName
+              ? `வணக்கம் ${firstName}, நீங்கள் ஏற்கனவே வருகை பதிவு செய்துள்ளீர்கள்.`
+              : 'நீங்கள் ஏற்கனவே வருகை பதிவு செய்துள்ளீர்கள்.',
+            phonetic: firstName
+              ? `Vanakkam ${firstName}, neengal yaerkkanavae varugai padhivu seidhu-vitteergal.`
+              : 'Neengal yaerkkanavae varugai padhivu seidhu-vitteergal.',
+            english: firstName
+              ? `You are already checked in, ${firstName}.`
+              : 'Attendance already recorded.',
+          });
+        }
+      }, 350);
       return;
     }
 
-    // Standard Check-in (client/public/Welcome-Audio.mp3)
+    // Standard Check-in (Welcome)
     playChime('checkin');
     setTimeout(() => {
-      playWelcomeAudio(memberName);
+      if (currentMode === AUDIO_MODES.ELEVEN_LABS) {
+        playWelcomeAudio(memberName);
+      } else if (currentMode === AUDIO_MODES.ENGLISH) {
+        speakEnglishCue({
+          english: firstName
+            ? `Welcome ${firstName} to Vino Fitness Studio!`
+            : 'Welcome to Vino Fitness Studio!',
+        });
+      } else {
+        // Tamil mode (TTS with member name)
+        speakVoiceCue({
+          tamil: firstName
+            ? `ஹேய் ${firstName}! வெல்கம் டூ வினோ ஃபிட்னஸ்.`
+            : 'ஹேய்! வெல்கம் டூ வினோ ஃபிட்னஸ்.',
+          phonetic: firstName
+            ? `Hai ${firstName}! Welcome To Vino Fitness`
+            : 'Hai! Vino Fitness Studio-vukku nalvaravu.',
+          english: firstName
+            ? `Welcome ${firstName} to Vino Fitness Studio!`
+            : 'Welcome to Vino Fitness Studio!',
+        });
+      }
     }, 100);
     return;
   }
 
-  // 2. Expired / Payment pending messages in Tamil
+  // 2. Expired / Payment pending messages
   if (popup.isExpired || subtitle.includes('expired') || title.includes('expired')) {
     playChime('expired');
     setTimeout(() => {
-      speakVoiceCue({
-        tamil: firstName
-          ? `மன்னிக்கவும் ${firstName}, உங்கள் உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.`
-          : 'உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.',
-        phonetic: firstName
-          ? `Mannikkavum ${firstName}, ungal membership mudivadhaindhadhu. Reception-ai anugavum.`
-          : 'Membership mudivadhaindhadhu. Reception-ai anugavum.',
-        english: firstName
-          ? `${firstName}, your membership has expired. Please contact reception.`
-          : 'Membership expired. Please visit reception.',
-      });
-    }, 550);
+      if (currentMode === AUDIO_MODES.ELEVEN_LABS) {
+        playExpiredAudio(memberName);
+      } else if (currentMode === AUDIO_MODES.ENGLISH) {
+        speakEnglishCue({
+          english: firstName
+            ? `Sorry ${firstName}, your membership has expired. Please contact reception.`
+            : 'Your membership has expired. Please contact reception to renew.',
+        });
+      } else {
+        // Tamil mode
+        speakVoiceCue({
+          tamil: firstName
+            ? `மன்னிக்கவும் ${firstName}, உங்கள் உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.`
+            : 'உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.',
+          phonetic: firstName
+            ? `Mannikkavum ${firstName}, ungal membership mudivadhaindhadhu. Reception-ai anugavum.`
+            : 'Membership mudivadhaindhadhu. Reception-ai anugavum.',
+          english: firstName
+            ? `${firstName}, your membership has expired. Please contact reception.`
+            : 'Membership expired. Please visit reception.',
+        });
+      }
+    }, 150);
     return;
   }
 
   if (subtitle.includes('payment') || title.includes('payment') || subtitle.includes('pending')) {
     playChime('payment_pending');
     setTimeout(() => {
-      speakVoiceCue({
-        tamil: 'கட்டணம் நிலுவையில் உள்ளது. தயவுசெய்து வரவேற்பறையை அணுகவும்.',
-        phonetic: 'Kattanam niluvaiyil ulladhu. Reception-ai anugavum.',
-        english: 'Membership payment pending. Please visit reception.',
-      });
-    }, 550);
+      if (currentMode === AUDIO_MODES.ENGLISH) {
+        speakEnglishCue({
+          english: firstName
+            ? `${firstName}, membership payment is pending. Please contact reception.`
+            : 'Membership payment pending. Please contact reception.',
+        });
+      } else {
+        speakVoiceCue({
+          tamil: 'கட்டணம் நிலுவையில் உள்ளது. தயவுசெய்து வரவேற்பறையை அணுகவும்.',
+          phonetic: 'Kattanam niluvaiyil ulladhu. Reception-ai anugavum.',
+          english: 'Membership payment pending. Please visit reception.',
+        });
+      }
+    }, 350);
     return;
   }
 
-  // 3. Unknown Fingerprint or Sensor Errors in Tamil
+  // 3. Unknown Fingerprint or Sensor Errors
   if (subtitle.includes('not recognized') || subtitle.includes('no matching') || title.includes('unrecognized')) {
     playChime('unknown');
     setTimeout(() => {
-      speakVoiceCue({
-        tamil: 'கைரேகை பொருந்தவில்லை. தயவுசெய்து மீண்டும் வைக்கவும்.',
-        phonetic: 'Kairaigai porundhavillai. Meendum vaikkavum.',
-        english: 'Fingerprint not recognized. Please scan again.',
-      });
-    }, 550);
+      if (currentMode === AUDIO_MODES.ELEVEN_LABS) {
+        playFingerprintNotRecognizedAudio();
+      } else if (currentMode === AUDIO_MODES.ENGLISH) {
+        speakEnglishCue({
+          english: 'Fingerprint not recognized. Please scan again.',
+        });
+      } else {
+        // Tamil mode
+        speakVoiceCue({
+          tamil: 'கைரேகை பொருந்தவில்லை. தயவுசெய்து மீண்டும் வைக்கவும்.',
+          phonetic: 'Kairaigai porundhavillai. Meendum vaikkavum.',
+          english: 'Fingerprint not recognized. Please scan again.',
+        });
+      }
+    }, 150);
     return;
   }
 

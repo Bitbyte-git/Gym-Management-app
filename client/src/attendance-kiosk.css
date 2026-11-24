@@ -217,6 +217,54 @@
   color: #ff9ca1 !important;
 }
 
+/* Audio Mode Dropdown (Tamil / English / 11-Labs) */
+.verification-audio-dropdown-wrapper {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
+  height: 38px !important;
+  padding: 0 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.verification-audio-dropdown-wrapper:hover {
+  background: rgba(198, 255, 0, 0.12) !important;
+  border-color: rgba(198, 255, 0, 0.5) !important;
+}
+
+.verification-audio-dropdown-wrapper.disabled {
+  opacity: 0.45 !important;
+  pointer-events: none !important;
+}
+
+.verification-audio-dropdown-icon {
+  color: #c6ff00 !important;
+  flex-shrink: 0 !important;
+}
+
+.verification-audio-dropdown-select {
+  background: transparent !important;
+  border: none !important;
+  color: #e1e7e0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  outline: none !important;
+  padding: 0 4px !important;
+  height: 100% !important;
+  appearance: auto !important;
+}
+
+.verification-audio-dropdown-select option {
+  background: #141716 !important;
+  color: #e1e7e0 !important;
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+}
+
 /* --------------------------------------------------------------------------
    MAIN BODY & SCANNER STAGE
    -------------------------------------------------------------------------- */
