@@ -17,7 +17,7 @@ function getAudioContext() {
     }
   }
   if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {});
+    audioCtx.resume().catch(() => { });
   }
   return audioCtx;
 }
@@ -236,7 +236,7 @@ export function playPunchFeedback(popup) {
     // Standard Check-in
     playChime('checkin');
     setTimeout(() => {
-      speakVoiceCue(firstName ? `Welcome, ${firstName}!` : 'Welcome to Vino Fitness Studio!');
+      speakVoiceCue(firstName ? `Welcome, ${firstName}! ` : 'Welcome to Vino Fitness Studio!');
     }, 550);
     return;
   }
