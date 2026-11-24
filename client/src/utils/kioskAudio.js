@@ -359,10 +359,10 @@ export function playThankYouAudio(memberName = '') {
   const firstName = memberName ? memberName.split(' ')[0] : '';
   const fallbackCue = {
     tamil: firstName
-      ? `நன்றி ${firstName}!,கம் பேக் சூன்.`
+      ? `நன்றி ${firstName}!.`
       : 'நன்றி! இந்த நாள் இனிய நாளாக அமையட்டும்.',
     phonetic: firstName
-      ? `Nandri ${firstName}! Comeback Soon.`
+      ? `Nandri ${firstName}!.`
       : 'Nandri! Come Back Soon.',
     english: firstName
       ? `Goodbye ${firstName}! Have a great day.`
