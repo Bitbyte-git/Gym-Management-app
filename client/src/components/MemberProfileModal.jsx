@@ -251,7 +251,7 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
         if (e.target === e.currentTarget && !saving) onClose();
       }}
     >
-      <article className="member-profile-modal" style={{ maxWidth: '540px', width: 'min(540px, 94vw)', colorScheme: 'dark' }}>
+      <article className="member-profile-modal" style={{ maxWidth: '580px', width: 'min(580px, 94vw)', colorScheme: 'dark' }}>
         {/* Header Hero */}
         <header className="member-profile-hero">
           <button
@@ -546,10 +546,10 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
               </label>
             </div>
 
-            <footer className="member-profile-footer">
+            <footer className="member-profile-footer" style={{ position: 'relative', marginTop: 'auto' }}>
               <button
                 type="button"
-                className="outline-btn"
+                className="outline-btn cancel-edit-btn"
                 disabled={saving}
                 onClick={() => {
                   setIsEditing(false);
@@ -563,7 +563,7 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
                 className="lime-btn save-profile-btn"
                 disabled={saving}
               >
-                {saving ? <Loader2 size={15} className="spin" /> : <Save size={15} />}
+                {saving ? <Loader2 size={13} className="spin" /> : <Save size={13} />}
                 <span>{saving ? 'Saving...' : 'Save Changes'}</span>
               </button>
             </footer>
@@ -734,9 +734,9 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
             </div>
 
             {/* Footer */}
-            <footer className="member-profile-footer">
+            <footer className="member-profile-footer" style={{ position: 'relative', marginTop: 'auto' }}>
               <span className="footer-role-notice">
-                <ShieldCheck size={14} /> Member data is visible according to your assigned role.
+                <ShieldCheck size={13} /> Member data visible according to role.
               </span>
               <div className="footer-action-buttons">
                 {canEdit && (
@@ -748,7 +748,7 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
                       setSaveError('');
                     }}
                   >
-                    <Edit3 size={14} />
+                    <Edit3 size={13} />
                     <span>Edit Profile</span>
                   </button>
                 )}
