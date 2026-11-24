@@ -123,6 +123,8 @@ const FEMALE_VOICE_NAMES = [
   'hazel',
   'susan',
   'female',
+  'pallavi',
+  'valluvar',
 ];
 
 const MALE_VOICE_NAMES = [
@@ -148,7 +150,7 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
   };
 }
 
-function getBestFemaleVoice() {
+export function getBestFemaleVoice() {
   if (typeof window === 'undefined' || !window.speechSynthesis) return null;
   const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
   if (!voices || voices.length === 0) return null;
@@ -172,25 +174,95 @@ function getBestFemaleVoice() {
 }
 
 /**
- * Natural female voice cue using browser SpeechSynthesis
+ * Discovers and prioritizes native Tamil voices (ta-IN, ta, Valluvar, Pallavi, Google தமிழ்)
+ * with graceful Indian-English female voice fallback.
  */
-export function speakVoiceCue(phrase) {
-  if (!isAudioEnabled() || !phrase) return;
+export function getBestTamilVoice() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+  const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  // 1. Look for explicit Tamil language voice (ta-IN, ta-LK, Tamil, தமிழ்)
+  const tamilVoice = voices.find((v) => {
+    const l = (v.lang || '').toLowerCase();
+    const n = (v.name || '').toLowerCase();
+    return (
+      l.startsWith('ta') ||
+      n.includes('tamil') ||
+      n.includes('தமிழ்') ||
+      n.includes('valluvar') ||
+      n.includes('pallavi')
+    );
+  });
+  if (tamilVoice) return tamilVoice;
+
+  // 2. Look for Indian multilingual female voices (e.g. en-IN, hi-IN with natural Indian accent)
+  const indianFemale = voices.find((v) => {
+    const l = (v.lang || '').toLowerCase();
+    const n = (v.name || '').toLowerCase();
+    const isIndian = l.includes('-in') || l.includes('_in') || n.includes('india') || n.includes('neerja') || n.includes('heera');
+    const isFemale = FEMALE_VOICE_NAMES.some((fn) => n.includes(fn)) || !MALE_VOICE_NAMES.some((mn) => n.includes(mn));
+    return isIndian && isFemale;
+  });
+  if (indianFemale) return indianFemale;
+
+  // 3. Fallback to standard female voice
+  return getBestFemaleVoice();
+}
+
+/**
+ * Natural voice announcement in Tamil with proper pronunciation and slow pitch.
+ * Accepts either:
+ *  - string phrase
+ *  - or cue object: { tamil: '...', phonetic: '...', english: '...' }
+ */
+export function speakVoiceCue(cue, options = {}) {
+  if (!isAudioEnabled() || !cue) return;
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
   try {
-    // Cancel any queued speech to avoid backlog
+    // Cancel any queued speech to avoid audio backlog
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(phrase);
-    utterance.rate = 0.88; // Calm, clear, natural announcement tempo
-    utterance.pitch = 1.08; // Warm, friendly female tone
-    utterance.volume = 0.95;
+    // Determine voice availability
+    const tamilVoice = getBestTamilVoice();
+    const hasNativeTamilVoice = Boolean(
+      tamilVoice &&
+        ((tamilVoice.lang || '').toLowerCase().startsWith('ta') ||
+          (tamilVoice.name || '').toLowerCase().includes('tamil') ||
+          (tamilVoice.name || '').includes('தமிழ்'))
+    );
 
-    // Pick best female voice
-    const femaleVoice = getBestFemaleVoice();
-    if (femaleVoice) {
-      utterance.voice = femaleVoice;
+    let textToSpeak = '';
+    let speechLang = 'ta-IN';
+
+    if (typeof cue === 'object') {
+      if (hasNativeTamilVoice || !cue.phonetic) {
+        textToSpeak = cue.tamil || cue.phonetic || cue.english || '';
+        speechLang = 'ta-IN';
+      } else {
+        // When system lacks native Tamil voice pack, use phonetic Tamil for clear diction
+        textToSpeak = cue.phonetic;
+        speechLang = tamilVoice?.lang || 'en-IN';
+      }
+    } else {
+      const containsTamilUnicode = /[\u0B80-\u0BFF]/.test(cue);
+      textToSpeak = cue;
+      speechLang = containsTamilUnicode ? 'ta-IN' : (tamilVoice?.lang || 'en-IN');
+    }
+
+    if (!textToSpeak) return;
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = speechLang;
+
+    // Slow tempo & relaxed, dignified pitch for clear, natural Tamil enunciation
+    utterance.rate = options.rate ?? 0.82; // Slow, deliberate cadence so every Tamil syllable is distinct
+    utterance.pitch = options.pitch ?? 0.92; // Warm, soothing, lower/slow pitch
+    utterance.volume = options.volume ?? 1.0;
+
+    if (tamilVoice) {
+      utterance.voice = tamilVoice;
     }
 
     window.speechSynthesis.speak(utterance);
@@ -200,7 +272,8 @@ export function speakVoiceCue(phrase) {
 }
 
 /**
- * Unified feedback dispatcher for punch confirmations
+ * Unified feedback dispatcher for punch confirmations.
+ * Features automated welcome and send-off messages in Tamil.
  */
 export function playPunchFeedback(popup) {
   if (!popup || !isAudioEnabled()) return;
@@ -218,34 +291,76 @@ export function playPunchFeedback(popup) {
   // 1. Success cases
   if (isSuccess) {
     if (isCheckout) {
+      // Send-off message in Tamil
       playChime('checkout');
       setTimeout(() => {
-        speakVoiceCue(firstName ? `Goodbye ${firstName}! Have a great day.` : 'Check-out recorded. Have a great day!');
+        speakVoiceCue({
+          tamil: firstName
+            ? `நன்றி ${firstName}! இன்றைய உடற்பயிற்சி முடிந்தது, மீண்டும் வருக. இந்த நாள் இனிய நாளாக அமையட்டும்.`
+            : 'நன்றி! இன்றைய உடற்பயிற்சி முடிந்தது, மீண்டும் வருக. இந்த நாள் இனிய நாளாக அமையட்டும்.',
+          phonetic: firstName
+            ? `Nandri ${firstName}! Udar-payirchi mudindhadhu, meendum varuga. Iniya naalaaga amaiyattum.`
+            : 'Nandri! Udar-payirchi mudindhadhu, meendum varuga. Iniya naalaaga amaiyattum.',
+          english: firstName
+            ? `Goodbye ${firstName}! Have a great day.`
+            : 'Check-out recorded. Have a great day!',
+        });
       }, 550);
       return;
     }
 
     if (isReconfirmed || subtitle.includes('already')) {
+      // Already checked in message in Tamil
       playChime('reconfirmed');
       setTimeout(() => {
-        speakVoiceCue(firstName ? `You are already checked in, ${firstName}.` : 'Attendance already recorded.');
+        speakVoiceCue({
+          tamil: firstName
+            ? `வணக்கம் ${firstName}, நீங்கள் ஏற்கனவே வருகை பதிவு செய்துள்ளீர்கள்.`
+            : 'நீங்கள் ஏற்கனவே வருகை பதிவு செய்துள்ளீர்கள்.',
+          phonetic: firstName
+            ? `Vanakkam ${firstName}, neengal yaerkkanavae varugai padhivu seidhu-vitteergal.`
+            : 'Neengal yaerkkanavae varugai padhivu seidhu-vitteergal.',
+          english: firstName
+            ? `You are already checked in, ${firstName}.`
+            : 'Attendance already recorded.',
+        });
       }, 500);
       return;
     }
 
-    // Standard Check-in
+    // Standard Check-in (Auto-Welcome message in Tamil)
     playChime('checkin');
     setTimeout(() => {
-      speakVoiceCue(firstName ? `Welcome, ${firstName}! ` : 'Welcome to Vino Fitness Studio!');
+      speakVoiceCue({
+        tamil: firstName
+          ? `வணக்கம் ${firstName}! வினோ ஃபிட்னஸ் ஸ்டுடியோவிற்கு நல்வரவு. உடற்பயிற்சியை தொடங்குங்கள்.`
+          : 'வணக்கம்! வினோ ஃபிட்னஸ் ஸ்டுடியோவிற்கு நல்வரவு. உடற்பயிற்சியை தொடங்குங்கள்.',
+        phonetic: firstName
+          ? `Vanakkam ${firstName}! Vino Fitness Studio-vukku nalvaravu.`
+          : 'Vanakkam! Vino Fitness Studio-vukku nalvaravu.',
+        english: firstName
+          ? `Welcome ${firstName} to Vino Fitness Studio!`
+          : 'Welcome to Vino Fitness Studio!',
+      });
     }, 550);
     return;
   }
 
-  // 2. Expired / Payment pending
+  // 2. Expired / Payment pending messages in Tamil
   if (popup.isExpired || subtitle.includes('expired') || title.includes('expired')) {
     playChime('expired');
     setTimeout(() => {
-      speakVoiceCue(firstName ? `${firstName}, your membership has expired. Please contact reception.` : 'Membership expired. Please visit reception.');
+      speakVoiceCue({
+        tamil: firstName
+          ? `மன்னிக்கவும் ${firstName}, உங்கள் உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.`
+          : 'உறுப்பினர் காலம் முடிவடைந்துவிட்டது. தயவுசெய்து வரவேற்பறையை அணுகவும்.',
+        phonetic: firstName
+          ? `Mannikkavum ${firstName}, ungal membership mudivadhaindhadhu. Reception-ai anugavum.`
+          : 'Membership mudivadhaindhadhu. Reception-ai anugavum.',
+        english: firstName
+          ? `${firstName}, your membership has expired. Please contact reception.`
+          : 'Membership expired. Please visit reception.',
+      });
     }, 550);
     return;
   }
@@ -253,16 +368,24 @@ export function playPunchFeedback(popup) {
   if (subtitle.includes('payment') || title.includes('payment') || subtitle.includes('pending')) {
     playChime('payment_pending');
     setTimeout(() => {
-      speakVoiceCue('Membership payment pending. Please visit reception.');
+      speakVoiceCue({
+        tamil: 'கட்டணம் நிலுவையில் உள்ளது. தயவுசெய்து வரவேற்பறையை அணுகவும்.',
+        phonetic: 'Kattanam niluvaiyil ulladhu. Reception-ai anugavum.',
+        english: 'Membership payment pending. Please visit reception.',
+      });
     }, 550);
     return;
   }
 
-  // 3. Unknown Fingerprint or Sensor Errors
+  // 3. Unknown Fingerprint or Sensor Errors in Tamil
   if (subtitle.includes('not recognized') || subtitle.includes('no matching') || title.includes('unrecognized')) {
     playChime('unknown');
     setTimeout(() => {
-      speakVoiceCue('Fingerprint not recognized. Please scan again.');
+      speakVoiceCue({
+        tamil: 'கைரேகை பொருந்தவில்லை. தயவுசெய்து மீண்டும் வைக்கவும்.',
+        phonetic: 'Kairaigai porundhavillai. Meendum vaikkavum.',
+        english: 'Fingerprint not recognized. Please scan again.',
+      });
     }, 550);
     return;
   }
