@@ -251,7 +251,7 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
         if (e.target === e.currentTarget && !saving) onClose();
       }}
     >
-      <article className="member-profile-modal">
+      <article className="member-profile-modal" style={{ maxWidth: '540px', width: 'min(540px, 94vw)', colorScheme: 'dark' }}>
         {/* Header Hero */}
         <header className="member-profile-hero">
           <button
@@ -276,8 +276,14 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
               />
             ) : null}
             <div
-              className="member-profile-avatar"
-              style={{ display: profilePic ? 'none' : 'grid' }}
+              className="member-profile-avatar member-avatar-initials"
+              style={{
+                display: profilePic ? 'none' : 'grid',
+                background: 'linear-gradient(135deg, rgba(212, 255, 0, 0.18) 0%, rgba(18, 26, 20, 0.95) 100%)',
+                color: '#d4ff00',
+                border: 'none',
+                boxShadow: 'inset 0 0 14px rgba(212, 255, 0, 0.08)',
+              }}
             >
               {initials(currentMember.fullName)}
             </div>
@@ -314,7 +320,7 @@ export default function MemberProfileModal({ member, onClose, onUpdate }) {
           <div className="member-hero-right-actions">
             <div className={`member-profile-status ${active ? 'active' : ''}`}>
               <span className="status-dot" />
-              <span>{active ? 'ACTIVE MEMBER' : text(currentMember.membershipStatus || 'INACTIVE')}</span>
+              <span className="status-text" style={{ whiteSpace: 'nowrap' }}>{active ? 'ACTIVE MEMBER' : text(currentMember.membershipStatus || 'INACTIVE')}</span>
             </div>
           </div>
         </header>

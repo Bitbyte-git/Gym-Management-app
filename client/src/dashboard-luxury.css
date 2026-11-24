@@ -3256,58 +3256,60 @@ button.outline-btn:hover {
 }
 
 .member-profile-modal {
-  max-width: 630px !important;
-  width: 100% !important;
-  max-height: calc(100vh - 48px) !important;
-  background: rgba(14, 18, 15, 0.96) !important;
-  backdrop-filter: blur(32px) !important;
-  -webkit-backdrop-filter: blur(32px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 22px !important;
-  box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 255, 0, 0.04) !important;
+  max-width: 540px !important;
+  width: min(540px, 94vw) !important;
+  max-height: calc(100vh - 44px) !important;
+  background: linear-gradient(180deg, rgba(16, 22, 18, 0.98) 0%, rgba(12, 15, 13, 0.98) 100%) !important;
+  backdrop-filter: blur(36px) !important;
+  -webkit-backdrop-filter: blur(36px) !important;
+  border: 1px solid rgba(212, 255, 0, 0.16) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 28px 80px -10px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 255, 0, 0.05) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   display: flex !important;
   flex-direction: column !important;
+  color-scheme: dark !important;
   scrollbar-width: thin !important;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+  scrollbar-color: rgba(255, 255, 255, 0.18) rgba(12, 16, 13, 0.8) !important;
 }
 
 .member-profile-modal::-webkit-scrollbar {
-  width: 6px !important;
+  width: 5px !important;
 }
 
 .member-profile-modal::-webkit-scrollbar-track {
-  background: transparent !important;
+  background: rgba(12, 16, 13, 0.8) !important;
+  border-radius: 999px !important;
 }
 
 .member-profile-modal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
   border-radius: 999px !important;
 }
 
 .member-profile-modal::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 255, 0, 0.4) !important;
+  background: #d4ff00 !important;
 }
 
 /* Modal Hero Header */
 .member-profile-hero {
   display: flex !important;
   align-items: center !important;
-  gap: 18px !important;
+  gap: 16px !important;
   padding: 22px 24px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: rgba(10, 14, 11, 0.6) !important;
+  background: rgba(10, 14, 11, 0.7) !important;
   position: relative !important;
 }
 
 .member-profile-avatar-wrap {
-  width: 68px !important;
-  height: 68px !important;
+  width: 64px !important;
+  height: 64px !important;
   border-radius: 18px !important;
   position: relative !important;
-  border: 2px solid rgba(212, 255, 0, 0.35) !important;
-  box-shadow: 0 0 20px rgba(212, 255, 0, 0.12) !important;
+  border: 1.5px solid rgba(212, 255, 0, 0.4) !important;
+  box-shadow: 0 0 16px rgba(212, 255, 0, 0.12) !important;
   flex-shrink: 0 !important;
   overflow: visible !important;
 }
@@ -3317,36 +3319,42 @@ button.outline-btn:hover {
   height: 100% !important;
   border-radius: 16px !important;
   object-fit: cover !important;
+  display: block !important;
 }
 
-.member-profile-avatar {
+.member-profile-avatar,
+.member-avatar-initials {
   width: 100% !important;
   height: 100% !important;
   border-radius: 16px !important;
   display: grid !important;
   place-items: center !important;
-  background: linear-gradient(135deg, rgba(212, 255, 0, 0.2) 0%, rgba(212, 255, 0, 0.05) 100%) !important;
+  background: linear-gradient(135deg, rgba(212, 255, 0, 0.18) 0%, rgba(18, 26, 20, 0.95) 100%) !important;
+  border: none !important;
   color: #d4ff00 !important;
-  font-size: 1.5rem !important;
+  font-size: 1.45rem !important;
   font-weight: 800 !important;
-  letter-spacing: -0.02em !important;
+  letter-spacing: 0.02em !important;
+  text-shadow: 0 0 12px rgba(212, 255, 0, 0.3) !important;
+  box-shadow: inset 0 0 14px rgba(212, 255, 0, 0.08) !important;
 }
 
 .member-profile-avatar-edit-btn {
   position: absolute !important;
   bottom: -4px !important;
   right: -4px !important;
-  width: 24px !important;
-  height: 24px !important;
+  width: 22px !important;
+  height: 22px !important;
   border-radius: 50% !important;
   background: #d4ff00 !important;
-  color: #080b09 !important;
-  border: 2px solid #080b09 !important;
+  color: #0b130a !important;
+  border: 2px solid #0d120f !important;
   display: grid !important;
   place-items: center !important;
   cursor: pointer !important;
   transition: transform 0.2s ease !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+  z-index: 2 !important;
 }
 
 .member-profile-avatar-edit-btn:hover {
@@ -3360,16 +3368,16 @@ button.outline-btn:hover {
 
 .member-profile-tag {
   color: #d4ff00 !important;
-  font-size: 0.68rem !important;
+  font-size: 0.65rem !important;
   font-weight: 800 !important;
-  letter-spacing: 0.09em !important;
+  letter-spacing: 0.1em !important;
   text-transform: uppercase !important;
   display: block !important;
   margin-bottom: 2px !important;
 }
 
 .member-profile-identity h2 {
-  font-size: 1.45rem !important;
+  font-size: 1.35rem !important;
   font-weight: 800 !important;
   color: #ffffff !important;
   margin: 0 0 5px 0 !important;
@@ -3386,7 +3394,7 @@ button.outline-btn:hover {
 }
 
 .joined-date-text {
-  font-size: 0.76rem !important;
+  font-size: 0.75rem !important;
   color: rgba(255, 255, 255, 0.45) !important;
 }
 
@@ -3395,7 +3403,8 @@ button.outline-btn:hover {
   align-items: center !important;
   gap: 12px !important;
   margin-left: auto !important;
-  padding-right: 32px !important;
+  padding-right: 36px !important;
+  flex-shrink: 0 !important;
 }
 
 .member-profile-status {
@@ -3404,18 +3413,20 @@ button.outline-btn:hover {
   gap: 6px !important;
   padding: 5px 12px !important;
   border-radius: 999px !important;
-  font-size: 0.7rem !important;
+  font-size: 0.68rem !important;
   font-weight: 800 !important;
   letter-spacing: 0.05em !important;
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   color: rgba(255, 255, 255, 0.6) !important;
   white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
 }
 
 .member-profile-status.active {
   background: rgba(34, 197, 94, 0.12) !important;
-  border-color: rgba(34, 197, 94, 0.4) !important;
+  border-color: rgba(34, 197, 94, 0.45) !important;
   color: #4ade80 !important;
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.15) !important;
 }
@@ -3424,8 +3435,18 @@ button.outline-btn:hover {
   width: 6px !important;
   height: 6px !important;
   border-radius: 50% !important;
+  background: currentColor !important;
+  flex-shrink: 0 !important;
+}
+
+.member-profile-status.active .status-dot {
   background: #4ade80 !important;
   box-shadow: 0 0 6px #4ade80 !important;
+}
+
+.member-profile-status .status-text {
+  white-space: nowrap !important;
+  display: inline-block !important;
 }
 
 .member-modal-close {
@@ -3437,11 +3458,12 @@ button.outline-btn:hover {
   border-radius: 50% !important;
   background: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
   display: grid !important;
   place-items: center !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
+  z-index: 5 !important;
 }
 
 .member-modal-close:hover {
@@ -3455,24 +3477,24 @@ button.outline-btn:hover {
 .member-profile-metrics {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  gap: 10px !important;
-  padding: 14px 24px !important;
+  gap: 8px !important;
+  padding: 12px 20px !important;
   background: rgba(0, 0, 0, 0.35) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .metric-box {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
   border-radius: 12px !important;
-  padding: 10px 12px !important;
+  padding: 9px 8px !important;
   text-align: center !important;
 }
 
 .metric-box small {
-  font-size: 0.65rem !important;
+  font-size: 0.62rem !important;
   font-weight: 800 !important;
-  letter-spacing: 0.07em !important;
+  letter-spacing: 0.08em !important;
   color: rgba(255, 255, 255, 0.4) !important;
   display: block !important;
   margin-bottom: 4px !important;
@@ -3480,24 +3502,25 @@ button.outline-btn:hover {
 }
 
 .metric-box strong {
-  font-size: 0.95rem !important;
+  font-size: 0.88rem !important;
   font-weight: 700 !important;
-  color: #ffffff !important;
+  color: #f5f5f7 !important;
+  display: block !important;
 }
 
 /* Modal Body */
 .member-profile-body {
-  padding: 20px 24px !important;
+  padding: 16px 20px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 18px !important;
+  gap: 14px !important;
 }
 
 .member-profile-section {
   background: rgba(0, 0, 0, 0.25) !important;
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 16px !important;
-  padding: 16px 18px !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
 }
 
 .member-section-title {
