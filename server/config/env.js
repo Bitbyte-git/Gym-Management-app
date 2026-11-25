@@ -24,17 +24,12 @@ function biometricKeys() {
   } catch { throw new Error('BIOMETRIC_ENCRYPTION_KEYS must be a JSON keyring object'); }
 }
 
-function cleanEnvString(val) {
-  if (!val) return val;
-  return String(val).trim().replace(/^['"]|['"]$/g, '').trim();
-}
-
 const config = {
   port: process.env.PORT === undefined ? 5000 : Number(process.env.PORT),
   nodeEnv,
   appUrl: process.env.APP_URL || 'http://localhost:5000',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
-  mongodbUri: cleanEnvString(process.env.MONGODB_URI || process.env.MONGO_URI),
+  mongodbUri: process.env.MONGODB_URI,
   mongodbFallbackHosts: (process.env.MONGODB_FALLBACK_HOSTS || '')
     .split(',')
     .map((host) => host.trim())
@@ -141,9 +136,6 @@ config.validate = () => {
     require('../services/biometricCrypto').keyFor(config.biometric.keyVersion);
   }
   if (!config.mongodbUri) throw new Error('MONGODB_URI must be configured');
-  if (!/^mongodb(\+srv)?:\/\//i.test(config.mongodbUri)) {
-    throw new Error('MONGODB_URI must start with "mongodb://" or "mongodb+srv://" (check Render Environment Variables)');
-  }
   if (config.mongodbFallbackHosts.length > 0 && !config.mongodbReplicaSet) {
     throw new Error('MONGODB_REPLICA_SET is required when MONGODB_FALLBACK_HOSTS is configured');
   }
