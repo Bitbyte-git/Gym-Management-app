@@ -11,6 +11,8 @@ COPY client/package*.json ./client/
 RUN npm ci --prefix client
 
 COPY client ./client
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=${VITE_API_URL}
 RUN npm run build --prefix client
 
 # Stage 2: Ultra-slim Nginx Static Host
