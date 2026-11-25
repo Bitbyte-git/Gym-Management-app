@@ -39,15 +39,20 @@ app.use(express.json());
 
 // Middleware
 app.disable('x-powered-by');
+
 if (config.trustProxy) app.set('trust proxy', 1);
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
+
 app.use(cors(config.cors));
+
 // Template 64 KiB + optional image 512 KiB + Base64 overhead and metadata.
 app.use('/api/attendance/biometric', express.json({ limit: '100kb' }));
 app.use('/api/biometrics', express.json({ limit: '800kb' }));
 app.use(express.json({ limit: '1mb' }));
+
 app.use(express.urlencoded({ extended: true }));
 
 // Request tracing (API Gateway correlation) and logging middleware
