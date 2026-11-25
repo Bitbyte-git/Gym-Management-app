@@ -4,16 +4,16 @@ services:
     image: redis:7-alpine
     container_name: pulsefit-redis
     restart: unless-stopped
-    command: [ "redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru" ]
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis_data:/data
     networks:
       - gym-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
   # 3. Application Backend (Node.js API Server)
   backend:
@@ -30,7 +30,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_ENABLED=true
-      - MONGODB_URI=${MONGODB_URI:-mongodb+srv://user:pass@cluster.mongodb.net/pulsefit}
       - JWT_SECRET=${JWT_SECRET:-vino_fitness_production_secret_key_2026}
       # - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - JWT_EXPIRE=30d
@@ -67,6 +66,11 @@ services:
         limits:
           cpus: '0.5'
           memory: 256M
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
   # 4. Reverse Proxy & 5. API Gateway (Edge Nginx)
   gateway:

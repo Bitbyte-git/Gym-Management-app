@@ -32,6 +32,11 @@ const registrationRoutes = require('./routes/registration');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
+// Remaining middleware
+app.use(express.json());
+
 // Middleware
 app.disable('x-powered-by');
 if (config.trustProxy) app.set('trust proxy', 1);
