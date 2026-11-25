@@ -33,10 +33,24 @@ module.exports = async () => {
   try {
     conn = await mongoose.connect(config.mongodbUri, options);
   } catch (error) {
-    const directUri = buildDirectUri(config.mongodbUri);
     const isDnsFailure = ['ECONNREFUSED', 'ETIMEOUT', 'EAI_AGAIN', 'ENOTFOUND'].includes(error.code);
+    if (!isDnsFailure) throw error;
 
-    if (!directUri || !isDnsFailure) throw error;
+    // Retry SRV lookup using public DNS (8.8.8.8, 1.1.1.1) if local/ISP DNS refuses SRV queries
+    if (!process.env.DNS_SERVERS && config.mongodbUri.startsWith('mongodb+srv://')) {
+      try {
+        console.warn(`MongoDB SRV lookup failed (${error.code}); retrying with public DNS (8.8.8.8, 1.1.1.1)`);
+        dns.setServers(['8.8.8.8', '1.1.1.1']);
+        conn = await mongoose.connect(config.mongodbUri, options);
+        console.log('MongoDB connected');
+        return conn;
+      } catch (retryError) {
+        console.warn(`Public DNS retry failed (${retryError.code})`);
+      }
+    }
+
+    const directUri = buildDirectUri(config.mongodbUri);
+    if (!directUri) throw error;
 
     console.warn(`MongoDB SRV lookup failed (${error.code}); retrying with configured Atlas hosts`);
     conn = await mongoose.connect(directUri, options);
