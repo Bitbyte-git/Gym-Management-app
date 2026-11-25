@@ -218,7 +218,7 @@ export function getBestTamilVoice() {
  */
 const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
 const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-export const WELCOME_AUDIO_URL = `${cleanBase}/Welcome-Audio.mp3`;
+export const WELCOME_AUDIO_URL = `${cleanBase}/Welcome-message.mp3`;
 export const THANKYOU_AUDIO_URL = `${cleanBase}/Thankyou-Audio.mp3`;
 export const SUBSCRIPTION_EXPIRED_AUDIO_URL = `${cleanBase}/Subscription-Expired.mp3`;
 export const FINGERPRINT_NOT_RECOGNIZED_AUDIO_URL = `${cleanBase}/Fingerprint-Not-Recogonized.mp3`;
@@ -529,11 +529,11 @@ export function playPunchFeedback(popup) {
           // Tamil mode (TTS with member name)
           speakVoiceCue({
             tamil: firstName
-              ? `நன்றி ${firstName}!,கம் பேக் சூன்.`
-              : 'நன்றி! இந்த நாள் இனிய நாளாக அமையட்டும்.',
+              ? `நன்றி ${firstName}! மீண்டும் வருக. இந்த நாள் இனிய நாளாக அமையட்டும்.`
+              : 'நன்றி! மீண்டும் வருக. இந்த நாள் இனிய நாளாக அமையட்டும்.',
             phonetic: firstName
-              ? `Nandri ${firstName}! Comeback Soon.`
-              : 'Nandri! Come Back Soon.',
+              ? `Nandri ${firstName}! Meendum varuga. Indha naal iniya naalaaga amaiyattum.`
+              : 'Nandri! Meendum varuga. Indha naal iniya naalaaga amaiyattum.',
             english: firstName
               ? `Goodbye ${firstName}! Have a great day.`
               : 'Check-out recorded. Have a great day!',
@@ -584,11 +584,11 @@ export function playPunchFeedback(popup) {
         // Tamil mode (TTS with member name)
         speakVoiceCue({
           tamil: firstName
-            ? `ஹேய் ${firstName}! வெல்கம் டூ வினோ ஃபிட்னஸ்.`
-            : 'ஹேய்! வெல்கம் டூ வினோ ஃபிட்னஸ்.',
+            ? `வணக்கம் ${firstName}! வினோ ஃபிட்னஸ் ஸ்டுடியோவிற்கு நல்வரவு.`
+            : 'வணக்கம்! வினோ ஃபிட்னஸ் ஸ்டுடியோவிற்கு நல்வரவு.',
           phonetic: firstName
-            ? `Hai ${firstName}! Welcome To Vino Fitness`
-            : 'Hai! Vino Fitness Studio-vukku nalvaravu.',
+            ? `Vanakkam ${firstName}! Vino Fitness Studio-virkku nalvaravu.`
+            : 'Vanakkam! Vino Fitness Studio-virkku nalvaravu.',
           english: firstName
             ? `Welcome ${firstName} to Vino Fitness Studio!`
             : 'Welcome to Vino Fitness Studio!',
