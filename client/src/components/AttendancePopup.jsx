@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   CheckCircle2,
   AlertCircle,
@@ -32,6 +32,12 @@ const formatDate = (dateVal) => {
 
 export default function AttendancePopup({ popup, onClose }) {
   const onCloseRef = useRef(onClose);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [popup?.member?.profilePicture, popup?.errorData?.member?.profilePicture]);
+
   useEffect(() => {
     onCloseRef.current = onClose;
   });
@@ -101,24 +107,18 @@ export default function AttendancePopup({ popup, onClose }) {
           {member && (
             <div className="attendance-popup-member-card">
               <div className="attendance-popup-avatar-container">
-                {hasPhoto ? (
+                {hasPhoto && !imgError ? (
                   <img
                     src={member.profilePicture}
                     alt={member.fullName || 'Member'}
                     className="attendance-popup-avatar-img"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const fallback = e.currentTarget.parentElement?.querySelector('.attendance-avatar');
-                      if (fallback) fallback.style.display = 'grid';
-                    }}
+                    onError={() => setImgError(true)}
                   />
-                ) : null}
-                <span
-                  className="attendance-avatar"
-                  style={{ display: hasPhoto ? 'none' : 'grid' }}
-                >
-                  {member.avatarInitials || member.fullName?.slice(0, 2).toUpperCase() || 'VF'}
-                </span>
+                ) : (
+                  <span className="attendance-avatar">
+                    {member.avatarInitials || member.fullName?.slice(0, 2).toUpperCase() || 'VF'}
+                  </span>
+                )}
               </div>
               <div className="attendance-popup-member-info">
                 <div className="attendance-popup-member-name-row">
