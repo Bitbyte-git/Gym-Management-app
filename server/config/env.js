@@ -24,12 +24,17 @@ function biometricKeys() {
   } catch { throw new Error('BIOMETRIC_ENCRYPTION_KEYS must be a JSON keyring object'); }
 }
 
+function cleanEnvString(val) {
+  if (!val) return val;
+  return String(val).trim().replace(/^['"]|['"]$/g, '').trim();
+}
+
 const config = {
   port: process.env.PORT === undefined ? 5000 : Number(process.env.PORT),
   nodeEnv,
   appUrl: process.env.APP_URL || 'http://localhost:5000',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
-  mongodbUri: process.env.MONGODB_URI,
+  mongodbUri: cleanEnvString(process.env.MONGODB_URI || process.env.MONGO_URI),
   mongodbFallbackHosts: (process.env.MONGODB_FALLBACK_HOSTS || '')
     .split(',')
     .map((host) => host.trim())
@@ -59,8 +64,8 @@ const config = {
     stalePolicy: process.env.BIOMETRIC_STALE_SESSION_POLICY || 'review',
     identificationMode: (process.env.RENDER || process.platform !== 'win32' || nodeEnv === 'production')
       ? (process.env.BIOMETRIC_IDENTIFICATION_MODE && process.env.BIOMETRIC_IDENTIFICATION_MODE !== 'morfin-local-development'
-          ? process.env.BIOMETRIC_IDENTIFICATION_MODE
-          : 'kiosk-assisted')
+        ? process.env.BIOMETRIC_IDENTIFICATION_MODE
+        : 'kiosk-assisted')
       : (process.env.BIOMETRIC_IDENTIFICATION_MODE || 'kiosk-assisted'),
     localServiceUrl: process.env.MORFIN_AUTH_SERVICE_URL || 'https://localhost:8030/morfinauth',
     searchMaxCandidates: Number(process.env.BIOMETRIC_SEARCH_MAX_CANDIDATES || 100),
@@ -136,6 +141,9 @@ config.validate = () => {
     require('../services/biometricCrypto').keyFor(config.biometric.keyVersion);
   }
   if (!config.mongodbUri) throw new Error('MONGODB_URI must be configured');
+  if (!/^mongodb(\+srv)?:\/\//i.test(config.mongodbUri)) {
+    throw new Error('MONGODB_URI must start with "mongodb://" or "mongodb+srv://" (check Render Environment Variables)');
+  }
   if (config.mongodbFallbackHosts.length > 0 && !config.mongodbReplicaSet) {
     throw new Error('MONGODB_REPLICA_SET is required when MONGODB_FALLBACK_HOSTS is configured');
   }
@@ -156,7 +164,7 @@ config.validate = () => {
       throw new Error('JWT access and refresh secrets must be different');
     }
     if (process.env.FRONTEND_URL && process.env.FRONTEND_URL !== '*') {
-      for (const origin of config.cors.origin) {
+      for (const origin of configuredOrigins) {
         if (origin instanceof RegExp || origin === '*') continue;
         let parsedOrigin;
         try {
